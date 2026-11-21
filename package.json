@@ -1,0 +1,47 @@
+{
+  "name": "framelime",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Turn code into clean, shareable images.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "validate": "yummacss lint --allow app-root,bottom-sheet-handle,drawer-backdrop,drawer-popup,frame-collapsible,menu-popup,popover-popup,select-popup,toast-root",
+    "prepare": "vp config"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.9.0",
+    "@fontsource-variable/stack-sans-notch": "^5.3.0",
+    "@fontsource-variable/stack-sans-text": "^5.3.0",
+    "@fontsource/fira-code": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@shikijs/core": "4.6.0",
+    "@shikijs/engine-javascript": "4.6.0",
+    "@shikijs/langs": "4.6.0",
+    "@tabler/icons-react": "^3.51.0",
+    "@tanstack/react-hotkeys": "^0.10.0",
+    "culori": "4.0.2",
+    "html-to-image": "^1.11.13",
+    "next": "^16.4.6",
+    "nuqs": "^2.10.3",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "tinycolor2": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/culori": "^4.0.1",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/tinycolor2": "^1.4.6",
+    "@yummacss/postcss": "^4.13.0",
+    "typescript": "~7.0.2",
+    "vite-plus": "catalog:",
+    "yummacss": "^4.13.0"
+  },
+  "packageManager": "pnpm@12.21.0+sha512.66fd8278ee28935ce951792d34367ff3af5c432a2756445823029533835b8da529bbe0be5130afd56ed0713fb8789e47bad82d93bd5ae2fe54b15562d6276ef0"
+}

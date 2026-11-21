@@ -1,0 +1,82 @@
+@import "@fontsource/jetbrains-mono";
+@import "@fontsource/fira-code";
+@import "@fontsource/ibm-plex-mono";
+
+.toast-root {
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease;
+}
+
+.toast-root[data-starting-style],
+.toast-root[data-ending-style] {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.drawer-backdrop {
+  transition: opacity 200ms ease;
+}
+
+.drawer-backdrop[data-starting-style],
+.drawer-backdrop[data-ending-style] {
+  opacity: 0;
+}
+
+.drawer-popup {
+  --stack-scale: calc(1 - (var(--nested-drawers, 0) * 0.05));
+  transition: transform 200ms ease;
+  transform: translateY(
+      calc(var(--drawer-snap-point-offset, 0px) + var(--drawer-swipe-movement-y, 0px))
+    )
+    scale(var(--stack-scale));
+}
+
+.drawer-popup[data-swiping] {
+  transition: none;
+}
+
+.drawer-popup[data-starting-style],
+.drawer-popup[data-ending-style] {
+  transform: translateY(100%);
+}
+
+.bottom-sheet-handle {
+  bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
+.select-popup,
+.popover-popup,
+.menu-popup {
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+  transform-origin: top;
+}
+
+.select-popup[data-starting-style],
+.select-popup[data-ending-style],
+.popover-popup[data-starting-style],
+.popover-popup[data-ending-style],
+.menu-popup[data-starting-style],
+.menu-popup[data-ending-style] {
+  opacity: 0;
+  transform: scale(0.96) translateY(-4px);
+}
+
+.frame-collapsible {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 200ms ease;
+}
+
+.frame-collapsible-open {
+  grid-template-rows: 1fr;
+}
+
+.app-root {
+  padding-top: env(safe-area-inset-top);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+}
