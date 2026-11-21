@@ -1,3 +1,4 @@
+import { type Icon, IconArrowRight, IconAsterisk } from "@tabler/icons-react";
 import { DISPLAY_STYLE } from "@/lib/fonts.ts";
 
 const ACTIONS = [
@@ -25,12 +26,13 @@ const OPTIONS = [
 
 function Tape({
   words,
-  mark,
+  mark: Mark,
   className,
   trackClassName,
 }: {
   words: string[];
-  mark: string;
+  /** The Tabler icon between words. */
+  mark: Icon;
   className: string;
   trackClassName: string;
 }) {
@@ -42,9 +44,9 @@ function Tape({
         {/* Two copies: the track slides one, then starts over on the same frame. */}
         {[...run, ...run].map((word, index) => (
           // oxlint-disable-next-line react/no-array-index-key -- a fixed, repeated list
-          <span key={index} className="d:f g:11 pr:11">
+          <span key={index} className="d:f ai:c g:11 pr:11">
             <span>{word}</span>
-            <span>{mark}</span>
+            <Mark className="w:8 h:8 fs:0" stroke={2.5} aria-hidden="true" />
           </span>
         ))}
       </div>
@@ -63,13 +65,13 @@ export function Tapes() {
       <div className="landing-tapes p:a t:20 d:f fd:c">
         <Tape
           words={ACTIONS}
-          mark="→"
+          mark={IconArrowRight}
           className="bg:fill c:on-fill bbw:3 bs:s bc:edge"
           trackClassName="landing-tape-track"
         />
         <Tape
           words={OPTIONS}
-          mark="✳"
+          mark={IconAsterisk}
           className="bg:label c:page bbw:3 bs:s bc:hint"
           trackClassName="landing-tape-track-back"
         />

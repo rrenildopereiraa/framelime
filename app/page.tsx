@@ -1,7 +1,6 @@
-import { IconBrandGithub } from "@tabler/icons-react";
+import { IconBrandGithub, IconCornerDownLeft } from "@tabler/icons-react";
 import { LogoMark } from "@/components/logo.tsx";
 import Button from "@/components/ui/button.tsx";
-import Kbd from "@/components/ui/kbd.tsx";
 import { FramesBackdrop } from "@/landing/frames-backdrop.tsx";
 import { StartHotkey } from "@/landing/start-hotkey.tsx";
 import { Tapes } from "@/landing/tapes.tsx";
@@ -48,10 +47,11 @@ export default function LandingPage() {
               render={<a href="/editor" />}
               nativeButton={false}
               role="link"
-              className="g:3"
+              aria-keyshortcuts="Enter"
+              icon={<IconCornerDownLeft className="w:4 h:4" />}
+              iconPosition="trailing"
             >
               Start framing
-              <Kbd keys={["↵"]} />
             </Button>
             <Button
               variant="secondary"
