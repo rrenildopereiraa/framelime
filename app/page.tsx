@@ -1,14 +1,15 @@
 import { IconBrandGithub } from "@tabler/icons-react";
 import { LogoMark } from "@/components/logo.tsx";
+import Button from "@/components/ui/button.tsx";
+import Kbd from "@/components/ui/kbd.tsx";
 import { FramesBackdrop } from "@/landing/frames-backdrop.tsx";
 import { StartHotkey } from "@/landing/start-hotkey.tsx";
 import { Tapes } from "@/landing/tapes.tsx";
-import { DISPLAY_STYLE, MONO_STYLE } from "@/lib/fonts.ts";
+import { DISPLAY_STYLE } from "@/lib/fonts.ts";
 import { site } from "@/lib/site.ts";
 import "@/landing/landing.css";
 
 const CONTAINER = "max-w:320 mx:auto px:8";
-const BUTTON = "d:if ai:c g:3 py:4 px:5 br:9999 td:none fs:sm tp:c tdu:150";
 
 export default function LandingPage() {
   return (
@@ -33,37 +34,47 @@ export default function LandingPage() {
             <br />
             <span className="@md:ws:nw">exactly how you want it.</span>
           </h1>
-          <p className="m:0 max-w:130 fs:sm lh:5 c:hint" style={MONO_STYLE}>
+          <p className="m:0 max-w:130 fs:md lh:5 c:hint">
             Framelime turns a snippet into a clean image. The frame, the colors and the type are all
             yours to set, right from the editor.
           </p>
+          {/* Yumma UI's buttons, drawn as links. Base UI marks a non-button
+              `role="button"`; these navigate, so they say so. */}
           <div className="d:f fw:w jc:c g:3">
-            <a
-              href="/editor"
-              className={`${BUTTON} bg:fill c:on-fill h:bg:edge`}
-              style={MONO_STYLE}
+            <Button
+              variant="primary"
+              size="lg"
+              shape="pill"
+              render={<a href="/editor" />}
+              nativeButton={false}
+              role="link"
+              className="g:3"
             >
               Start framing
-              <kbd className="px:2 br:9999 bw:1 bs:s bc:on-fill fs:xs" style={MONO_STYLE}>
-                ↵
-              </kbd>
-            </a>
-            <a
-              href={site.repo}
-              className={`${BUTTON} bw:1 bs:s bc:line bg:page c:label h:bg:well`}
-              style={MONO_STYLE}
+              <Kbd keys={["↵"]} />
+            </Button>
+            <Button
+              variant="secondary"
+              size="lg"
+              shape="pill"
+              icon={<IconBrandGithub className="w:4 h:4" />}
+              render={<a href={site.repo} />}
+              nativeButton={false}
+              role="link"
             >
-              <IconBrandGithub className="w:4 h:4" aria-hidden="true" />
               GitHub
-            </a>
+            </Button>
           </div>
         </div>
       </section>
 
       <Tapes />
 
-      <footer className={`d:f jc:sb py:7 fs:xs c:hint ${CONTAINER}`} style={MONO_STYLE}>
+      <footer className={`d:f jc:sb py:7 fs:sm c:hint ${CONTAINER}`}>
         <span>© 2026 Framelime · MIT License</span>
+        <a href={site.repo} className="td:none c:hint h:c:label tp:c tdu:150">
+          GitHub
+        </a>
       </footer>
     </div>
   );

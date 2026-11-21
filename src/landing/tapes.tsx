@@ -54,7 +54,8 @@ function Tape({
 
 /**
  * Two tapes across the page, one lime and one in the text color, running
- * opposite ways. Decorative: the controls below say the same in full.
+ * opposite ways, each with a keycap edge like Yumma UI's buttons. Decorative,
+ * so hidden from assistive tech: the hero already says what Framelime does.
  */
 export function Tapes() {
   return (
@@ -63,13 +64,13 @@ export function Tapes() {
         <Tape
           words={ACTIONS}
           mark="→"
-          className="bg:fill c:on-fill"
+          className="bg:fill c:on-fill bbw:3 bs:s bc:edge"
           trackClassName="landing-tape-track"
         />
         <Tape
           words={OPTIONS}
           mark="✳"
-          className="bg:label c:page"
+          className="bg:label c:page bbw:3 bs:s bc:hint"
           trackClassName="landing-tape-track-back"
         />
       </div>
