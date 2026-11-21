@@ -1,0 +1,67 @@
+/* The landing page's moving parts: what Yumma CSS has no utility for. */
+
+@keyframes landing-drift {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes landing-drift-back {
+  from {
+    transform: translateX(-50%);
+  }
+}
+
+/* The hero's backdrop: rows of small frames on a tilted plane. */
+.landing-stage {
+  perspective: 1600px;
+}
+
+.landing-plane {
+  inset: -30% -40%;
+  transform: rotateX(56deg) rotateZ(-30deg);
+}
+
+.landing-row {
+  animation: landing-drift var(--landing-speed, 60s) linear infinite;
+}
+
+/* Clears the middle for the heading and fades the frames out at the top and bottom. */
+.landing-vignette {
+  background:
+    radial-gradient(
+      ellipse 50% 46% at 50% 52%,
+      light-dark(#fafaf7, #0b0b0a) 30%,
+      light-dark(rgb(250 250 247 / 0.85), rgb(11 11 10 / 0.85)) 60%,
+      transparent 100%
+    ),
+    linear-gradient(
+      to bottom,
+      light-dark(#fafaf7, #0b0b0a) 0%,
+      transparent 16%,
+      transparent 64%,
+      light-dark(#fafaf7, #0b0b0a) 94%
+    );
+}
+
+/* The two tapes, tilted together, running opposite ways. */
+.landing-tapes {
+  inset-inline: -10%;
+  transform: rotate(-5deg);
+}
+
+.landing-tape-track {
+  animation: landing-drift 42s linear infinite;
+}
+
+.landing-tape-track-back {
+  animation: landing-drift-back 48s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-row,
+  .landing-tape-track,
+  .landing-tape-track-back {
+    animation: none;
+  }
+}

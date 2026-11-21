@@ -7,6 +7,7 @@ import {
   IconSearch,
   IconX,
 } from "@tabler/icons-react";
+import Link from "next/link";
 import { useState } from "react";
 import Button from "@/components/ui/button.tsx";
 import Kbd from "@/components/ui/kbd.tsx";
@@ -106,9 +107,13 @@ export function EditorTabBar({
 
   return (
     <header className="d:f ai:c g:3 p:st t:0 zi:10 px:3 py:2 bbw:1 bs:s bc:line bg:page">
-      <h1 aria-label="Framelime" className="d:f ai:c h:8 m:0 px:1">
+      <Link
+        href="/"
+        aria-label="Framelime home"
+        className={`d:f ai:c h:8 px:1 br:md td:none ${FOCUS}`}
+      >
         <Logo />
-      </h1>
+      </Link>
 
       <div className="d:none @lg:d:f ai:c g:1 min-w:0 ox:auto p:1 br:9999 bg:well bs-o:sunk">
         {documents.map((doc) => (
