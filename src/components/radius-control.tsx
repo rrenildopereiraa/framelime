@@ -8,8 +8,8 @@ import type { CornerRadii } from "../lib/types";
 export const RADIUS_MIN = 0;
 export const RADIUS_MAX = 16;
 
-// Under the slider, every 4 px: evenly spaced, as the slider spreads its marks.
-const MARKS = ["0", "4", "8", "12", "16"];
+// Under the slider, spread evenly across 0–16 px: None at 0, Small at 8, Large at 16.
+const MARKS = ["None", "Small", "Large"];
 
 const CORNERS: { id: keyof CornerRadii; label: string }[] = [
   { id: "tl", label: "Top left" },
