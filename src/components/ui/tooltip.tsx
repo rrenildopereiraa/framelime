@@ -6,9 +6,9 @@ import { merge } from "yummacss/merge";
 import { asTrigger, FOCUS, RADIUS, useShape, type Shape } from "./style";
 
 type Side = "top" | "right" | "bottom" | "left";
-type Tone = "light" | "dark" | "danger";
+type Variant = "light" | "dark" | "danger";
 
-const TONES: Record<Tone, string> = {
+const VARIANTS: Record<Variant, string> = {
   light: "bg:raised bc:line c:label bw:1",
   dark: "bg:fill c:on-fill",
   danger: "bg:red-7 c:white",
@@ -16,13 +16,13 @@ const TONES: Record<Tone, string> = {
 
 const DANGER_OUTLINE = "oc:red-2/60 fv:bc:red-3";
 
-const TRIGGER_TONES: Record<Tone, string> = {
+const TRIGGER_VARIANTS: Record<Variant, string> = {
   light: "c:hint h:c:label",
   dark: "c:hint h:c:label",
   danger: "c:red-7 h:c:red-8",
 };
 
-const ARROW_TONES: Record<Tone, string> = {
+const ARROW_VARIANTS: Record<Variant, string> = {
   light: "f:raised s:line",
   dark: "f:fill s:fill",
   danger: "f:red-7 s:red-7",
@@ -80,7 +80,7 @@ export interface TooltipProps {
    * two neutral surfaces; `danger` reads red at both ends, for a destructive
    * action.
    */
-  tone?: Tone;
+  variant?: Variant;
   /**
    * A pointer notched into the tooltip's edge, aimed back at the trigger. It
    * re-aims itself when `side` changes.
@@ -125,7 +125,7 @@ export default function TooltipBase({
   shortcut,
   side = "top",
   sideOffset = 8,
-  tone = "light",
+  variant = "light",
   arrow = true,
   delay = 300,
   shape: shapeProp,
@@ -136,20 +136,20 @@ export default function TooltipBase({
 }: TooltipProps) {
   const shape = useShape(shapeProp);
   const outline = focus
-    ? merge(FOCUS, tone === "danger" ? DANGER_OUTLINE : "", focus === true ? "" : focus)
+    ? merge(FOCUS, variant === "danger" ? DANGER_OUTLINE : "", focus === true ? "" : focus)
     : "";
 
   const triggerClasses = merge(
     outline,
     "d:f ai:c jc:c w:8 h:8 bg:transparent bw:0 c:p h:bg:well",
     RADIUS.item[shape],
-    TRIGGER_TONES[tone],
+    TRIGGER_VARIANTS[variant],
     className,
   );
 
   const popupClasses = [
     "d:f ai:c g:2 px:2 py:1 fs:xs us:none",
-    TONES[tone],
+    VARIANTS[variant],
     RADIUS.item[shape],
     "bs-o:pop",
     arrow ? "p:r" : "",
@@ -157,17 +157,17 @@ export default function TooltipBase({
     .filter(Boolean)
     .join(" ");
 
-  const arrowTone = ARROW_TONES[tone];
+  const arrowVariant = ARROW_VARIANTS[variant];
 
   const popup = (
     <Tooltip.Popup
-      className={`${popupClasses} ${animated ? "tor:var(--transform-origin) tp:ot tdu:200 ttf:out-quart opening:o:0 opening:s:97 opening:tty:1 closing:o:0 closing:tdu:100 closing:ttf:eo @prm:tp:none" : ""}`}
+      className={`${popupClasses} ${animated ? "tor:var(--transform-origin) tp:ot tdu:200 ttf:out-quart opening:o:0 wc:s opening:s:97 opening:tty:1 closing:o:0 closing:tdu:100 closing:ttf:eo @prm:tp:none" : ""}`}
     >
       {arrow && (
         <Tooltip.Arrow className="d:f" style={(state) => ARROW_PLACEMENT[state.side]}>
           <svg viewBox="0 0 10 5" width="12" height="6">
             <title>Arrow</title>
-            <path d="M0 5 L5 0 L10 5" strokeWidth="1" className={arrowTone} />
+            <path d="M0 5 L5 0 L10 5" strokeWidth="1" className={arrowVariant} />
           </svg>
         </Tooltip.Arrow>
       )}
@@ -182,8 +182,7 @@ export default function TooltipBase({
         {render ? (
           <Tooltip.Trigger
             render={asTrigger(render, outline, className)}
-            // only when given: an undefined label would wipe the element's own
-            {...(triggerLabel ? { "aria-label": triggerLabel } : {})}
+            aria-label={triggerLabel}
           />
         ) : (
           <Tooltip.Trigger className={triggerClasses} aria-label={triggerLabel}>
@@ -191,11 +190,7 @@ export default function TooltipBase({
           </Tooltip.Trigger>
         )}
         <Tooltip.Portal container={container}>
-          <Tooltip.Positioner
-            className="zi:50"
-            side={side}
-            sideOffset={sideOffset + (arrow ? ARROW_HEIGHT : 0)}
-          >
+          <Tooltip.Positioner side={side} sideOffset={sideOffset + (arrow ? ARROW_HEIGHT : 0)}>
             {popup}
           </Tooltip.Positioner>
         </Tooltip.Portal>

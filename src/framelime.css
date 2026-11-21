@@ -74,6 +74,11 @@
   grid-template-rows: 1fr;
 }
 
+/* Yumma UI's tabs size to their labels; the inspector's span its width. */
+.inspector-tabs [role="tablist"] {
+  width: 100%;
+}
+
 .app-root {
   padding-top: env(safe-area-inset-top);
   padding-right: env(safe-area-inset-right);

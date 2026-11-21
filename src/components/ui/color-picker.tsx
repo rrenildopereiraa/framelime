@@ -17,6 +17,7 @@ import {
   useId,
   useRef,
   useState,
+  type CSSProperties,
 } from "react";
 import { merge } from "yummacss/merge";
 import { FOCUS, FOCUS_WITHIN, RADIUS, type Shape, useShape } from "./style";
@@ -308,13 +309,17 @@ function Area({
         aria-valuetext={`Saturation ${percent(s)}%, brightness ${percent(v)}%`}
         aria-disabled={disabled || undefined}
         onKeyDown={onKeyDown}
-        className={merge(outline, "p:a w:5 h:5 br:9999 bw:2 bc:white bs-o:key")}
-        style={{
-          left: `${s * 100}%`,
-          top: `${(1 - v) * 100}%`,
-          translate: "-50% -50%",
-          background: color,
-        }}
+        className={merge(
+          outline,
+          "p:a l:var(--s) t:var(--v) tr:calc(-50%) w:5 h:5 br:9999 bw:2 bc:white bs-o:key",
+        )}
+        style={
+          {
+            "--s": `${s * 100}%`,
+            "--v": `${(1 - v) * 100}%`,
+            background: color,
+          } as CSSProperties
+        }
       />
     </div>
   );
@@ -434,11 +439,11 @@ export default function ColorPicker({
             {value.toUpperCase()}
           </Popover.Trigger>
           <Popover.Portal container={container}>
-            <Popover.Positioner className="zi:50" sideOffset={8} align="start">
+            <Popover.Positioner sideOffset={8} align="start">
               <Popover.Popup
                 className={merge(
                   "d:f fd:c g:3 w:68 max-w:var(--available-width) p:3 bg:raised bc:line bw:1 c:label os:none bs-o:pop",
-                  "tor:var(--transform-origin) tp:ot tdu:200 ttf:out-quart opening:o:0 opening:s:97 closing:o:0 closing:s:97 closing:tdu:100 closing:ttf:eo @prm:tp:none",
+                  "tor:var(--transform-origin) tp:ot tdu:200 ttf:out-quart opening:o:0 wc:s opening:s:97 closing:o:0 closing:s:97 closing:tdu:100 closing:ttf:eo @prm:tp:none",
                   RADIUS.popup[shape],
                 )}
               >

@@ -43,7 +43,7 @@ function TabItem({
   return (
     <div
       className={`d:f ai:c fs:0 g:1 h:7 pl:3 bw:1 bs:s br:9999 tp:c tdu:150 ${canClose ? "pr:1" : "pr:3"} ${
-        isActive ? "bg:raised bc:rim bs-o:key" : "bc:transparent h:bg:line"
+        isActive ? "bg:raised bc:accent bs-o:key" : "bc:transparent h:bg:line"
       }`}
     >
       <button
@@ -199,7 +199,7 @@ export function EditorTabBar({
         </Tooltip>
 
         <ThemeSwitcher
-          iconOnly
+          variant="cycle"
           size="sm"
           shape="pill"
           value={TO_SWITCHER[mode]}

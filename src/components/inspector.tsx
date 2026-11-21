@@ -77,8 +77,7 @@ function SettingsTabs({
         { value: "layout", label: "Layout" },
         { value: "style", label: "Style" },
       ]}
-      fill
-      className="mb:5"
+      className="inspector-tabs w:100% mb:5"
     />
   );
 }

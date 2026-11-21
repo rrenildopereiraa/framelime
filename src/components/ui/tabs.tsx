@@ -82,8 +82,6 @@ export interface TabsProps {
    * back fails WCAG 2.4.7.
    */
   focus?: boolean | string;
-  /** Stretches the list to its container, the tabs sharing the width. */
-  fill?: boolean;
   /**
    * Panels of your own, from Base UI's `Tabs.Panel`, after the list in the same
    * tabs, for panels laid out other than as cards.
@@ -108,7 +106,6 @@ export default function TabsBase({
   animated = true,
   className,
   focus = true,
-  fill = false,
   children,
 }: TabsProps) {
   const shape = useShape(shapeProp);
@@ -129,22 +126,21 @@ export default function TabsBase({
   const hasPanels = items.some((item) => item.panel !== undefined);
 
   const rootClasses = merge(
-    isVertical ? "d:f ai:s g:4" : hasPanels ? "w:112 max-w:100%" : fill ? "w:100%" : "w:fc",
+    isVertical ? "d:f ai:s g:4" : hasPanels ? "w:112 max-w:100%" : "w:fc",
     className,
   );
 
   const listShape = isVertical && shape === "pill" ? "rounded" : shape;
 
   const listClasses = merge(
-    "d:f p:r bg:well bs-o:sunk",
-    fill && !isVertical ? "w:100%" : "w:fc",
+    "d:f p:r w:fc bg:well bs-o:sunk",
     RADIUS.bar[listShape],
     isVertical && "fd:c",
     hasPanels && !isVertical && "mb:3",
   );
 
   const indicatorClasses = merge(
-    "p:a l:0 t:0 zi:0 bg:raised bs-o:key bw:1 bc:rim",
+    "p:a l:var(--active-tab-left) t:var(--active-tab-top) w:var(--active-tab-width) h:var(--active-tab-height) zi:0 bg:raised bs-o:key bw:1 bc:rim",
     RADIUS.control[shape],
     animated && "tp:a tdu:300 ttf:out-quart @prm:tp:none",
   );
@@ -216,14 +212,7 @@ export default function TabsBase({
         })}
 
         {}
-        <Tabs.Indicator
-          className={indicatorClasses}
-          style={{
-            translate: "var(--active-tab-left) var(--active-tab-top)",
-            width: "var(--active-tab-width)",
-            height: "var(--active-tab-height)",
-          }}
-        />
+        <Tabs.Indicator className={indicatorClasses} />
       </Tabs.List>
 
       {hasPanels &&

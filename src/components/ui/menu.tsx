@@ -121,8 +121,7 @@ export interface MenuProps {
   /** Trigger padding, popup width, item padding and item text size together. */
   size?: Size;
   /**
-   * Corner radius on the trigger, popup and items together. `squircle` steps
-   * the popup & item radius up one and adds `corner-shape`. Inherits the
+   * Corner radius on the trigger, popup and items together. Inherits the
    * nearest `Shape`.
    */
   shape?: Shape;
@@ -308,7 +307,7 @@ export default function MenuBase({
             </Menu.SubmenuTrigger>
 
             <Menu.Portal container={container}>
-              <Menu.Positioner className="zi:50 ow:0" sideOffset={-4} alignOffset={-5}>
+              <Menu.Positioner className="ow:0" sideOffset={-4} alignOffset={-5}>
                 <Menu.Popup className={popupClasses}>
                   <Scroll className="f:1" viewport="py:1 ob:c">
                     {renderItems(item.items, key)}
@@ -348,9 +347,9 @@ export default function MenuBase({
 
   const popup = (
     <Menu.Portal container={container} keepMounted>
-      <Menu.Positioner className="zi:50 ow:0" sideOffset={8}>
+      <Menu.Positioner className="ow:0" sideOffset={8}>
         <Menu.Popup
-          className={`${popupClasses} ${animated ? "tor:var(--transform-origin) tp:ot tdu:200 ttf:out-quart opening:o:0 opening:s:97 closing:o:0 closing:s:97 closing:tdu:100 closing:ttf:eo @prm:tp:none" : ""}`}
+          className={`${popupClasses} ${animated ? "tor:var(--transform-origin) tp:ot tdu:200 ttf:out-quart opening:o:0 wc:s opening:s:97 closing:o:0 closing:s:97 closing:tdu:100 closing:ttf:eo @prm:tp:none" : ""}`}
         >
           <Scroll className="f:1" viewport="py:1 ob:c">
             {renderItems(items, "item")}
