@@ -49,9 +49,8 @@ export default function Image() {
         >
           Framelime
         </div>
-        <div style={{ display: "flex", marginTop: 28, fontSize: 40, color: "#95978d" }}>
-          Turn code into clean,{" "}
-          <span style={{ color: LIME, marginLeft: 12 }}>shareable images.</span>
+        <div style={{ display: "flex", marginTop: 28, fontSize: 40, color: LIME }}>
+          Gorgeous code images, fully customizable from the UI.
         </div>
       </div>
     </div>,
