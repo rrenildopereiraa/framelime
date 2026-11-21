@@ -1,14 +1,19 @@
 /* The landing page's moving parts: what Yumma CSS has no utility for. */
 
+/*
+ * A track holds its content `--landing-copies` times over and slides exactly
+ * one copy, so the frame the loop restarts on is the frame it ended on. Every
+ * item carries its own trailing space (no `gap`), so each copy is the same width.
+ */
 @keyframes landing-drift {
   to {
-    transform: translateX(-50%);
+    transform: translateX(calc(-100% / var(--landing-copies, 2)));
   }
 }
 
 @keyframes landing-drift-back {
   from {
-    transform: translateX(-50%);
+    transform: translateX(calc(-100% / var(--landing-copies, 2)));
   }
 }
 

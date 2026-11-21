@@ -38,10 +38,11 @@ function Tape({
   const run = [...words, ...words, ...words];
   return (
     <div className={`py:5 o:h ${className}`}>
-      <div className={`${trackClassName} d:f g:11 w:max fs:4xl fw:500 ws:nw`} style={DISPLAY_STYLE}>
+      <div className={`${trackClassName} d:f w:max fs:4xl fw:500 ws:nw`} style={DISPLAY_STYLE}>
+        {/* Two copies: the track slides one, then starts over on the same frame. */}
         {[...run, ...run].map((word, index) => (
           // oxlint-disable-next-line react/no-array-index-key -- a fixed, repeated list
-          <span key={index} className="d:f g:11">
+          <span key={index} className="d:f g:11 pr:11">
             <span>{word}</span>
             <span>{mark}</span>
           </span>

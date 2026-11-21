@@ -34,6 +34,9 @@ const DEFAULT: Sketch = {
 
 const SET = [LIME, ECLIPSA, AMBER, DEFAULT, LIME, AMBER, ECLIPSA, LIME];
 
+// Copies of the set in each row: enough that a row always outruns the tilted view.
+const COPIES = 4;
+
 // Each row starts at a different theme and drifts at its own speed.
 const ROWS = [
   { offset: 0, speed: "60s" },
@@ -58,7 +61,7 @@ function rotate<T>(list: T[], by: number): T[] {
 function FrameSketch({ sketch }: { sketch: Sketch }) {
   return (
     <div
-      className="fs:0 w:75 h:46 br:lg o:h"
+      className="fs:0 w:75 h:46 mr:9 br:lg o:h"
       style={{
         background: sketch.page,
         boxShadow: `0 0 0 1px ${sketch.border}, 0 18px 0 -6px #000`,
@@ -91,14 +94,17 @@ export function FramesBackdrop() {
           return (
             <div
               key={row.offset}
-              className="landing-row d:f g:9 w:max"
-              style={{ "--landing-speed": row.speed } as React.CSSProperties}
+              className="landing-row d:f w:max"
+              style={
+                { "--landing-speed": row.speed, "--landing-copies": COPIES } as React.CSSProperties
+              }
             >
-              {/* Twice over, so the loop has no seam. */}
-              {[...frames, ...frames].map((sketch, index) => (
-                // oxlint-disable-next-line react/no-array-index-key -- a fixed, repeated list
-                <FrameSketch key={index} sketch={sketch} />
-              ))}
+              {Array.from({ length: COPIES }, () => frames)
+                .flat()
+                .map((sketch, index) => (
+                  // oxlint-disable-next-line react/no-array-index-key -- a fixed, repeated list
+                  <FrameSketch key={index} sketch={sketch} />
+                ))}
             </div>
           );
         })}
