@@ -1,12 +1,15 @@
 import { IconBorderCorners } from "@tabler/icons-react";
 import { useState } from "react";
-import NumberField from "@/components/ui/number-field.tsx";
+import Knob from "@/components/ui/knob.tsx";
 import Slider from "@/components/ui/slider.tsx";
 import Toggle from "@/components/ui/toggle.tsx";
 import type { CornerRadii } from "../lib/types";
 
 export const RADIUS_MIN = 0;
 export const RADIUS_MAX = 16;
+
+// Under the slider, every 4 px: evenly spaced, as the slider spreads its marks.
+const MARKS = ["0", "4", "8", "12", "16"];
 
 const CORNERS: { id: keyof CornerRadii; label: string }[] = [
   { id: "tl", label: "Top left" },
@@ -41,6 +44,7 @@ export function RadiusControl({
         max={RADIUS_MAX}
         step={1}
         unit="px"
+        marks={MARKS}
         formatValue={uniform ? undefined : () => "Mixed"}
         className="w:100%"
       />
@@ -55,19 +59,19 @@ export function RadiusControl({
       />
 
       {split && (
-        <div className="d:g gtc:2 g:3">
+        // Laid out as the frame's corners are: top left, top right, then the bottom two.
+        <div className="d:g gtc:2 g:3 ji:c">
           {CORNERS.map(({ id, label }) => (
-            <NumberField
+            <Knob
               key={id}
               label={label}
               size="sm"
               value={radii[id]}
-              onValueChange={(value) => {
-                if (value != null) onRadiiChange({ ...radii, [id]: value });
-              }}
+              onValueChange={(value) => onRadiiChange({ ...radii, [id]: value })}
               min={RADIUS_MIN}
               max={RADIUS_MAX}
               step={1}
+              unit="px"
             />
           ))}
         </div>

@@ -153,7 +153,7 @@ export function EditorTabBar({
           shape="pill"
           icon={<IconSearch className={ICON} />}
           onClick={onOpenPalette}
-          className="d:none @lg:d:if pr:1 fw:400 c:hint h:c:label"
+          className="d:none @lg:d:if pr:1 fw:400 bg:well c:label h:bg:line"
         >
           Search
           <Kbd keys={[modKey, "K"]} />

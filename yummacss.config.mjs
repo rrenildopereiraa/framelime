@@ -55,7 +55,8 @@ export default defineConfig({
       chip: { light: "#f1f2ec", dark: "#262724" },
       line: { light: "#e3e5dc", dark: "#262724" },
       check: { light: "#4d7c0f", dark: "#d4ff3a" },
-      on: { light: "#65a30d", dark: "#d4ff3a" },
+      // Switches match the Export button: the same lime in both schemes.
+      on: { light: "#d4ff3a", dark: "#d4ff3a" },
       knob: { light: "#ffffff", dark: "#3a3b36" },
       focus: { light: "#65a30d", dark: "#d4ff3a" },
     },
