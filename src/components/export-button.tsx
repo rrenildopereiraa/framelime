@@ -21,7 +21,7 @@ export function ExportButton({
     <div className="d:f ml:1">
       <Button
         size="sm"
-        shape="square"
+        shape="none"
         loading={exporting}
         icon={<IconDownload className={ICON} />}
         onClick={onExport}
@@ -43,7 +43,7 @@ export function ExportButton({
         render={
           <Button
             size="sm"
-            shape="square"
+            shape="none"
             iconOnly
             icon={<IconChevronDown className={ICON} />}
             disabled={exporting}

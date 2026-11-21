@@ -69,6 +69,8 @@ export default defineConfig({
       resizing: "[data-separator=active]",
       scrolling: "[data-scrolling]",
       swiping: "[data-swiping]",
+      indented: "[data-active]",
+      nested: "[data-nested-drawer-open]",
     },
 
     easings: {

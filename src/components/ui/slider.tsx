@@ -1,7 +1,14 @@
 "use client";
 
 import { Slider } from "@base-ui/react/slider";
-import { type FocusEvent, type ReactNode, useEffect, useRef, useState } from "react";
+import {
+  type FocusEvent,
+  type ReactNode,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { merge } from "yummacss/merge";
 import { RADIUS, useShape, type Shape } from "./style";
 
@@ -45,7 +52,7 @@ export interface SliderProps {
   step?: number;
   /**
    * Corner radius, applied to the track, the indicator and the thumb together.
-   * `squircle` uses `corner-shape`. Inherits the nearest `Shape`.
+   * Inherits the nearest `Shape`.
    */
   shape?: Shape;
   /** Blocks interaction and dims the control. */
@@ -202,20 +209,16 @@ export default function SliderBase({
             RADIUS.control[shape],
           )}
         >
-          {/* the track is inset half a thumb each side, so a thumb centered on an end value stays in the well; inline, as positions depend on it */}
-          <Slider.Track className="p:r f:1 h:100%" style={{ marginInline: "0.75rem" }}>
+          {/* the track is inset half a thumb each side, so a thumb centered on an end value stays in the well */}
+          <Slider.Track className="p:r f:1 h:100% mx:3">
             {marks &&
               marks.length > 1 &&
               marks.map((mark, index) => (
                 <span
                   key={mark}
                   aria-hidden
-                  className="p:a w:1 h:1 br:9999 bg:hint/40"
-                  style={{
-                    left: `${(index / (marks.length - 1)) * 100}%`,
-                    top: "50%",
-                    transform: "translate(-50%, -50%)",
-                  }}
+                  className="p:a l:var(--mark) t:50% tr:calc(-50%) w:1 h:1 br:9999 bg:hint/40"
+                  style={{ "--mark": `${(index / (marks.length - 1)) * 100}%` } as CSSProperties}
                 />
               ))}
             <Slider.Indicator className={merge("p:r h:100%", glide(moved))}>

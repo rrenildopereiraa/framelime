@@ -118,8 +118,8 @@ export interface SelectProps {
   /** Height and width of the trigger. The popup follows it. */
   size?: Size;
   /**
-   * Corner radius, applied to the trigger and the popup together. `squircle`
-   * uses `corner-shape`. Inherits the nearest `Shape`.
+   * Corner radius, applied to the trigger and the popup together. Inherits the
+   * nearest `Shape`.
    */
   shape?: Shape;
   /**
@@ -227,7 +227,7 @@ export default function SelectBase({
 
   const popup = (
     <Select.Popup
-      className={`d:f fd:c o:h max-h:min(var(--available-height),18rem) py:1 bg:raised bc:line bs-o:pop bw:1 ${SIZE.width[size]} ${RADIUS.popup[shape]} ${animated ? "tor:var(--transform-origin) tp:ot tdu:200 ttf:out-quart opening:o:0 opening:s:97 closing:o:0 closing:s:97 closing:tdu:100 closing:ttf:eo @prm:tp:none" : ""}`}
+      className={`d:f fd:c o:h max-h:min(var(--available-height),18rem) py:1 bg:raised bc:line bs-o:pop bw:1 ${SIZE.width[size]} ${RADIUS.popup[shape]} ${animated ? "tor:var(--transform-origin) tp:ot tdu:200 ttf:out-quart opening:o:0 wc:s opening:s:97 closing:o:0 closing:s:97 closing:tdu:100 closing:ttf:eo @prm:tp:none" : ""}`}
     >
       <Scroll className="f:1" viewport="ob:c">
         <Select.List className="p:r">
@@ -288,7 +288,7 @@ export default function SelectBase({
           <Select.Positioner
             sideOffset={8}
             alignItemWithTrigger={false}
-            className="zi:50 p:0 ow:0 us:none"
+            className="zi:10 p:0 ow:0 us:none"
           >
             {popup}
           </Select.Positioner>

@@ -5,12 +5,12 @@ import { IconArrowBackUp } from "@tabler/icons-react";
 import type { ComponentProps, KeyboardEvent, MouseEvent, PointerEvent, ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { merge } from "yummacss/merge";
-import { FOCUS, RADIUS, type Shape, type Size, useMorph, useShape } from "./style";
+import { FOCUS, RADIUS, Roll, type Shape, type Size, useMorph, useShape } from "./style";
 
 type Variant = "primary" | "secondary" | "subtle" | "ghost" | "danger" | "link";
 type IconSide = "leading" | "trailing";
 
-const BASE = "d:if ai:c jc:c g:2 bw:1 fw:500 us:none";
+const BASE = "d:if ai:c jc:c g:2 bw:1 fw:500 ws:nw us:none";
 
 const MOTION = "tdu:150 ttf:out-quart a:s:98 wc:s @prm:tp:none @prm:a:s:100";
 
@@ -95,10 +95,7 @@ export interface ButtonProps extends ComponentProps<typeof Button> {
    * buttons lines up.
    */
   size?: Size;
-  /**
-   * Corner radius. `squircle` uses `corner-shape`, which degrades to a rounded
-   * square where that is unsupported. Inherits the nearest `Shape`.
-   */
+  /** Corner radius. Inherits the nearest `Shape`. */
   shape?: Shape;
   /**
    * Swaps the icon for a spinner, dims the button and blocks interaction, while
@@ -205,9 +202,10 @@ export default function ButtonBase({
     >
       <path d="M12 3a9 9 0 1 0 9 9" />
     </svg>
-  ) : (
-    icon
-  );
+  ) : icon ? (
+    // an icon passed in keeps its size when the label is long
+    <span className="d:f fs:0">{icon}</span>
+  ) : null;
 
   const held = useHold(hold, onHold, transition);
   const timed = !hold && Boolean(countdown);
@@ -223,7 +221,7 @@ export default function ButtonBase({
           BADGE[variant],
         )}
       >
-        {counter.seconds}
+        <Roll value={counter.seconds} text={String(counter.seconds)} still={!transition} />
       </span>
     </>
   ) : holdLabel ? (

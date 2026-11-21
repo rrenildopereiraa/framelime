@@ -16,7 +16,7 @@ import {
 import { merge } from "yummacss/merge";
 
 /** The corner style every component shares, set app-wide with `Shape` or per component with its `shape` prop. */
-export type Shape = "square" | "rounded" | "squircle" | "pill";
+export type Shape = "none" | "rounded" | "pill";
 
 /** The shape a component takes when neither a `Shape` above it nor its own prop sets one. */
 export const DEFAULT_SHAPE: Shape = "rounded";
@@ -34,7 +34,7 @@ export function Shape({ value, children }: ShapeProps) {
   return <ShapeContext value={value}>{children}</ShapeContext>;
 }
 
-const ALL: readonly Shape[] = ["square", "rounded", "squircle", "pill"];
+const ALL: readonly Shape[] = ["none", "rounded", "pill"];
 
 /**
  * The shape to draw: the component's own prop, else the nearest `Shape`, else
@@ -52,7 +52,7 @@ export function useShape<T extends Shape = Shape>(
 }
 
 /** The shape of a part as wide as it is tall, where a capsule is a `circle`. */
-export type Corner = "square" | "rounded" | "squircle" | "circle";
+export type Corner = "none" | "rounded" | "circle";
 
 /** Like `useShape`, for a square part: the nearest `pill` draws a circle. */
 export function useCorner(own?: Corner): Corner {
@@ -71,62 +71,43 @@ export function shapeOf(corner: Corner): Shape {
  */
 export const RADIUS = {
   /** Buttons, fields, triggers, tabs & toggles. */
-  control: { square: "", rounded: "br:lg", squircle: "br:xxl cs:s", pill: "br:9999" },
+  control: { none: "", rounded: "br:lg", pill: "br:9999" },
   /** The left end of a control split in two, such as a number field. */
-  controlStart: { square: "", rounded: "blr:lg", squircle: "blr:xxl cs:s", pill: "blr:9999" },
+  controlStart: { none: "", rounded: "blr:lg", pill: "blr:9999" },
   /** The right end of a control split in two. */
-  controlEnd: { square: "", rounded: "brr:lg", squircle: "brr:xxl cs:s", pill: "brr:9999" },
+  controlEnd: { none: "", rounded: "brr:lg", pill: "brr:9999" },
   /** A control that grows past one line: a textarea, a field of chips. */
-  box: { square: "", rounded: "br:lg", squircle: "br:xxl cs:s", pill: "br:xxl" },
+  box: { none: "", rounded: "br:lg", pill: "br:xxl" },
   /** Rows inside a list or popup: menu items, options, links & small close buttons. */
-  item: { square: "", rounded: "br:md", squircle: "br:xl cs:s", pill: "br:9999" },
+  item: { none: "", rounded: "br:md", pill: "br:9999" },
   /** Areas that hold wrapping text or data, such as a quote or a chart tile; never round enough to read as a pill. */
-  block: { square: "", rounded: "br:md", squircle: "br:xl cs:s", pill: "br:xl" },
+  block: { none: "", rounded: "br:md", pill: "br:xl" },
   /** Popups, dialogs, cards & panels. */
-  popup: { square: "", rounded: "br:xl", squircle: "br:3xl cs:s", pill: "br:3xl" },
+  popup: { none: "", rounded: "br:xl", pill: "br:3xl" },
   /** A key set inside a control's 1px border & 4px padding, such as a slider's fill in its well: the control's corner less those 5px. */
-  controlInset: {
-    square: "",
-    rounded: "br:calc(0.1875rem)",
-    squircle: "br:calc(0.6875rem) cs:s",
-    pill: "br:9999",
-  },
+  controlInset: { none: "", rounded: "br:calc(0.1875rem)", pill: "br:9999" },
   /** A block set inside a popup's 1px border & 4px padding: the popup's corner less those 5px, so the two are concentric. */
-  inset: {
-    square: "",
-    rounded: "br:calc(0.4375rem)",
-    squircle: "br:calc(1.1875rem) cs:s",
-    pill: "br:calc(1.1875rem)",
-  },
+  inset: { none: "", rounded: "br:calc(0.4375rem)", pill: "br:calc(1.1875rem)" },
   /** A strip that holds controls, such as a toolbar, a tab list or a menubar. */
-  bar: { square: "", rounded: "br:xl", squircle: "br:3xl cs:s", pill: "br:9999" },
+  bar: { none: "", rounded: "br:xl", pill: "br:9999" },
   /** Small tags & tiles: badges, chips, keycaps & icon tiles. */
-  chip: { square: "", rounded: "br:sm", squircle: "br:md cs:s", pill: "br:9999" },
+  chip: { none: "", rounded: "br:sm", pill: "br:9999" },
   /** Progress, slider & meter tracks. */
-  track: { square: "", rounded: "br:9999", squircle: "br:xxl cs:s", pill: "br:9999" },
+  track: { none: "", rounded: "br:9999", pill: "br:9999" },
   /** A chip inside running text, in em so it scales with the type. */
-  textChip: {
-    square: "",
-    rounded: "br:calc(.25em)",
-    squircle: "br:calc(.45em) cs:s",
-    pill: "br:9999",
-  },
+  textChip: { none: "", rounded: "br:calc(.25em)", pill: "br:9999" },
   /** A tile inside a text chip; its chip's radius less the padding, so the corners stay concentric. */
-  textTile: {
-    square: "",
-    rounded: "br:calc(.15em)",
-    squircle: "br:calc(.35em) cs:s",
-    pill: "br:9999",
-  },
+  textTile: { none: "", rounded: "br:calc(.15em)", pill: "br:9999" },
   /** A chat bubble: every corner but the one by its sender. */
   bubble: {
-    square: "",
+    none: "",
     rounded: "btlr:xl btrr:xl bblr:xl",
-    squircle: "btlr:3xl btrr:3xl bblr:3xl cs:s",
     pill: "btlr:3xl btrr:3xl bblr:3xl",
   },
+  /** A page stepped back behind an open drawer: the popup's corner, only while it is indented. */
+  indent: { none: "", rounded: "indented:br:xl", pill: "indented:br:3xl" },
   /** The box of a checkbox. */
-  mark: { square: "", rounded: "br:sm", squircle: "br:md cs:s", pill: "br:9999" },
+  mark: { none: "", rounded: "br:sm", pill: "br:9999" },
 } as const satisfies Record<string, Record<Shape, string>>;
 
 /** The sizes a component offers. */
@@ -182,7 +163,7 @@ export function useIndicator<T extends HTMLElement>(
     measure();
     const frame = requestAnimationFrame(() => setReady(true));
     const mutations = new MutationObserver(measure);
-    mutations.observe(root, { subtree: true, attributeFilter: ["data-pressed"] });
+    mutations.observe(root, { subtree: true, childList: true, attributeFilter: ["data-pressed"] });
     const sizes = new ResizeObserver(measure);
     sizes.observe(root);
     return () => {
@@ -233,6 +214,63 @@ export function useMorph<T extends HTMLElement>(key: boolean, animated: boolean)
   }, [key, animated]);
 
   return ref;
+}
+
+/**
+ * A box that eases its height to its content's whenever the content grows or
+ * shrinks, such as a popup moving between steps.
+ */
+export function Fit({
+  animated = true,
+  className,
+  children,
+}: {
+  animated?: boolean;
+  className?: string;
+  children: ReactNode;
+}) {
+  const outer = useRef<HTMLDivElement>(null);
+  const inner = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const box = outer.current;
+    const content = inner.current;
+    if (!box || !content) return;
+    let last = content.offsetHeight;
+    const settle = (event: TransitionEvent) => {
+      if (event.target !== box || event.propertyName !== "height") return;
+      box.style.transition = "";
+      box.style.height = "";
+      box.style.clipPath = "";
+    };
+    const observer = new ResizeObserver(() => {
+      const to = content.offsetHeight;
+      // mid-ease, the box is where the last ease left it, not where it began
+      const from = box.style.height ? box.offsetHeight : last;
+      last = to;
+      const still = !animated || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (from === to || still) return;
+      box.style.transition = "none";
+      box.style.height = `${from}px`;
+      // the sides keep room for a focus outline; the bottom clips what has not fit yet
+      box.style.clipPath = "inset(-4px -4px 0 -4px)";
+      box.getBoundingClientRect();
+      box.style.transition = "height 250ms cubic-bezier(0.25, 1, 0.5, 1)";
+      box.style.height = `${to}px`;
+    });
+    observer.observe(content);
+    box.addEventListener("transitionend", settle);
+    return () => {
+      observer.disconnect();
+      box.removeEventListener("transitionend", settle);
+    };
+  }, [animated]);
+
+  return (
+    <div ref={outer} className={className}>
+      <div ref={inner}>{children}</div>
+    </div>
+  );
 }
 
 /** Two icons in one place that cross-fade, such as copy to copied. */
@@ -313,7 +351,13 @@ export function shake(elements: Element | Iterable<Element> | null | undefined, 
   // an element from another frame fails instanceof, so ask what it is
   const list = "nodeType" in elements ? [elements as Element] : [...elements];
   list.forEach((element, index) =>
-    element.animate(SPRING, { duration: 460, delay: index * lag, easing: "linear" }),
+    // added onto the element's own transform, so a toast keeps its place in the stack
+    element.animate(SPRING, {
+      duration: 460,
+      delay: index * lag,
+      easing: "linear",
+      composite: "add",
+    }),
   );
 }
 
