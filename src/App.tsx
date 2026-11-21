@@ -71,19 +71,13 @@ function App() {
   // The frame follows the app scheme for adaptive themes. While the user
   // hasn't customized the frame colors (they still match the theme's
   // defaults for the other scheme), swap to the current scheme's defaults
-  // when the mode flips. Custom themes and hand-tuned colors are left
-  // untouched.
-  const prevModeRef = useRef(resolvedFrameMode);
+  // on first load and whenever the mode flips. Custom themes and
+  // hand-tuned colors are left untouched.
   useEffect(() => {
-    const modeChanged = prevModeRef.current !== resolvedFrameMode;
-    prevModeRef.current = resolvedFrameMode;
-
     const legacyTheme = normalizeThemeName(settings.theme) !== settings.theme;
     if (legacyTheme) {
       setSettings({ theme: normalizeThemeName(settings.theme) });
     }
-    if (!modeChanged) return;
-
     const nextColors = themeFrameColors(settings.theme, resolvedFrameMode);
     const otherColors = themeFrameColors(
       settings.theme,

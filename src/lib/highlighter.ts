@@ -18,6 +18,8 @@ import type { FrameColors } from "../components/frame";
 import amber from "../themes/amber-theme.json";
 import defaultTheme from "../themes/default-theme.json";
 import eclipsa from "../themes/eclipsa-theme.json";
+import limeDark from "../themes/lime-dark-theme.json";
+import limeLight from "../themes/lime-light-theme.json";
 import monochrome from "../themes/monochrome-theme.json";
 import type { ResolvedMode } from "./chrome-theme";
 
@@ -40,15 +42,23 @@ export const LANGUAGES = {
 
 export type LanguageId = keyof typeof LANGUAGES;
 
-export const THEME_NAME = eclipsa.name;
+export const THEME_NAME = "Lime";
 
-const BUILTIN_THEMES = [defaultTheme, eclipsa, monochrome, amber] as ThemeInput[];
+const BUILTIN_THEMES = [
+  limeLight,
+  limeDark,
+  defaultTheme,
+  eclipsa,
+  monochrome,
+  amber,
+] as ThemeInput[];
 
-// The canonical theme list users pick from. "Default" is the merged
-// Light + Monochrome theme - it renders the Light theme (colored tokens,
-// white frame) in light mode and Monochrome (grayscale tokens, near-black
-// frame) in dark mode.
+// The canonical theme list users pick from. "Lime" and "Default" are
+// adaptive: Lime renders Lime Light or Lime Dark, and Default renders the
+// Light theme (colored tokens, white frame) or Monochrome (grayscale
+// tokens, near-black frame), following the frame's scheme.
 export const THEMES = {
+  Lime: "Lime",
   Default: "Default",
   [eclipsa.name]: eclipsa.name,
   [amber.name]: amber.name,
@@ -61,6 +71,8 @@ export type ThemeId = keyof typeof THEMES;
 const LEGACY_THEME_NAMES: Record<string, string> = {
   [defaultTheme.name]: "Default",
   [monochrome.name]: "Default",
+  [limeLight.name]: "Lime",
+  [limeDark.name]: "Lime",
 };
 
 export function normalizeThemeName(name: string): string {
@@ -71,6 +83,7 @@ export function normalizeThemeName(name: string): string {
 // given scheme.
 export function resolveShikiTheme(themeName: string, mode: ResolvedMode): string {
   const name = normalizeThemeName(themeName);
+  if (name === "Lime") return mode === "dark" ? limeDark.name : limeLight.name;
   if (name === "Default") return mode === "dark" ? monochrome.name : defaultTheme.name;
   return name;
 }
@@ -120,6 +133,10 @@ function getColor(colors: Record<string, string | null>, key: string): string | 
 // Frame colors per scheme. Adaptive themes (Default) carry distinct light
 // and dark sets; static themes carry the same set for both schemes.
 export const THEME_FRAME_COLORS: Record<string, Record<ResolvedMode, FrameColors>> = {
+  Lime: {
+    light: readThemeFrameColors(limeLight),
+    dark: readThemeFrameColors(limeDark),
+  },
   Default: {
     light: {
       page: "#ffffff",
