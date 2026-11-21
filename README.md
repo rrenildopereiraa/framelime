@@ -1,6 +1,6 @@
 # Framelime
 
-Turn code into clean, shareable images. Pick a theme, frame and font, then copy, download or share a link to the snippet.
+Gorgeous code images, fully customizable from the UI.
 
 ## Development
 
