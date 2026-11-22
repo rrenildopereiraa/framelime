@@ -18,6 +18,8 @@ export const metadata: Metadata = {
     description: site.description,
     siteName: site.name,
   },
+  // The name and look of the app once it is added to the home screen.
+  appleWebApp: { capable: true, title: site.name, statusBarStyle: "default" },
   twitter: {
     card: "summary_large_image",
     title: site.name,
@@ -26,6 +28,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  // Lets the app read the safe-area insets, so it clears the notch and the home indicator.
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: site.themeColor.light },
     { media: "(prefers-color-scheme: dark)", color: site.themeColor.dark },

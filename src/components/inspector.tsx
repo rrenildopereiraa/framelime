@@ -1,4 +1,4 @@
-import { IconArrowsShuffle, IconUpload } from "@tabler/icons-react";
+import { IconArrowsShuffle, IconLayout, IconPalette, IconUpload } from "@tabler/icons-react";
 import { useState } from "react";
 import Button from "@/components/ui/button.tsx";
 import Separator from "@/components/ui/separator.tsx";
@@ -7,7 +7,7 @@ import Tabs from "@/components/ui/tabs.tsx";
 import { type ChromeMode, type FrameMode, useChromeTheme } from "../lib/chrome-theme";
 import { LANGUAGES, type LanguageId, THEMES } from "../lib/highlighter";
 import { ASPECT_RATIOS, type AspectRatio, type CornerRadii } from "../lib/types";
-import { BottomSheet } from "./bottom-sheet";
+import { BottomSheet, SubSheet } from "./bottom-sheet";
 import { ColorInput } from "./color-input";
 import type { FrameColors } from "./frame";
 import { PickerField } from "./picker-field";
@@ -280,8 +280,6 @@ export function Inspector({
       </aside>
 
       <BottomSheet open={open} onOpenChange={onOpenChange} title="Settings">
-        <SettingsTabs tab={tab} onTabChange={setTab} />
-
         <SectionSeparator label="Quick actions" />
 
         <PickerField
@@ -313,7 +311,16 @@ export function Inspector({
           </Button>
         </div>
 
-        <InspectorContent tab={tab} {...contentProps} />
+        {/* Layout and Style stack on top of this drawer; tabs stay on desktop. */}
+        <SectionSeparator label="Customize" />
+        <div className="d:f fd:c g:2 pb:2">
+          <SubSheet title="Layout" icon={<IconLayout className="w:4 h:4" stroke={1.8} />}>
+            <InspectorContent tab="layout" {...contentProps} />
+          </SubSheet>
+          <SubSheet title="Style" icon={<IconPalette className="w:4 h:4" stroke={1.8} />}>
+            <InspectorContent tab="style" {...contentProps} />
+          </SubSheet>
+        </div>
       </BottomSheet>
     </>
   );
