@@ -8,6 +8,7 @@ import {
   type AspectRatio,
   type HighlightedLine,
   type HighlightedWord,
+  type LabelPosition,
 } from "../lib/types";
 import { CodeEditor } from "./code-editor";
 import type { CornerRadii } from "./inspector";
@@ -25,8 +26,6 @@ export interface FrameColors {
   highlightAdd: string;
   highlightRemove: string;
 }
-
-const FRAME_PADDING = 64;
 
 export const Frame = forwardRef<
   HTMLDivElement,
@@ -52,6 +51,10 @@ export const Frame = forwardRef<
     colors: FrameColors;
     viewportRef: React.RefObject<HTMLElement | null>;
     mode: ResolvedMode;
+    padding: number;
+    fontSize: number;
+    showLineNumbers: boolean;
+    labelPosition: LabelPosition;
   }
 >(function Frame(
   {
@@ -76,6 +79,10 @@ export const Frame = forwardRef<
     colors,
     viewportRef,
     mode,
+    padding,
+    fontSize,
+    showLineNumbers,
+    labelPosition,
   },
   ref,
 ) {
@@ -129,8 +136,8 @@ export const Frame = forwardRef<
       const naturalHeight = content.offsetHeight;
       const scale = Math.min(
         1,
-        (boxWidth - FRAME_PADDING * 2) / naturalWidth,
-        (boxHeight - FRAME_PADDING * 2) / naturalHeight,
+        (boxWidth - padding * 2) / naturalWidth,
+        (boxHeight - padding * 2) / naturalHeight,
       );
 
       hasFitRef.current = true;
@@ -159,14 +166,14 @@ export const Frame = forwardRef<
       cancelAnimationFrame(raf);
       observer.disconnect();
     };
-  }, [ratioValue, viewportRef]);
+  }, [ratioValue, viewportRef, padding]);
 
   return (
     <div
       ref={ref}
       className={`p:r min-w:0 o:h ${ratioValue ? "d:f ai:c jc:c tp:d tdu:200" : ""}`}
       style={{
-        padding: FRAME_PADDING,
+        padding,
         backgroundColor: colors.page,
         ...(ratioValue
           ? {
@@ -221,10 +228,18 @@ export const Frame = forwardRef<
                     />
                   </div>
                   <div
-                    className="f:1"
+                    className="f:1 d:f ai:c jc:fe px:4"
                     style={{ borderBottom: `1px solid ${colors.border}` }}
-                    aria-hidden="true"
-                  />
+                  >
+                    {labelPosition === "tab" && (
+                      <span
+                        className="ff:m fs:xs fw:700"
+                        style={{ color: colors.statusBarText, ...fontStyle }}
+                      >
+                        {LANGUAGES[language]}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -245,6 +260,8 @@ export const Frame = forwardRef<
                 onSetWordRangeHighlight={onSetWordRangeHighlight}
                 textareaRef={textareaRef}
                 mode={mode}
+                fontSize={fontSize}
+                showLineNumbers={showLineNumbers}
                 highlightColors={{
                   mark: colors.highlightMark,
                   add: colors.highlightAdd,
@@ -262,8 +279,10 @@ export const Frame = forwardRef<
                     borderColor: colors.border,
                   }}
                 >
+                  {/* Hidden, not removed, so the bar keeps its height without the label. */}
                   <span
-                    className="ff:m fs:xs fw:700"
+                    className={`ff:m fs:xs fw:700 ${labelPosition === "status" ? "" : "v:h"}`}
+                    aria-hidden={labelPosition === "status" ? undefined : true}
                     style={{ color: colors.statusBarText, ...fontStyle }}
                   >
                     {LANGUAGES[language]}
