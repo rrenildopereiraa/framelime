@@ -40,6 +40,11 @@
   transform: translateY(100%);
 }
 
+/* The drawer's swipe strip sits above the home indicator, so the two swipes don't fight. */
+.settings-sheet > [data-swipe-direction] {
+  bottom: env(safe-area-inset-bottom);
+}
+
 .select-popup,
 .popover-popup,
 .menu-popup {
