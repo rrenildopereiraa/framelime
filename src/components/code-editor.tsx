@@ -153,6 +153,12 @@ function splitLineIntoSegments(
   return segments;
 }
 
+interface Gutter {
+  width: string;
+  numberWidth: string;
+  color: string;
+}
+
 function CodeLine({
   lineIndex,
   line,
@@ -162,6 +168,7 @@ function CodeLine({
   highlightedWords,
   wordPreview,
   highlightColors,
+  gutter,
 }: {
   lineIndex: number;
   line: string;
@@ -171,6 +178,7 @@ function CodeLine({
   highlightedWords: HighlightedWord[];
   wordPreview: WordRange | null;
   highlightColors: HighlightColors;
+  gutter: Gutter | null;
 }) {
   const lineBackground = highlightType
     ? overlayColor(highlightColors[highlightType], 0.16)
@@ -187,9 +195,28 @@ function CodeLine({
   return (
     <div
       data-line-index={lineIndex}
-      className="ws:pw d:b mx:-4 px:4"
-      style={lineBackground ? { backgroundColor: lineBackground } : undefined}
+      className="p:r ws:pw d:b mx:-4 px:4"
+      style={{
+        ...(lineBackground ? { backgroundColor: lineBackground } : {}),
+        // The line reaches across the gutter, so a highlight covers its number too.
+        ...(gutter
+          ? {
+              marginLeft: `calc(-1rem - ${gutter.width})`,
+              paddingLeft: `calc(1rem + ${gutter.width})`,
+            }
+          : {}),
+      }}
     >
+      {gutter && (
+        // Out of the selection and the accessibility tree: copied code never carries numbers.
+        <span
+          aria-hidden="true"
+          className="p:a t:0 l:4 ta:r us:none pe:none"
+          style={{ width: gutter.numberWidth, color: gutter.color }}
+        >
+          {lineIndex + 1}
+        </span>
+      )}
       {/* Fall back to the plain line while Shiki tokens load, so
 			    lines keep their real height from the first paint */}
       {segments.map((segment, segmentIndex) => (
@@ -239,6 +266,8 @@ export function CodeEditor({
   textareaRef,
   highlightColors,
   mode,
+  fontSize,
+  showLineNumbers,
 }: {
   code: string;
   onCodeChange: (value: string) => void;
@@ -255,8 +284,11 @@ export function CodeEditor({
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
   highlightColors: HighlightColors;
   mode: ResolvedMode;
+  fontSize: number;
+  showLineNumbers: boolean;
 }) {
   const [tokens, setTokens] = useState<{ content: string; color?: string }[][]>([]);
+  const [lineNumberColor, setLineNumberColor] = useState<string | undefined>();
   const [altHoverLine, setAltHoverLine] = useState<number | null>(null);
   const [dragPreview, setDragPreview] = useState<{
     start: number;
@@ -280,11 +312,10 @@ export function CodeEditor({
     getHighlighter().then((highlighter) => {
       if (cancelled) return;
       const lang = language === "mjs" ? "javascript" : language;
-      const result = highlighter.codeToTokens(code, {
-        lang,
-        theme: resolveShikiTheme(themeName, mode),
-      });
+      const theme = resolveShikiTheme(themeName, mode);
+      const result = highlighter.codeToTokens(code, { lang, theme });
       setTokens(result.tokens);
+      setLineNumberColor(highlighter.getTheme(theme).colors?.["editorLineNumber.foreground"]);
     });
     return () => {
       cancelled = true;
@@ -294,9 +325,21 @@ export function CodeEditor({
   const lines = code.split("\n");
   const editorStyle = {
     tabSize: 2,
+    fontSize,
+    lineHeight: 1.5,
     ...(fontFamily ? { fontFamily } : {}),
   };
   const caretColor = contrastColor(background);
+  // Sized to the longest number, plus a gap before the code. Themes without
+  // a line-number color get a faded caret color.
+  const digits = String(lines.length).length;
+  const gutter: Gutter | null = showLineNumbers
+    ? {
+        width: `${digits + 2}ch`,
+        numberWidth: `${digits}ch`,
+        color: lineNumberColor ?? overlayColor(caretColor, 0.35),
+      }
+    : null;
 
   const setSelection = useCallback((textarea: HTMLTextAreaElement, start: number, end: number) => {
     // The textarea is controlled, so the value updates on re-render;
@@ -497,7 +540,10 @@ export function CodeEditor({
       : [];
 
   return (
-    <div className="p:r ff:m fs:sm lh:4" style={editorStyle}>
+    <div
+      className="p:r ff:m"
+      style={{ ...editorStyle, ...(gutter ? { paddingLeft: gutter.width } : {}) }}
+    >
       {lines.map((line, lineIndex) => {
         const committed = highlightedLines.find((h) => h.line === lineIndex);
         const inDragRange =
@@ -516,6 +562,7 @@ export function CodeEditor({
             highlightedWords={highlightedWords}
             wordPreview={wordPreviewRanges.find((r) => r.line === lineIndex) ?? null}
             highlightColors={highlightColors}
+            gutter={gutter}
           />
         );
       })}
@@ -530,9 +577,11 @@ export function CodeEditor({
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onMouseDown={handleMouseDown}
-        className="p:a t:0 l:0 w:100% h:100% p:0 m:0 bg:transparent c:transparent bw:0 os:none o:h r:none ff:m fs:sm lh:4 ws:pw"
+        className="p:a t:0 l:0 w:100% h:100% p:0 m:0 bg:transparent c:transparent bw:0 os:none o:h r:none ff:m ws:pw"
         style={{
           ...editorStyle,
+          // The textarea covers the code only, so its lines wrap where the visible ones do.
+          ...(gutter ? { left: gutter.width, width: `calc(100% - ${gutter.width})` } : {}),
           caretColor,
           pointerEvents: wordDragActive ? "none" : undefined,
         }}

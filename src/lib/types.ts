@@ -60,3 +60,28 @@ export interface CornerRadii {
   bl: number;
   br: number;
 }
+
+// Space between the frame's edge and the code window, in px. The default
+// is the padding every frame had before it was adjustable.
+export const PADDING_MIN = 0;
+export const PADDING_MAX = 128;
+export const PADDING_STEP = 8;
+export const PADDING_DEFAULT = 64;
+
+// Code font size, in px. Line height follows at 1.5x.
+export const FONT_SIZE_MIN = 10;
+export const FONT_SIZE_MAX = 24;
+export const FONT_SIZE_DEFAULT = 14;
+
+export function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+// Where the language name shows. "status" is where it always was.
+export type LabelPosition = "none" | "status" | "tab";
+
+export const LABEL_POSITIONS: { id: LabelPosition; label: string }[] = [
+  { id: "none", label: "None" },
+  { id: "status", label: "Status bar, bottom right" },
+  { id: "tab", label: "Tab bar, top right" },
+];

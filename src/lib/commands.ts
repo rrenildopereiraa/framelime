@@ -2,7 +2,18 @@ import type { ExportFormat } from "../components/format-picker";
 import { FONT_FAMILIES, type FontFamilyId } from "../components/inspector";
 import { LANGUAGES, type LanguageId } from "./highlighter";
 import { modLabel } from "./platform";
-import { ASPECT_RATIOS, type AspectRatio } from "./types";
+import {
+  ASPECT_RATIOS,
+  type AspectRatio,
+  FONT_SIZE_DEFAULT,
+  FONT_SIZE_MAX,
+  FONT_SIZE_MIN,
+  LABEL_POSITIONS,
+  type LabelPosition,
+  PADDING_MAX,
+  PADDING_MIN,
+  PADDING_STEP,
+} from "./types";
 
 export interface Command {
   id: string;
@@ -16,6 +27,13 @@ export function buildCommands({
   onShowTabBarChange,
   showStatusBar,
   onShowStatusBarChange,
+  showLineNumbers,
+  onShowLineNumbersChange,
+  onLabelPositionChange,
+  padding,
+  onPaddingChange,
+  fontSize,
+  onFontSizeChange,
   onAspectRatioChange,
   onSetLanguage,
   onSetFormat,
@@ -33,6 +51,13 @@ export function buildCommands({
   onShowTabBarChange: (value: boolean) => void;
   showStatusBar: boolean;
   onShowStatusBarChange: (value: boolean) => void;
+  showLineNumbers: boolean;
+  onShowLineNumbersChange: (value: boolean) => void;
+  onLabelPositionChange: (value: LabelPosition) => void;
+  padding: number;
+  onPaddingChange: (value: number) => void;
+  fontSize: number;
+  onFontSizeChange: (value: number) => void;
   onAspectRatioChange: (value: AspectRatio) => void;
   onSetLanguage: (value: LanguageId) => void;
   onSetFormat: (value: ExportFormat) => void;
@@ -100,6 +125,41 @@ export function buildCommands({
       label: `${showStatusBar ? "Hide" : "Show"} status bar`,
       run: () => onShowStatusBarChange(!showStatusBar),
     },
+    {
+      id: "toggle-line-numbers",
+      label: `${showLineNumbers ? "Hide" : "Show"} line numbers`,
+      run: () => onShowLineNumbersChange(!showLineNumbers),
+    },
+    {
+      id: "font-size-increase",
+      label: "Increase font size",
+      run: () => onFontSizeChange(Math.min(FONT_SIZE_MAX, fontSize + 1)),
+    },
+    {
+      id: "font-size-decrease",
+      label: "Decrease font size",
+      run: () => onFontSizeChange(Math.max(FONT_SIZE_MIN, fontSize - 1)),
+    },
+    {
+      id: "font-size-reset",
+      label: "Reset font size",
+      run: () => onFontSizeChange(FONT_SIZE_DEFAULT),
+    },
+    {
+      id: "padding-increase",
+      label: "Increase padding",
+      run: () => onPaddingChange(Math.min(PADDING_MAX, padding + PADDING_STEP)),
+    },
+    {
+      id: "padding-decrease",
+      label: "Decrease padding",
+      run: () => onPaddingChange(Math.max(PADDING_MIN, padding - PADDING_STEP)),
+    },
+    ...LABEL_POSITIONS.map(({ id, label }): Command => ({
+      id: `language-label-${id}`,
+      label: `Language label: ${label}`,
+      run: () => onLabelPositionChange(id),
+    })),
     ...ASPECT_RATIOS.map(({ id, label }): Command => ({
       id: `aspect-ratio-${id}`,
       label: `Aspect ratio: ${label}`,

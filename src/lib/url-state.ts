@@ -9,7 +9,7 @@ import type { FrameColors } from "../components/frame";
 import { FONT_FAMILIES, type FontFamilyId } from "../components/inspector";
 import type { FrameMode } from "./chrome-theme";
 import { requireThemeFrameColors, THEME_NAME } from "./highlighter";
-import type { AspectRatio } from "./types";
+import { type AspectRatio, FONT_SIZE_DEFAULT, type LabelPosition, PADDING_DEFAULT } from "./types";
 
 const FRAME_COLOR_KEYS: (keyof FrameColors)[] = [
   "page",
@@ -44,6 +44,10 @@ export const settingsParsers = {
   font: parseAsStringEnum<FontFamilyId>(Object.keys(FONT_FAMILIES) as FontFamilyId[]).withDefault(
     "default",
   ),
+  pad: parseAsInteger.withDefault(PADDING_DEFAULT),
+  size: parseAsInteger.withDefault(FONT_SIZE_DEFAULT),
+  lines: parseAsBoolean.withDefault(false),
+  label: parseAsStringEnum<LabelPosition>(["none", "status", "tab"]).withDefault("status"),
   theme: parseAsString.withDefault(THEME_NAME),
   // The frame's light/dark preference, independent of the app scheme.
   frameMode: parseAsStringEnum<FrameMode>(["light", "dark", "auto"]).withDefault("auto"),

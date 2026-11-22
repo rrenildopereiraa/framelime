@@ -24,10 +24,17 @@ import {
 } from "./lib/highlighter";
 import { randomSnippet } from "./lib/snippets";
 import {
+  clamp,
   type CornerRadii,
   type EditorDocument,
+  FONT_SIZE_MAX,
+  FONT_SIZE_MIN,
   type HighlightType,
+  LABEL_POSITIONS,
   MAX_DOCUMENTS,
+  PADDING_MAX,
+  PADDING_MIN,
+  PADDING_STEP,
 } from "./lib/types";
 import { settingsParsers } from "./lib/url-state";
 
@@ -93,6 +100,10 @@ function App() {
       setSettings({ colors: nextColors });
     }
   }, [resolvedFrameMode, settings.theme, settings.colors, setSettings]);
+
+  // A hand-edited link can carry any number; the frame only draws the slider's range.
+  const padding = clamp(settings.pad, PADDING_MIN, PADDING_MAX);
+  const fontSize = clamp(settings.size, FONT_SIZE_MIN, FONT_SIZE_MAX);
 
   const radii: CornerRadii = {
     tl: settings.rtl,
@@ -282,9 +293,13 @@ function App() {
     const themePool = themeNames.filter((name) => name !== themeName);
     const pool = themePool.length > 0 ? themePool : themeNames;
     const nextTheme = pool[Math.floor(Math.random() * pool.length)];
+    const paddingSteps = (PADDING_MAX - PADDING_MIN) / PADDING_STEP;
 
     setSettings({
       tabBar: randomBool(),
+      lines: randomBool(),
+      label: LABEL_POSITIONS[Math.floor(Math.random() * LABEL_POSITIONS.length)].id,
+      pad: PADDING_MIN + Math.floor(Math.random() * (paddingSteps + 1)) * PADDING_STEP,
       rtl: radius,
       rtr: radius,
       rbl: radius,
@@ -358,6 +373,13 @@ function App() {
     onShowTabBarChange: (value) => setSettings({ tabBar: value }),
     showStatusBar: settings.statusBar,
     onShowStatusBarChange: (value) => setSettings({ statusBar: value }),
+    showLineNumbers: settings.lines,
+    onShowLineNumbersChange: (value) => setSettings({ lines: value }),
+    onLabelPositionChange: (value) => setSettings({ label: value }),
+    padding,
+    onPaddingChange: (value) => setSettings({ pad: value }),
+    fontSize,
+    onFontSizeChange: (value) => setSettings({ size: value }),
     onAspectRatioChange: (value) => setSettings({ ratio: value }),
     onSetLanguage: (value) => updateActive({ language: value }),
     onSetFormat: setFormat,
@@ -423,6 +445,10 @@ function App() {
             showBoundingBox={showBoundingBox}
             frameRef={frameRef}
             mode={resolvedFrameMode}
+            padding={padding}
+            fontSize={fontSize}
+            showLineNumbers={settings.lines}
+            labelPosition={settings.label}
           />
 
           <Inspector
@@ -435,6 +461,14 @@ function App() {
             onShowTabBarChange={(value) => setSettings({ tabBar: value })}
             showStatusBar={settings.statusBar}
             onShowStatusBarChange={(value) => setSettings({ statusBar: value })}
+            showLineNumbers={settings.lines}
+            onShowLineNumbersChange={(value) => setSettings({ lines: value })}
+            labelPosition={settings.label}
+            onLabelPositionChange={(value) => setSettings({ label: value })}
+            padding={padding}
+            onPaddingChange={(value) => setSettings({ pad: value })}
+            fontSize={fontSize}
+            onFontSizeChange={(value) => setSettings({ size: value })}
             showBoundingBox={showBoundingBox}
             onShowBoundingBoxChange={setShowBoundingBox}
             aspectRatio={settings.ratio}

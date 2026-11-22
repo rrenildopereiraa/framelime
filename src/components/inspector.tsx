@@ -2,11 +2,23 @@ import { IconArrowsShuffle, IconLayout, IconPalette, IconUpload } from "@tabler/
 import { useState } from "react";
 import Button from "@/components/ui/button.tsx";
 import Separator from "@/components/ui/separator.tsx";
+import Slider from "@/components/ui/slider.tsx";
 import Switch from "@/components/ui/switch.tsx";
 import Tabs from "@/components/ui/tabs.tsx";
 import { type ChromeMode, type FrameMode, useChromeTheme } from "../lib/chrome-theme";
 import { LANGUAGES, type LanguageId, THEMES } from "../lib/highlighter";
-import { ASPECT_RATIOS, type AspectRatio, type CornerRadii } from "../lib/types";
+import {
+  ASPECT_RATIOS,
+  type AspectRatio,
+  type CornerRadii,
+  FONT_SIZE_MAX,
+  FONT_SIZE_MIN,
+  LABEL_POSITIONS,
+  type LabelPosition,
+  PADDING_MAX,
+  PADDING_MIN,
+  PADDING_STEP,
+} from "../lib/types";
 import { BottomSheet, SubSheet } from "./bottom-sheet";
 import { ColorInput } from "./color-input";
 import type { FrameColors } from "./frame";
@@ -82,6 +94,37 @@ function SettingsTabs({
   );
 }
 
+function SliderField({
+  label,
+  value,
+  onValueChange,
+  min,
+  max,
+  step,
+}: {
+  label: string;
+  value: number;
+  onValueChange: (value: number) => void;
+  min: number;
+  max: number;
+  step: number;
+}) {
+  return (
+    <div className="pb:4">
+      <Slider
+        label={label}
+        value={value}
+        onValueChange={(next) => onValueChange(Array.isArray(next) ? next[0] : next)}
+        min={min}
+        max={max}
+        step={step}
+        unit="px"
+        className="w:100%"
+      />
+    </div>
+  );
+}
+
 /** A small heading over a group, on Yumma UI's separator. */
 function SectionSeparator({ label }: { label: string }) {
   return (
@@ -122,6 +165,14 @@ interface InspectorContentProps {
   onShowTabBarChange: (value: boolean) => void;
   showStatusBar: boolean;
   onShowStatusBarChange: (value: boolean) => void;
+  showLineNumbers: boolean;
+  onShowLineNumbersChange: (value: boolean) => void;
+  labelPosition: LabelPosition;
+  onLabelPositionChange: (value: LabelPosition) => void;
+  padding: number;
+  onPaddingChange: (value: number) => void;
+  fontSize: number;
+  onFontSizeChange: (value: number) => void;
   showBoundingBox: boolean;
   onShowBoundingBoxChange: (value: boolean) => void;
   aspectRatio: AspectRatio;
@@ -146,6 +197,14 @@ function InspectorContent({
   onShowTabBarChange,
   showStatusBar,
   onShowStatusBarChange,
+  showLineNumbers,
+  onShowLineNumbersChange,
+  labelPosition,
+  onLabelPositionChange,
+  padding,
+  onPaddingChange,
+  fontSize,
+  onFontSizeChange,
   showBoundingBox,
   onShowBoundingBoxChange,
   aspectRatio,
@@ -177,8 +236,22 @@ function InspectorContent({
           checked={showStatusBar}
           onCheckedChange={onShowStatusBarChange}
         />
+        <OptionSwitch
+          label="Line numbers"
+          checked={showLineNumbers}
+          onCheckedChange={onShowLineNumbersChange}
+        />
 
         <RadiusControl radii={radii} onRadiiChange={onRadiiChange} />
+
+        <SliderField
+          label="Padding"
+          value={padding}
+          onValueChange={onPaddingChange}
+          min={PADDING_MIN}
+          max={PADDING_MAX}
+          step={PADDING_STEP}
+        />
 
         <PickerField
           label="Aspect ratio"
@@ -196,6 +269,22 @@ function InspectorContent({
             style: FONT_FAMILIES[id].stack ? { fontFamily: FONT_FAMILIES[id].stack } : undefined,
           }))}
           onValueChange={onFontFamilyChange}
+        />
+
+        <SliderField
+          label="Font size"
+          value={fontSize}
+          onValueChange={onFontSizeChange}
+          min={FONT_SIZE_MIN}
+          max={FONT_SIZE_MAX}
+          step={1}
+        />
+
+        <PickerField
+          label="Language label"
+          value={labelPosition}
+          options={LABEL_POSITIONS}
+          onValueChange={onLabelPositionChange}
         />
       </>
     );
