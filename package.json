@@ -9,7 +9,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "validate": "yummacss lint --allow app-root,bottom-sheet-handle,drawer-backdrop,drawer-popup,frame-collapsible,inspector-tabs,landing-plane,landing-row,landing-stage,landing-tapes,landing-vignette,menu-popup,popover-popup,select-popup,toast-root",
+    "validate": "yummacss lint --allow app-root,drawer-backdrop,drawer-popup,frame-collapsible,inspector-tabs,landing-plane,landing-row,landing-stage,landing-tapes,landing-vignette,menu-popup,popover-popup,select-popup,toast-root",
     "prepare": "vp config"
   },
   "dependencies": {

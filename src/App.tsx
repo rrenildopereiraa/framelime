@@ -10,6 +10,7 @@ import { FONT_FAMILIES, type FontFamilyId, Inspector } from "./components/inspec
 import { RADIUS_MAX, RADIUS_MIN } from "./components/radius-control";
 import { StatusBar } from "./components/status-bar";
 import { useToast } from "./components/toast-provider";
+import { DrawerIndent } from "./components/ui/drawer";
 import { type ResolvedMode, useChromeTheme } from "./lib/chrome-theme";
 import { buildCommands } from "./lib/commands";
 import { captureDataUrl } from "./lib/export";
@@ -378,86 +379,90 @@ function App() {
     onHighlightCurrentLine: highlightCurrentLine,
   });
 
+  // `is:i` keeps the editor's z-indexes inside the app, so the settings
+  // drawer, portaled to the body, always paints above the frame.
   return (
-    <div className="app-root d:f fd:c h:vh o:h bg:page">
-      <EditorTabBar
-        documents={documents}
-        activeId={activeId}
-        onSelect={selectDocument}
-        onClose={closeDocument}
-        onAdd={addDocument}
-        onOpenPalette={() => setPaletteOpen(true)}
-        onCopy={handleCopyImage}
-        onExport={handleExport}
-        onShare={handleShare}
-        exporting={exporting}
-        format={format}
-        onFormatChange={setFormat}
-      />
-
-      <div className="f:1 d:f min-h:0">
-        <Canvas
-          code={active.code}
-          onCodeChange={(value) => updateActive({ code: value })}
-          language={active.language}
-          fileName={active.fileName}
-          onFileNameChange={(value) => updateActive({ fileName: value })}
-          highlightedLines={active.highlightedLines}
-          highlightedWords={active.highlightedWords}
-          onCycleLineHighlight={cycleLineHighlight}
-          onSetLineRangeHighlight={setLineRangeHighlight}
-          onCycleWordHighlight={cycleWordHighlight}
-          onSetWordRangeHighlight={setWordRangeHighlight}
-          textareaRef={codeTextareaRef}
-          showTabBar={settings.tabBar}
-          showStatusBar={settings.statusBar}
-          aspectRatio={settings.ratio}
-          radii={radii}
-          fontFamily={FONT_FAMILIES[settings.font].stack}
-          themeName={themeName}
-          colors={settings.colors}
-          showBoundingBox={showBoundingBox}
-          frameRef={frameRef}
-          mode={resolvedFrameMode}
+    <DrawerIndent className="bg:page">
+      <div className="app-root is:i d:f fd:c h:vh o:h bg:page">
+        <EditorTabBar
+          documents={documents}
+          activeId={activeId}
+          onSelect={selectDocument}
+          onClose={closeDocument}
+          onAdd={addDocument}
+          onOpenPalette={() => setPaletteOpen(true)}
+          onCopy={handleCopyImage}
+          onExport={handleExport}
+          onShare={handleShare}
+          exporting={exporting}
+          format={format}
+          onFormatChange={setFormat}
         />
 
-        <Inspector
-          open={inspectorOpen}
-          onOpenChange={setInspectorOpen}
+        <div className="f:1 d:f min-h:0">
+          <Canvas
+            code={active.code}
+            onCodeChange={(value) => updateActive({ code: value })}
+            language={active.language}
+            fileName={active.fileName}
+            onFileNameChange={(value) => updateActive({ fileName: value })}
+            highlightedLines={active.highlightedLines}
+            highlightedWords={active.highlightedWords}
+            onCycleLineHighlight={cycleLineHighlight}
+            onSetLineRangeHighlight={setLineRangeHighlight}
+            onCycleWordHighlight={cycleWordHighlight}
+            onSetWordRangeHighlight={setWordRangeHighlight}
+            textareaRef={codeTextareaRef}
+            showTabBar={settings.tabBar}
+            showStatusBar={settings.statusBar}
+            aspectRatio={settings.ratio}
+            radii={radii}
+            fontFamily={FONT_FAMILIES[settings.font].stack}
+            themeName={themeName}
+            colors={settings.colors}
+            showBoundingBox={showBoundingBox}
+            frameRef={frameRef}
+            mode={resolvedFrameMode}
+          />
+
+          <Inspector
+            open={inspectorOpen}
+            onOpenChange={setInspectorOpen}
+            language={active.language}
+            onLanguageChange={(value) => updateActive({ language: value })}
+            onRandomize={randomizeAll}
+            showTabBar={settings.tabBar}
+            onShowTabBarChange={(value) => setSettings({ tabBar: value })}
+            showStatusBar={settings.statusBar}
+            onShowStatusBarChange={(value) => setSettings({ statusBar: value })}
+            showBoundingBox={showBoundingBox}
+            onShowBoundingBoxChange={setShowBoundingBox}
+            aspectRatio={settings.ratio}
+            onAspectRatioChange={(value) => setSettings({ ratio: value })}
+            radii={radii}
+            onRadiiChange={setRadii}
+            fontFamily={settings.font}
+            onFontFamilyChange={(value) => setSettings({ font: value })}
+            themeName={themeName}
+            onThemeChange={handleManualThemeChange}
+            themeIsRandom={themeIsRandom}
+            frameMode={frameMode}
+            onFrameModeChange={(value) => setSettings({ frameMode: value })}
+            frameColors={settings.colors}
+            onFrameColorsChange={(value) => setSettings({ colors: value })}
+            onUploadTheme={handleUploadTheme}
+          />
+        </div>
+
+        <StatusBar
           language={active.language}
           onLanguageChange={(value) => updateActive({ language: value })}
           onRandomize={randomizeAll}
-          showTabBar={settings.tabBar}
-          onShowTabBarChange={(value) => setSettings({ tabBar: value })}
-          showStatusBar={settings.statusBar}
-          onShowStatusBarChange={(value) => setSettings({ statusBar: value })}
-          showBoundingBox={showBoundingBox}
-          onShowBoundingBoxChange={setShowBoundingBox}
-          aspectRatio={settings.ratio}
-          onAspectRatioChange={(value) => setSettings({ ratio: value })}
-          radii={radii}
-          onRadiiChange={setRadii}
-          fontFamily={settings.font}
-          onFontFamilyChange={(value) => setSettings({ font: value })}
-          themeName={themeName}
-          onThemeChange={handleManualThemeChange}
-          themeIsRandom={themeIsRandom}
-          frameMode={frameMode}
-          onFrameModeChange={(value) => setSettings({ frameMode: value })}
-          frameColors={settings.colors}
-          onFrameColorsChange={(value) => setSettings({ colors: value })}
-          onUploadTheme={handleUploadTheme}
         />
+
+        <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} commands={commands} />
       </div>
-
-      <StatusBar
-        language={active.language}
-        onLanguageChange={(value) => updateActive({ language: value })}
-        onRandomize={randomizeAll}
-      />
-
-      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} commands={commands} />
-    </div>
+    </DrawerIndent>
   );
 }
 
