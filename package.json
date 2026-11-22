@@ -9,7 +9,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "validate": "yummacss lint --allow app-root,drawer-backdrop,drawer-popup,frame-collapsible,inspector-tabs,landing-plane,landing-row,landing-stage,landing-tapes,landing-vignette,menu-popup,popover-popup,select-popup,settings-sheet,toast-root",
+    "validate": "yummacss lint --allow app-root,drawer-backdrop,drawer-popup,frame-collapsible,inspector-tabs,landing-badge,landing-badge-icon,landing-badge-soon,landing-belt,landing-belt-track,landing-belt-track-back,landing-burst,landing-card,landing-card-settings,landing-card-share,landing-cursor,landing-cursor-label,landing-device,landing-dot,landing-drop,landing-front,landing-glass,landing-glow,landing-ink,landing-lime,landing-lime-near,landing-link,landing-link-url,landing-logo-well,landing-pill,landing-pill-fill,landing-pill-ink,landing-sky,landing-soon,landing-stage-frame,landing-sticker,landing-sticker-edge,landing-sticker-fill,landing-sticker-ink,landing-title,landing-toggle,landing-toggle-on,landing-toggle-thumb,landing-trail,landing-zest,menu-popup,popover-popup,select-popup,settings-sheet,toast-root",
     "prepare": "vp config"
   },
   "dependencies": {
