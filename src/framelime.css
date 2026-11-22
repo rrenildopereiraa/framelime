@@ -41,7 +41,8 @@
 }
 
 .bottom-sheet-handle {
-  bottom: max(0.5rem, env(safe-area-inset-bottom));
+  /* Clear of the drawer's 1.5rem swipe strip along the bottom edge, so taps reach the bar. */
+  bottom: max(1.5rem, env(safe-area-inset-bottom));
 }
 
 .select-popup,
