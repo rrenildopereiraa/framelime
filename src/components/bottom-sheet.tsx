@@ -1,7 +1,5 @@
-import { IconAdjustmentsHorizontal } from "@tabler/icons-react";
 import { type ReactNode, useSyncExternalStore } from "react";
 import Drawer from "@/components/ui/drawer.tsx";
-import { FOCUS } from "./styles";
 
 // Tablets, from the md breakpoint up to lg, where the inspector takes over.
 const TABLET = "(min-width: 48rem)";
@@ -20,7 +18,7 @@ function useMediaQuery(query: string) {
   );
 }
 
-/** Settings on phones: a bar along the bottom that opens Yumma UI's drawer. */
+/** Settings on phones and tablets: Yumma UI's drawer, opened by a swipe up from the bottom edge. */
 export function BottomSheet({
   open,
   onOpenChange,
@@ -34,8 +32,9 @@ export function BottomSheet({
 }) {
   const tablet = useMediaQuery(TABLET);
 
+  // No trigger of its own: a swipe up from the bottom edge opens it.
   return (
-    <div className="bottom-sheet-handle @lg:d:none p:f l:0 r:0 zi:10 h:8">
+    <div className="@lg:d:none">
       <Drawer
         side="bottom"
         variant={tablet ? "flyout" : "edge"}
@@ -44,15 +43,6 @@ export function BottomSheet({
         onOpenChange={onOpenChange}
         snapPoints={SNAP_POINTS}
         swipeToOpen
-        render={
-          <button
-            type="button"
-            className={`d:f ai:c jc:c g:2 w:100% h:100% p:0 btw:1 bw:0 bs:s bc:line bg:raised fs:xs fw:500 us:none c:p c:hint h:c:label ${FOCUS}`}
-          >
-            <IconAdjustmentsHorizontal className="w:4 h:4 fs:0" stroke={1.8} />
-            {title}
-          </button>
-        }
       >
         {children}
       </Drawer>
