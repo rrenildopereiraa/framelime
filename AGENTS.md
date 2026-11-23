@@ -55,6 +55,8 @@ Yumma UI components are written in these classes. Read one before building somet
 
 Sessions are cleared after each solved issue and closed PR, so nothing carries over between them. A PR is the agent's to drive until it is merged or closed.
 
+- Never commit to `main` directly. Every change goes through a PR.
+- Open one PR per phase of work, each on its own branch named `feat/`, `fix/` or `chore/` plus a word or two of plain English: `feat/dark-mode`, `fix/nav-overflow`, `chore/agent-rules`. No hashes, no generated suffixes, nothing long. Use this name even when the session suggests a generated branch.
 - After opening a PR, watch it right away (in Claude Code on the web, `subscribe_pr_activity`). Do not wait to be asked.
 - Handle every review comment. Fix what is asked, push to the PR branch and reply under the comment with what changed. If a suggestion is wrong or cannot be done, reply with why instead of ignoring it.
 - Handle every failed check. Read the job logs, fix the cause and push. Never skip, disable or delete a test, or loosen a lint rule, to get a check green.
