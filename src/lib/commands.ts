@@ -46,6 +46,9 @@ export function buildCommands({
   onRandomizeAll,
   onClearHighlights,
   onHighlightCurrentLine,
+  onUndo,
+  onRedo,
+  onFormat,
 }: {
   showTabBar: boolean;
   onShowTabBarChange: (value: boolean) => void;
@@ -70,8 +73,34 @@ export function buildCommands({
   onRandomizeAll: () => void;
   onClearHighlights: () => void;
   onHighlightCurrentLine: () => void;
+  onUndo: () => void;
+  onRedo: () => void;
+  // Left out for languages Prettier can't format without a plugin.
+  onFormat?: () => void;
 }): Command[] {
   return [
+    {
+      id: "undo",
+      label: "Undo",
+      kbd: `${modLabel} Z`,
+      run: onUndo,
+    },
+    {
+      id: "redo",
+      label: "Redo",
+      kbd: `${modLabel} Shift Z`,
+      run: onRedo,
+    },
+    ...(onFormat
+      ? [
+          {
+            id: "format-code",
+            label: "Format code",
+            kbd: "Alt Shift F",
+            run: onFormat,
+          },
+        ]
+      : []),
     {
       id: "new-snippet",
       label: "New snippet",
