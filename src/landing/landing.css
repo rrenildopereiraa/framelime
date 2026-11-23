@@ -204,10 +204,6 @@
     padding-top: 0;
     padding-bottom: clamp(0.5rem, 2dvh, 2rem);
   }
-
-  .landing-screen .landing-badge {
-    height: clamp(2.75rem, 5.5dvh, 3.75rem);
-  }
 }
 
 .landing-glow,
@@ -528,49 +524,20 @@
   height: 1.5rem;
 }
 
-/* ---- Browser badges ----------------------------------------------------- */
+/* ---- Footer ------------------------------------------------------------- */
 
-.landing-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.625rem;
-  height: 3.75rem;
-  padding: 0 1rem 0 0.75rem;
-  border-radius: 0.875rem;
-  text-decoration: none;
-}
-
-@media (min-width: 40rem) {
-  .landing-badge {
-    gap: 0.75rem;
-    padding: 0 1.375rem 0 1rem;
-  }
-}
-
-/* Lime on the dark badge, a deeper lime on the light one. */
-.landing-badge-icon {
-  flex-shrink: 0;
-  color: light-dark(#d4ff3a, #4d7c0f);
-}
-
-.landing-badge-soon {
-  background: light-dark(#e9ebe3, #1a1b18);
-  color: light-dark(#63665a, #95978d);
-  box-shadow: inset 0 0 0 1px light-dark(#dcdfd3, #2f302c);
-}
-
+/* A small lime tag beside Firefox, until it ships. */
 .landing-soon {
-  position: absolute;
-  right: -0.5rem;
-  top: -0.75rem;
-  padding: 0.1875rem 0.5625rem;
+  margin-left: 0.25rem;
+  padding: 0.125rem 0.5rem;
   border-radius: 9999px;
   background: #d4ff3a;
   color: #0b0b0a;
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.06em;
-  box-shadow: 0 0 0 2px light-dark(#ffffff, #0b0b0a);
+  text-transform: uppercase;
+  vertical-align: 0.125rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

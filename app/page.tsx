@@ -1,4 +1,3 @@
-import { IconBrandChrome, IconBrandFirefox } from "@tabler/icons-react";
 import Image from "next/image";
 import macbook from "@/assets/landing/macbook-air.webp";
 import { LogoMark } from "@/components/logo.tsx";
@@ -71,41 +70,22 @@ export default function LandingPage() {
 
       <StickerBelt />
 
-      <footer className="landing-footer max-w:340 mx:auto px:8 pt:4 pb:8 d:f fw:w ai:c jc:sb g:6">
-        <div className="d:f fw:w ai:c g:3 fs:md c:hint">
-          <span>© 2026 Framelime</span>
-          <span aria-hidden="true">·</span>
-          <span>MIT License</span>
-          <span aria-hidden="true">·</span>
-          <a href={site.repo} className="td:none c:hint h:c:label tp:c tdu:150">
-            GitHub
-          </a>
-        </div>
-
-        {/* Store badges, for browsers: Chrome today, Firefox soon. */}
-        <div className="landing-glass p:r d:f fw:w g:2 p:2 br:xl">
-          <a href="/editor" className="landing-badge landing-ink">
-            <IconBrandChrome
-              className="landing-badge-icon w:8 h:8"
-              stroke={1.8}
-              aria-hidden="true"
-            />
-            <span className="d:f fd:c lh:1">
-              <span className="fs:xs o:80">Available for</span>
-              <span className="fs:xl fw:600">Chrome</span>
-            </span>
-          </a>
-          <span className="landing-badge landing-badge-soon" aria-label="Firefox, coming soon">
-            <IconBrandFirefox className="w:8 h:8" stroke={1.8} aria-hidden="true" />
-            <span className="d:f fd:c lh:1" aria-hidden="true">
-              <span className="fs:xs">Coming to</span>
-              <span className="fs:xl fw:600">Firefox</span>
-            </span>
-          </span>
-          <span aria-hidden="true" className="landing-soon">
-            SOON
-          </span>
-        </div>
+      <footer className="landing-footer max-w:340 mx:auto px:8 pt:4 pb:8 d:f fw:w ai:c jc:c g:3 fs:md c:hint">
+        <span>© 2026 Framelime</span>
+        <span aria-hidden="true">·</span>
+        <span>MIT License</span>
+        <span aria-hidden="true">·</span>
+        <a href={site.repo} className="td:none c:hint h:c:label tp:c tdu:150">
+          GitHub
+        </a>
+        <span aria-hidden="true">·</span>
+        <a href="/editor" className="td:none c:hint h:c:label tp:c tdu:150">
+          Chrome
+        </a>
+        <span aria-hidden="true">·</span>
+        <span>
+          Firefox <span className="landing-soon">soon</span>
+        </span>
       </footer>
     </div>
   );
