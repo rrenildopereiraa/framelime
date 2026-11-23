@@ -51,6 +51,23 @@ Yumma UI components are written in these classes. Read one before building somet
 - In a project that uses Oxlint, the `@yummacss/lint` rules report the same in the editor, and `no-inline-styles` names the class for a property set in `style`.
 - Every utility has a page named after its CSS property, as plain text: https://yummacss.com/docs/justify-content.md. The index is https://yummacss.com/llms.txt.
 
+# Pull Requests
+
+Sessions are cleared after each solved issue and closed PR, so nothing carries over between them. A PR is the agent's to drive until it is merged or closed.
+
+- After opening a PR, watch it right away (in Claude Code on the web, `subscribe_pr_activity`). Do not wait to be asked.
+- Handle every review comment. Fix what is asked, push to the PR branch and reply under the comment with what changed. If a suggestion is wrong or cannot be done, reply with why instead of ignoring it.
+- Handle every failed check. Read the job logs, fix the cause and push. Never skip, disable or delete a test, or loosen a lint rule, to get a check green.
+- Run `vp check`, `vp test` and `pnpm dlx yummacss lint` before each push, so a push does not fail a check the agent could have caught.
+- Stop watching once the PR is merged or closed, and say so.
+
+## One Issue at a Time
+
+- Work only on the issue or PR the user names. Do not start, change or comment on any other.
+- If another open PR has unanswered review comments or failing checks, mention it in one line and leave it alone unless the user asks.
+- Once the PR is merged or closed, recommend the next issue: list the open issues, pick one, and say why in a sentence or two. Do not start it until the user says so.
+- To pick, follow the order the issues give first: a `priority:` label, a milestone, or an issue that says another blocks it. Without one, prefer an issue that unblocks others, then bugs over features, then the smallest change.
+
 <!--VITE PLUS START-->
 
 # Using Vite+, the Unified Toolchain for the Web
