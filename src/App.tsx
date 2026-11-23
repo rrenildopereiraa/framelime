@@ -14,6 +14,7 @@ import { DrawerIndent } from "./components/ui/drawer";
 import { type ResolvedMode, useChromeTheme } from "./lib/chrome-theme";
 import { buildCommands } from "./lib/commands";
 import { captureDataUrl } from "./lib/export";
+import { canFormat, formatCode } from "./lib/format";
 import {
   framesColorsEqual,
   loadCustomTheme,
@@ -22,6 +23,7 @@ import {
   THEME_FRAME_COLORS,
   themeFrameColors,
 } from "./lib/highlighter";
+import { useHistory } from "./lib/history";
 import { randomSnippet } from "./lib/snippets";
 import {
   clamp,
@@ -37,6 +39,35 @@ import {
   PADDING_STEP,
 } from "./lib/types";
 import { settingsParsers } from "./lib/url-state";
+
+type Settings = ReturnType<typeof useQueryStates<typeof settingsParsers>>[0];
+
+interface Snapshot {
+  doc: Omit<EditorDocument, "id">;
+  settings: Settings;
+}
+
+// Where two versions of the code stop matching, counted from the end: the
+// caret goes after the text an undo or redo put back.
+function changeEnd(before: string, after: string) {
+  let suffix = 0;
+  const max = Math.min(before.length, after.length);
+  let prefix = 0;
+  while (prefix < max && before[prefix] === after[prefix]) prefix++;
+  while (
+    suffix < max - prefix &&
+    before[before.length - 1 - suffix] === after[after.length - 1 - suffix]
+  ) {
+    suffix++;
+  }
+  return after.length - suffix;
+}
+
+// Prettier's parse errors carry a code frame after the first line; the toast shows only the reason.
+function formatError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.split("\n")[0].replace(/\s*\(\d+:\d+\)$/, "") || "The code could not be parsed.";
+}
 
 function App() {
   const { resolvedMode } = useChromeTheme();
@@ -60,14 +91,92 @@ function App() {
   const [themeIsRandom, setThemeIsRandom] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(false);
-  const [settings, setSettings] = useQueryStates(settingsParsers, {
+  const [formatting, setFormatting] = useState(false);
+  // Written with `history: "replace"`, so the browser keeps no trail of
+  // settings: undo has a stack of its own (see `useHistory`).
+  const [settings, writeSettings] = useQueryStates(settingsParsers, {
     history: "replace",
   });
   const frameRef = useRef<HTMLDivElement>(null);
   const codeTextareaRef = useRef<HTMLTextAreaElement>(null);
   const toast = useToast();
+  const history = useHistory<Snapshot>();
 
   const active = documents.find((doc) => doc.id === activeId) ?? documents[0];
+
+  // The latest state, for changes that land after an await.
+  const latest = useRef({ documents, settings });
+  latest.current = { documents, settings };
+
+  function snapshotOf(id: string): Snapshot | null {
+    const doc = latest.current.documents.find((d) => d.id === id);
+    if (!doc) return null;
+    const { id: _id, ...content } = doc;
+    return { doc: content, settings: latest.current.settings };
+  }
+
+  // Every change the user makes is recorded on the active snippet's stack
+  // first. Changes that leave everything as it was are not steps.
+  function recordChange(group: string | null) {
+    const snapshot = snapshotOf(activeId);
+    if (snapshot) history.record(activeId, snapshot, group);
+  }
+
+  // Settings changes merge with the same change just before (a slider or a
+  // color picker drag) unless given a group of their own.
+  function setSettings(patch: Partial<Settings>, group?: string | null) {
+    const changed = (Object.keys(patch) as (keyof Settings)[]).filter(
+      (key) => JSON.stringify(patch[key]) !== JSON.stringify(settings[key]),
+    );
+    if (changed.length === 0) return;
+    recordChange(group === undefined ? `settings:${changed.sort().join(",")}` : group);
+    writeSettings(patch);
+  }
+
+  function restore(id: string, snapshot: Snapshot) {
+    const before = documents.find((doc) => doc.id === id)?.code ?? "";
+    setDocuments((docs) => docs.map((doc) => (doc.id === id ? { ...doc, ...snapshot.doc } : doc)));
+    writeSettings(snapshot.settings);
+    // Put the caret where the code changed, as a text editor's undo does.
+    const textarea = codeTextareaRef.current;
+    if (textarea && before !== snapshot.doc.code) {
+      const caret = changeEnd(before, snapshot.doc.code);
+      requestAnimationFrame(() => textarea.setSelectionRange(caret, caret));
+    }
+  }
+
+  function undo() {
+    const current = snapshotOf(activeId);
+    const previous = current && history.undo(activeId, current);
+    if (previous) restore(activeId, previous);
+  }
+
+  function redo() {
+    const current = snapshotOf(activeId);
+    const next = current && history.redo(activeId, current);
+    if (next) restore(activeId, next);
+  }
+
+  // The code textarea's own undo would only know about typing, and React
+  // resets it on every render: route the browser's Undo and Redo, from the
+  // keyboard or the context menu, to the shared stack instead.
+  const undoRedo = useRef({ undo, redo });
+  undoRedo.current = { undo, redo };
+  useEffect(() => {
+    const textarea = codeTextareaRef.current;
+    if (!textarea) return;
+    const handleBeforeInput = (event: InputEvent) => {
+      if (event.inputType === "historyUndo") {
+        event.preventDefault();
+        undoRedo.current.undo();
+      } else if (event.inputType === "historyRedo") {
+        event.preventDefault();
+        undoRedo.current.redo();
+      }
+    };
+    textarea.addEventListener("beforeinput", handleBeforeInput);
+    return () => textarea.removeEventListener("beforeinput", handleBeforeInput);
+  }, []);
 
   const themeName = normalizeThemeName(settings.theme);
 
@@ -84,7 +193,7 @@ function App() {
   useEffect(() => {
     const legacyTheme = normalizeThemeName(settings.theme) !== settings.theme;
     if (legacyTheme) {
-      setSettings({ theme: normalizeThemeName(settings.theme) });
+      writeSettings({ theme: normalizeThemeName(settings.theme) });
     }
     const nextColors = themeFrameColors(settings.theme, resolvedFrameMode);
     const otherColors = themeFrameColors(
@@ -97,9 +206,9 @@ function App() {
       framesColorsEqual(settings.colors, otherColors) &&
       !framesColorsEqual(settings.colors, nextColors)
     ) {
-      setSettings({ colors: nextColors });
+      writeSettings({ colors: nextColors });
     }
-  }, [resolvedFrameMode, settings.theme, settings.colors, setSettings]);
+  }, [resolvedFrameMode, settings.theme, settings.colors, writeSettings]);
 
   // A hand-edited link can carry any number; the frame only draws the slider's range.
   const padding = clamp(settings.pad, PADDING_MIN, PADDING_MAX);
@@ -116,7 +225,14 @@ function App() {
     setSettings({ rtl: next.tl, rtr: next.tr, rbl: next.bl, rbr: next.br });
   }
 
-  function updateActive(patch: Partial<EditorDocument>) {
+  // Typing, renaming and picking a language merge with the same change just
+  // before; a highlight is always a step of its own.
+  function updateActive(patch: Partial<EditorDocument>, group?: string | null) {
+    const changed = (Object.keys(patch) as (keyof EditorDocument)[]).filter(
+      (key) => JSON.stringify(patch[key]) !== JSON.stringify(active[key]),
+    );
+    if (changed.length === 0) return;
+    recordChange(group === undefined ? `doc:${changed.sort().join(",")}` : group);
     setDocuments((docs) => docs.map((doc) => (doc.id === activeId ? { ...doc, ...patch } : doc)));
   }
 
@@ -135,9 +251,12 @@ function App() {
     const existing = current.find((l) => l.line === line);
     const next = nextHighlightType(existing?.type);
     const withoutLine = current.filter((l) => l.line !== line);
-    updateActive({
-      highlightedLines: next ? [...withoutLine, { line, type: next }] : withoutLine,
-    });
+    updateActive(
+      {
+        highlightedLines: next ? [...withoutLine, { line, type: next }] : withoutLine,
+      },
+      null,
+    );
   }
 
   // Dragging across multiple lines sets the whole range to "mark" in one
@@ -152,11 +271,14 @@ function App() {
       current.some((l) => l.line === line && l.type === "mark"),
     );
     const withoutRange = current.filter((l) => l.line < from || l.line > to);
-    updateActive({
-      highlightedLines: allAlreadyMarked
-        ? withoutRange
-        : [...withoutRange, ...rangeLines.map((line) => ({ line, type: "mark" as const }))],
-    });
+    updateActive(
+      {
+        highlightedLines: allAlreadyMarked
+          ? withoutRange
+          : [...withoutRange, ...rangeLines.map((line) => ({ line, type: "mark" as const }))],
+      },
+      null,
+    );
   }
 
   // A plain click (no drag) cycles whatever range sits exactly under the
@@ -171,11 +293,14 @@ function App() {
     const withoutWord = current.filter(
       (w) => !(w.line === line && w.startCol === startCol && w.endCol === endCol),
     );
-    updateActive({
-      highlightedWords: next
-        ? [...withoutWord, { line, startCol, endCol, type: next }]
-        : withoutWord,
-    });
+    updateActive(
+      {
+        highlightedWords: next
+          ? [...withoutWord, { line, startCol, endCol, type: next }]
+          : withoutWord,
+      },
+      null,
+    );
   }
 
   // Dragging across text - possibly spanning multiple lines - marks the
@@ -197,11 +322,14 @@ function App() {
     const overlaps = (w: { line: number; startCol: number; endCol: number }) =>
       ranges.some((r) => r.line === w.line && r.startCol < w.endCol && r.endCol > w.startCol);
     const withoutOverlaps = current.filter((w) => !overlaps(w));
-    updateActive({
-      highlightedWords: allAlreadyMarked
-        ? withoutOverlaps
-        : [...withoutOverlaps, ...ranges.map((r) => ({ ...r, type: "mark" as const }))],
-    });
+    updateActive(
+      {
+        highlightedWords: allAlreadyMarked
+          ? withoutOverlaps
+          : [...withoutOverlaps, ...ranges.map((r) => ({ ...r, type: "mark" as const }))],
+      },
+      null,
+    );
   }
 
   function highlightCurrentLine() {
@@ -213,7 +341,7 @@ function App() {
   }
 
   function clearHighlights() {
-    updateActive({ highlightedLines: [], highlightedWords: [] });
+    updateActive({ highlightedLines: [], highlightedWords: [] }, null);
   }
 
   function addDocument() {
@@ -243,6 +371,7 @@ function App() {
     const index = documents.findIndex((doc) => doc.id === id);
     const remaining = documents.filter((doc) => doc.id !== id);
     setDocuments(remaining);
+    history.forget(id);
     if (id === activeId) {
       setActiveId(remaining[Math.min(index, remaining.length - 1)].id);
     }
@@ -255,7 +384,8 @@ function App() {
   async function handleUploadTheme(file: File) {
     try {
       const result = await loadCustomTheme(await file.text());
-      setSettings({ theme: result.name, colors: result.frameColors });
+      recordChange(null);
+      writeSettings({ theme: result.name, colors: result.frameColors });
       setThemeIsRandom(false);
       toast.add({
         title: "Theme loaded",
@@ -273,7 +403,7 @@ function App() {
 
   function handleThemeChange(name: string) {
     const colors = themeFrameColors(name, resolvedFrameMode);
-    setSettings({ theme: name, ...(colors ? { colors } : {}) });
+    setSettings({ theme: name, ...(colors ? { colors } : {}) }, null);
   }
 
   function handleManualThemeChange(name: string) {
@@ -295,7 +425,8 @@ function App() {
     const nextTheme = pool[Math.floor(Math.random() * pool.length)];
     const paddingSteps = (PADDING_MAX - PADDING_MIN) / PADDING_STEP;
 
-    setSettings({
+    recordChange(null);
+    writeSettings({
       tabBar: randomBool(),
       lines: randomBool(),
       label: LABEL_POSITIONS[Math.floor(Math.random() * LABEL_POSITIONS.length)].id,
@@ -309,6 +440,31 @@ function App() {
       colors: requireThemeFrameColors(nextTheme, resolvedFrameMode),
     });
     setThemeIsRandom(true);
+  }
+
+  // A format is one step, and is dropped if the code changed while Prettier
+  // was loading or running.
+  async function formatActive() {
+    const id = active.id;
+    const { code, language } = active;
+    if (!canFormat(language) || formatting) return;
+    setFormatting(true);
+    try {
+      const formatted = await formatCode(code, language);
+      const doc = latest.current.documents.find((d) => d.id === id);
+      if (!doc || doc.code !== code || formatted === code) return;
+      const snapshot = snapshotOf(id);
+      if (snapshot) history.record(id, snapshot, null);
+      setDocuments((docs) => docs.map((d) => (d.id === id ? { ...d, code: formatted } : d)));
+    } catch (error) {
+      toast.add({
+        title: "Couldn't format",
+        description: formatError(error),
+        type: "error",
+      });
+    } finally {
+      setFormatting(false);
+    }
   }
 
   async function handleExport() {
@@ -368,6 +524,39 @@ function App() {
     randomizeAll();
   });
 
+  // Undo and redo belong to the frame: other fields, like the palette's
+  // search, keep their own.
+  function ownsUndo(target: EventTarget | null) {
+    if (!(target instanceof HTMLElement)) return true;
+    const editable = target.closest("input, textarea, select, [contenteditable]");
+    return !editable || (frameRef.current?.contains(editable) ?? false);
+  }
+  const UNDO_OPTIONS = { preventDefault: false, stopPropagation: false, ignoreInputs: false };
+  useHotkey(
+    "Mod+Z",
+    (event) => {
+      if (!ownsUndo(event.target)) return;
+      event.preventDefault();
+      undo();
+    },
+    UNDO_OPTIONS,
+  );
+  function redoHotkey(event: KeyboardEvent) {
+    if (!ownsUndo(event.target)) return;
+    event.preventDefault();
+    redo();
+  }
+  useHotkey("Mod+Shift+Z", redoHotkey, UNDO_OPTIONS);
+  useHotkey("Mod+Y", redoHotkey, UNDO_OPTIONS);
+  useHotkey(
+    "Alt+Shift+F",
+    (event) => {
+      event.preventDefault();
+      void formatActive();
+    },
+    { ignoreInputs: false },
+  );
+
   const commands = buildCommands({
     showTabBar: settings.tabBar,
     onShowTabBarChange: (value) => setSettings({ tabBar: value }),
@@ -399,6 +588,9 @@ function App() {
     onRandomizeAll: randomizeAll,
     onClearHighlights: clearHighlights,
     onHighlightCurrentLine: highlightCurrentLine,
+    onUndo: undo,
+    onRedo: redo,
+    onFormat: canFormat(active.language) ? formatActive : undefined,
   });
 
   // `is:i` keeps the editor's z-indexes inside the app, so the settings
@@ -492,6 +684,9 @@ function App() {
           language={active.language}
           onLanguageChange={(value) => updateActive({ language: value })}
           onRandomize={randomizeAll}
+          canFormat={canFormat(active.language)}
+          onFormat={formatActive}
+          formatting={formatting}
         />
 
         <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} commands={commands} />
