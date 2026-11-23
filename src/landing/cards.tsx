@@ -5,14 +5,18 @@ import { MONO_STYLE } from "@/lib/fonts.ts";
  * The two cards floating over the laptop. They picture the editor's
  * controls rather than being controls, so they are hidden from assistive
  * tech and hold nothing to tab to: the hero's copy already says the same.
+ *
+ * Sized in `em` rather than Yumma CSS's `rem` steps, so that on the
+ * one-screen layout they scale with the laptop from a single font size.
  */
 
+/** The editor's switch: Yumma UI's rounded track and thumb, in its colors. */
 function Toggle({ label, on }: { label: string; on: boolean }) {
   return (
-    <span className="d:f ai:c jc:sb">
-      <span className="fs:lg fw:600">{label}</span>
-      <span className={`landing-toggle ${on ? "landing-toggle-on" : ""}`}>
-        <span className="landing-toggle-thumb" />
+    <span className="landing-card-row">
+      <span className="landing-card-label">{label}</span>
+      <span className={`landing-switch ${on ? "landing-switch-on" : ""}`}>
+        <span className="landing-switch-thumb" />
       </span>
     </span>
   );
@@ -22,16 +26,14 @@ function Toggle({ label, on }: { label: string; on: boolean }) {
 export function SettingsCard() {
   return (
     <div aria-hidden="true" className="landing-card landing-card-settings">
-      <div className="d:f fd:c g:3">
+      <div className="landing-card-rows">
         <Toggle label="Tab bar" on />
         <Toggle label="Status bar" on={false} />
       </div>
-      <div className="h:px my:4 bg:line" />
-      <div className="fs:lg fw:600">Bring your VS Code theme</div>
-      <div className="mt:1 fs:sm lh:5 c:hint">
-        Drop a theme file in, and the frame takes its colors.
-      </div>
-      <div className="landing-pill landing-pill-fill mt:4 h:12">Load a theme</div>
+      <div className="landing-card-rule" />
+      <div className="landing-card-title">Bring your VS Code theme</div>
+      <div className="landing-card-text">Drop a theme file in, and the frame takes its colors.</div>
+      <div className="landing-pill landing-pill-fill landing-card-button">Load a theme</div>
     </div>
   );
 }
@@ -40,26 +42,26 @@ export function SettingsCard() {
 export function ShareCard() {
   return (
     <div aria-hidden="true" className="landing-card landing-card-share">
-      <div className="fs:xl fw:600">Ready to share</div>
-      <div className="mt:1 fs:md lh:5 c:hint">
+      <div className="landing-card-title landing-card-title-lg">Ready to share</div>
+      <div className="landing-card-text">
         Export a crisp image, or send a link that opens this exact frame.
       </div>
-      <div className="landing-pill landing-pill-fill mt:5 h:14 g:2 fs:lg">
-        <IconDownload className="w:5 h:5" stroke={2.2} />
+      <div className="landing-pill landing-pill-fill landing-card-button landing-card-button-lg">
+        <IconDownload className="landing-card-icon" stroke={2.2} />
         Export PNG
       </div>
-      <div className="d:f ai:c g:3 my:4 fs:sm c:hint">
-        <span className="fg:1 h:px bg:line" />
+      <div className="landing-card-or">
+        <span />
         or share a link
-        <span className="fg:1 h:px bg:line" />
+        <span />
       </div>
-      <div className="landing-link p:r d:f ai:c jc:sb g:2 h:12 pl:4 pr:1 fs:sm c:hint">
+      <div className="landing-link">
         <span className="landing-link-url" style={MONO_STYLE}>
           framelime.dev/?t=lime&amp;r=12
         </span>
-        <span className="landing-pill landing-pill-ink fs:0 h:10 px:4">Copy</span>
+        <span className="landing-pill landing-pill-ink landing-link-copy">Copy</span>
         <span className="landing-cursor">
-          <svg viewBox="0 0 46 52" className="d:b w:10">
+          <svg viewBox="0 0 46 52" className="landing-cursor-arrow">
             <path
               d="M6 4l34 18l-15 4l-7 15z"
               fill="#11120e"

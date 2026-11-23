@@ -1,6 +1,6 @@
 import { IconBrandChrome, IconBrandFirefox } from "@tabler/icons-react";
 import Image from "next/image";
-import macbook from "@/assets/landing/macbook-neo.webp";
+import macbook from "@/assets/landing/macbook-air.webp";
 import { LogoMark } from "@/components/logo.tsx";
 import { Burst } from "@/landing/burst.tsx";
 import { SettingsCard, ShareCard } from "@/landing/cards.tsx";
@@ -12,7 +12,7 @@ import "@/landing/landing.css";
 
 export default function LandingPage() {
   return (
-    <div className="landing-sky o:h c:label">
+    <div className="landing-sky landing-screen o:h c:label">
       <StartHotkey />
 
       <div className="px:4 pt:5">
@@ -35,7 +35,7 @@ export default function LandingPage() {
         </header>
       </div>
 
-      <section className="max-w:265 mx:auto px:4 pt:16 @lg:pt:18 ta:c">
+      <section className="landing-hero max-w:265 mx:auto px:4 pt:16 ta:c">
         <h1
           className="landing-title m:0 fs:5xl @sm:fs:6xl @md:fs:7xl @lg:fs:8xl fw:700"
           style={DISPLAY_STYLE}
@@ -44,22 +44,24 @@ export default function LandingPage() {
           <br />
           <span className="landing-zest">showing off.</span>
         </h1>
-        <p className="m:0 mt:7 mx:auto max-w:155 fs:lg @md:fs:xl lh:5 c:hint">
+        <p className="landing-lede m:0 mt:7 mx:auto max-w:155 fs:lg @md:fs:xl lh:5 c:hint">
           Squeeze the most out of your snippets. Pick a theme, tune the frame, and export a crisp
           image or a link that opens the same setup.
         </p>
       </section>
 
-      {/* The laptop, the burst behind it and the cards over it. Below `lg`
-          the cards drop under the laptop and the burst is left out. */}
-      <section className="ct:is max-w:310 mx:auto mt:10 px:4">
+      {/* The laptop, the burst behind it and the cards over it. On a screen
+          big enough to hold the whole page, the stage takes the height left
+          over and everything on it scales together; otherwise the cards drop
+          under the laptop and the burst is left out. */}
+      <section className="landing-stage max-w:310 mx:auto mt:10 px:4">
         <div className="landing-stage-frame">
           <Burst />
           <Image
             src={macbook}
-            alt="Framelime's editor on a MacBook Neo, framing useToggle.ts beside its settings"
+            alt="Framelime's editor on a MacBook Air, framing index.css beside its settings"
             preload
-            sizes="(min-width: 64rem) 900px, 100vw"
+            sizes="(min-width: 64rem) 60vw, 100vw"
             className="landing-device"
           />
           <SettingsCard />
@@ -69,7 +71,7 @@ export default function LandingPage() {
 
       <StickerBelt />
 
-      <footer className="max-w:340 mx:auto px:8 pt:4 pb:8 d:f fw:w ai:c jc:sb g:6">
+      <footer className="landing-footer max-w:340 mx:auto px:8 pt:4 pb:8 d:f fw:w ai:c jc:sb g:6">
         <div className="d:f fw:w ai:c g:3 fs:md c:hint">
           <span>© 2026 Framelime</span>
           <span aria-hidden="true">·</span>

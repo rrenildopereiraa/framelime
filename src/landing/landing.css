@@ -72,7 +72,7 @@
 
 /* ---- The stage ---------------------------------------------------------- */
 
-/* Below `lg`: the laptop, then the two cards side by side, then stacked. */
+/* Scrolling layout: the laptop, then the two cards side by side, then stacked. */
 .landing-stage-frame {
   display: grid;
   gap: 1rem;
@@ -80,6 +80,7 @@
 }
 
 .landing-device {
+  display: block;
   width: 100%;
   max-width: 56rem;
   height: auto;
@@ -101,18 +102,53 @@
 }
 
 /*
- * From `lg`: the stage keeps the design's 1240 by 600 proportions, and
- * everything on it is placed in `cqw`, so it all scales together. Burst
- * behind (0), laptop (1), cards (2), the nearest limes in front (3).
+ * One screen: on a screen wide and tall enough, the page is exactly the
+ * viewport's height and the stage takes what the copy, belt and footer leave.
+ * The frame keeps the design's 1240 by 600 proportions at the largest size
+ * that fits, and everything on it is placed in `cqw`, the cards' type
+ * included, so it all scales together. Burst behind (0), laptop (1),
+ * cards (2), the nearest limes in front (3).
  */
-@media (min-width: 64rem) {
-  .landing-stage-frame {
-    display: block;
-    position: relative;
-    aspect-ratio: 1240 / 600;
+@media (min-width: 64rem) and (min-height: 40rem) {
+  .landing-screen {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
   }
 
-  .landing-device {
+  .landing-screen .landing-hero {
+    padding-top: clamp(0.5rem, 3.5dvh, 4rem);
+  }
+
+  .landing-screen .landing-title {
+    font-size: clamp(3rem, 8dvh, 6.5rem);
+  }
+
+  .landing-screen .landing-lede {
+    max-width: 46rem;
+    margin-top: clamp(0.75rem, 2dvh, 1.75rem);
+    font-size: clamp(1rem, 2.1dvh, 1.25rem);
+  }
+
+  .landing-screen .landing-stage {
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100%;
+    max-width: none;
+    margin-top: clamp(1.5rem, 4.5dvh, 4rem);
+    container-type: size;
+  }
+
+  .landing-screen .landing-stage-frame {
+    display: block;
+    position: relative;
+    width: min(100cqw - 6rem, 206.67cqh);
+    aspect-ratio: 1240 / 600;
+    margin-inline: auto;
+    container-type: inline-size;
+  }
+
+  .landing-screen .landing-device {
     position: absolute;
     z-index: 1;
     left: 13.71cqw;
@@ -121,11 +157,56 @@
     max-width: none;
   }
 
-  .landing-burst {
+  .landing-screen .landing-burst {
     display: block;
     position: absolute;
     inset: 0;
     pointer-events: none;
+  }
+
+  /* The cards' type follows the frame: 16px on the 1240-wide design. */
+  .landing-screen .landing-card {
+    position: absolute;
+    z-index: 2;
+    max-width: none;
+    font-size: clamp(0.5rem, 1.29cqw, 1rem);
+  }
+
+  .landing-screen .landing-card-settings {
+    left: -3.2cqw;
+    top: 10cqw;
+    width: 21em;
+    rotate: -3deg;
+  }
+
+  .landing-screen .landing-card-share {
+    right: -3.2cqw;
+    top: 19cqw;
+    width: 23em;
+    rotate: 3deg;
+  }
+
+  .landing-screen .landing-cursor {
+    display: block;
+  }
+
+  .landing-screen .landing-belt {
+    padding-block: clamp(0.5rem, 2.5dvh, 2rem);
+  }
+
+  .landing-screen .landing-sticker {
+    height: clamp(2.25rem, 5dvh, 3.5rem);
+    padding-inline: clamp(1rem, 2dvh, 1.5rem);
+    font-size: clamp(1rem, 2.3dvh, 1.625rem);
+  }
+
+  .landing-screen .landing-footer {
+    padding-top: 0;
+    padding-bottom: clamp(0.5rem, 2dvh, 2rem);
+  }
+
+  .landing-screen .landing-badge {
+    height: clamp(2.75rem, 5.5dvh, 3.75rem);
   }
 }
 
@@ -185,85 +266,136 @@
 
 /* ---- The cards ---------------------------------------------------------- */
 
+/* In `em`, so one font size scales a whole card. */
 .landing-card {
   box-sizing: border-box;
   width: 100%;
   max-width: 24rem;
-  padding: 1.25rem;
-  border-radius: 1.625rem;
+  padding: 1.25em;
+  border-radius: 1.625em;
+  font-size: 1rem;
+  line-height: 1.4;
   background: light-dark(rgb(255 255 255 / 0.88), rgb(26 27 24 / 0.92));
   box-shadow:
     inset 0 0 0 1px light-dark(#ffffff, #2f302c),
-    0 0 0 6px light-dark(rgb(255 255 255 / 0.45), rgb(255 255 255 / 0.03)),
-    0 30px 50px -24px light-dark(rgb(50 80 0 / 0.4), rgb(0 0 0 / 0.8));
+    0 0 0 0.375em light-dark(rgb(255 255 255 / 0.45), rgb(255 255 255 / 0.03)),
+    0 1.875em 3.125em -1.5em light-dark(rgb(50 80 0 / 0.4), rgb(0 0 0 / 0.8));
 }
 
 .landing-card-share {
-  padding: 1.375rem;
+  padding: 1.375em;
   background: light-dark(rgb(240 248 214 / 0.92), rgb(30 33 22 / 0.94));
 }
 
-@media (min-width: 64rem) {
-  .landing-card {
-    position: absolute;
-    z-index: 2;
-  }
-
-  .landing-card-settings {
-    left: 0;
-    top: 12.1cqw;
-    width: clamp(17.5rem, 28.2cqw, 22rem);
-    rotate: -3deg;
-  }
-
-  .landing-card-share {
-    right: 0;
-    top: 21.8cqw;
-    width: clamp(18.75rem, 30.6cqw, 23.75rem);
-    max-width: none;
-    rotate: 3deg;
-  }
+.landing-card-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
 }
 
-/* With room to spare, the cards hang a little past the stage's edges. */
-@media (min-width: 80rem) {
-  .landing-card-settings {
-    left: -2.5rem;
-  }
-
-  .landing-card-share {
-    right: -2.5rem;
-  }
+.landing-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.landing-toggle {
+.landing-card-label {
+  font-weight: 500;
+}
+
+.landing-card-rule {
+  height: 1px;
+  margin: 1em 0;
+  background: light-dark(#e3e5dc, #262724);
+}
+
+.landing-card-title {
+  font-size: 1.125em;
+  font-weight: 600;
+}
+
+.landing-card-title-lg {
+  font-size: 1.25em;
+}
+
+.landing-card-text {
+  margin-top: 0.25em;
+  font-size: 0.875em;
+  line-height: 1.6;
+  color: light-dark(#63665a, #95978d);
+}
+
+.landing-card-button {
+  height: 3em;
+  margin-top: 1em;
+}
+
+.landing-card-button-lg {
+  gap: 0.5em;
+  height: 3.5em;
+  margin-top: 1.25em;
+  font-size: 1.0625em;
+}
+
+.landing-card-icon {
+  width: 1.25em;
+  height: 1.25em;
+}
+
+.landing-card-or {
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  margin: 1em 0;
+  font-size: 0.875em;
+  color: light-dark(#63665a, #95978d);
+}
+
+.landing-card-or > span {
+  flex-grow: 1;
+  height: 1px;
+  background: light-dark(#e3e5dc, #262724);
+}
+
+/*
+ * The editor's switch at `md` (Yumma UI: a 2.5 by 1.5 track with a 2px
+ * clear border, a 1.25 thumb, rounded corners), in the same colors and shadows.
+ */
+.landing-switch {
   position: relative;
+  display: flex;
+  align-items: center;
   flex-shrink: 0;
-  width: 3.25rem;
-  height: 1.875rem;
-  border-radius: 9999px;
-  background: light-dark(#e3e5dc, #2f302c);
+  box-sizing: border-box;
+  width: 2.5em;
+  height: 1.5em;
+  border: 2px solid transparent;
+  border-radius: 0.375em;
+  background: light-dark(#e3e5dc, #262724);
+  box-shadow: inset 0 1px 2px light-dark(oklch(0 0 0 / 0.05), oklch(0 0 0 / 0.45));
 }
 
-.landing-toggle-on {
+.landing-switch-on {
   background: #d4ff3a;
-  box-shadow: inset 0 0 0 1px #9bc21c;
+  box-shadow:
+    inset 0 1px 0 light-dark(oklch(1 0 0 / 0.14), oklch(1 0 0 / 0.7)),
+    0 1px 0 light-dark(oklch(0.18 0.008 286 / 0.25), oklch(0 0 0 / 0)),
+    0 2px 4px -1px light-dark(oklch(0.18 0.008 286 / 0.2), oklch(0 0 0 / 0.35));
 }
 
-.landing-toggle-thumb {
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 9999px;
-  background: #ffffff;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+.landing-switch-thumb {
+  width: 1.25em;
+  height: 1.25em;
+  border-radius: 0.375em;
+  background: light-dark(#ffffff, #3a3b36);
+  box-shadow:
+    inset 0 1px 0 light-dark(oklch(1 0 0), oklch(1 0 0 / 0.11)),
+    0 1px 0 light-dark(oklch(0.18 0.008 286 / 0.1), oklch(0 0 0 / 0.45)),
+    0 2px 4px -1px light-dark(oklch(0.18 0.008 286 / 0.08), oklch(0 0 0 / 0.4));
 }
 
-.landing-toggle-on .landing-toggle-thumb {
-  left: auto;
-  right: 3px;
+.landing-switch-on .landing-switch-thumb {
+  translate: 1em 0;
 }
 
 .landing-pill {
@@ -290,7 +422,16 @@
 }
 
 .landing-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5em;
+  height: 3em;
+  padding: 0 0.25em 0 1em;
   border-radius: 9999px;
+  font-size: 0.875em;
+  color: light-dark(#63665a, #95978d);
   background: light-dark(#ffffff, #121311);
 }
 
@@ -302,28 +443,33 @@
   white-space: nowrap;
 }
 
-/* The pointer that just clicked Copy, from `lg` up where there is room for it. */
+.landing-link-copy {
+  flex-shrink: 0;
+  height: 2.5em;
+  padding: 0 1em;
+}
+
+/* The pointer that just clicked Copy, only where there is room for it. */
 .landing-cursor {
   display: none;
   position: absolute;
-  right: -0.75rem;
-  bottom: -2.875rem;
+  right: -0.75em;
+  bottom: -3.25em;
   rotate: -6deg;
   filter: drop-shadow(0 10px 12px rgb(40 60 0 / 0.3));
 }
 
-@media (min-width: 64rem) {
-  .landing-cursor {
-    display: block;
-  }
+.landing-cursor-arrow {
+  display: block;
+  width: 2.75em;
 }
 
 .landing-cursor-label {
   position: absolute;
-  left: 1.875rem;
-  top: 2.125rem;
-  padding: 0.375rem 0.75rem;
-  font-size: 0.8125rem;
+  left: 2.125em;
+  top: 2.375em;
+  padding: 0.375em 0.75em;
+  font-size: 0.9375em;
   box-shadow: 0 0 0 3px #ffffff;
 }
 
@@ -335,38 +481,36 @@
   }
 }
 
-@keyframes landing-drift-back {
-  from {
-    transform: translateX(-50%);
-  }
-}
-
 .landing-belt {
   mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
 }
 
 .landing-belt-track {
-  animation: landing-drift 60s linear infinite;
-}
-
-.landing-belt-track-back {
-  animation: landing-drift-back 70s linear infinite;
+  animation: landing-drift 90s linear infinite;
 }
 
 .landing-sticker {
   display: inline-flex;
   align-items: center;
-  height: 3.5rem;
-  padding: 0 1.5rem;
+  height: 3rem;
+  padding: 0 1.25rem;
   border-radius: 9999px;
   white-space: nowrap;
-  font-size: 1.625rem;
+  font-size: 1.375rem;
   font-weight: 600;
   background: light-dark(#ffffff, #1a1b18);
   color: light-dark(#11120e, #eeefe9);
   box-shadow:
     0 0 0 4px light-dark(rgb(255 255 255 / 0.55), rgb(255 255 255 / 0.04)),
     0 14px 24px -14px light-dark(rgb(50 80 0 / 0.45), rgb(0 0 0 / 0.8));
+}
+
+@media (min-width: 40rem) {
+  .landing-sticker {
+    height: 3.5rem;
+    padding: 0 1.5rem;
+    font-size: 1.625rem;
+  }
 }
 
 .landing-sticker-fill {
@@ -379,12 +523,9 @@
   color: light-dark(#d4ff3a, #0b0b0a);
 }
 
-.landing-dot {
-  flex-shrink: 0;
-  width: 0.625rem;
-  height: 0.625rem;
-  border-radius: 9999px;
-  background: light-dark(#65a30d, #d4ff3a);
+.landing-star {
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 /* ---- Browser badges ----------------------------------------------------- */
@@ -433,8 +574,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landing-belt-track,
-  .landing-belt-track-back {
+  .landing-belt-track {
     animation: none;
   }
 }
