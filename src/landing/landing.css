@@ -1,72 +1,547 @@
-/* The landing page's moving parts: what Yumma CSS has no utility for. */
-
 /*
- * A track holds its content `--landing-copies` times over and slides exactly
- * one copy, so the frame the loop restarts on is the frame it ended on. Every
- * item carries its own trailing space (no `gap`), so each copy is the same width.
+ * The landing page's look: what Yumma CSS has no utility for. Gradients,
+ * glass, the burst's layering and the belt's motion. Colors follow the
+ * page's scheme through `light-dark()`.
  */
-@keyframes landing-drift {
-  to {
-    transform: translateX(calc(-100% / var(--landing-copies, 2)));
-  }
-}
 
-@keyframes landing-drift-back {
-  from {
-    transform: translateX(calc(-100% / var(--landing-copies, 2)));
-  }
-}
-
-/* The hero's backdrop: rows of small frames on a tilted plane. */
-.landing-stage {
-  perspective: 1600px;
-}
-
-.landing-plane {
-  inset: -30% -40%;
-  transform: rotateX(56deg) rotateZ(-30deg);
-}
-
-.landing-row {
-  animation: landing-drift var(--landing-speed, 60s) linear infinite;
-}
-
-/* Clears the middle for the heading and fades the frames out at the top and bottom. */
-.landing-vignette {
+/* The sky: lime at the top, fading to the page, with soft clouds below the stage. */
+.landing-sky {
+  min-height: 100dvh;
   background:
     radial-gradient(
-      ellipse 50% 46% at 50% 52%,
-      light-dark(#fafaf7, #0b0b0a) 30%,
-      light-dark(rgb(250 250 247 / 0.85), rgb(11 11 10 / 0.85)) 60%,
-      transparent 100%
+      ellipse 60% 22% at 12% 66%,
+      light-dark(#ffffff, transparent) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 50% 20% at 90% 64%,
+      light-dark(#ffffff, transparent) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 70% 40% at 50% 0%,
+      light-dark(transparent, rgb(212 255 58 / 0.2)) 0%,
+      transparent 70%
     ),
     linear-gradient(
       to bottom,
-      light-dark(#fafaf7, #0b0b0a) 0%,
-      transparent 16%,
-      transparent 64%,
-      light-dark(#fafaf7, #0b0b0a) 94%
+      light-dark(#e4f5b5, #0b0b0a) 0%,
+      light-dark(#eef8d2, #0b0b0a) 28%,
+      light-dark(#f7fbe9, #0b0b0a) 52%,
+      light-dark(#fcfdf6, #0b0b0a) 72%
     );
 }
 
-/* The two tapes, tilted together, running opposite ways. */
-.landing-tapes {
-  inset-inline: -10%;
-  transform: rotate(-5deg);
+.landing-glass {
+  background: light-dark(rgb(255 255 255 / 0.62), rgb(26 27 24 / 0.72));
+  box-shadow:
+    inset 0 0 0 1px light-dark(rgb(255 255 255 / 0.9), #262724),
+    0 8px 24px -12px light-dark(rgb(60 90 0 / 0.25), rgb(0 0 0 / 0.6));
 }
 
-.landing-tape-track {
-  animation: landing-drift 42s linear infinite;
+.landing-logo-well {
+  background: light-dark(linear-gradient(160deg, #ffffff, #eef6d8), #1a1b18);
+  box-shadow:
+    0 2px 6px light-dark(rgb(60 90 0 / 0.18), rgb(0 0 0 / 0.4)),
+    inset 0 1px 0 light-dark(#ffffff, rgb(255 255 255 / 0.08));
 }
 
-.landing-tape-track-back {
-  animation: landing-drift-back 48s linear infinite;
+/* Ink: the dark pill on a light page, a light one on a dark page. */
+.landing-ink {
+  background: light-dark(#11120e, #eeefe9);
+  color: light-dark(#ffffff, #0b0b0a);
+  box-shadow:
+    inset 0 1px 0 light-dark(rgb(255 255 255 / 0.18), rgb(255 255 255 / 0.6)),
+    0 4px 10px -4px rgb(0 0 0 / 0.4);
+}
+
+.landing-title {
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+}
+
+/* The headline's second line: lime, deeper on white, brighter on black. */
+.landing-zest {
+  background: light-dark(
+    linear-gradient(to bottom, #8cc63f, #4d7c0f),
+    linear-gradient(to bottom, #f0ffa8, #d4ff3a 45%, #9bc21c)
+  );
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---- The stage ---------------------------------------------------------- */
+
+/* Scrolling layout: the laptop, then the two cards side by side, then stacked. */
+.landing-stage-frame {
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+}
+
+.landing-device {
+  display: block;
+  width: 100%;
+  max-width: 56rem;
+  height: auto;
+}
+
+.landing-burst {
+  display: none;
+}
+
+@media (min-width: 40rem) {
+  .landing-stage-frame {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+
+  .landing-device {
+    grid-column: 1 / -1;
+  }
+}
+
+/*
+ * One screen: on a screen wide and tall enough, the page is exactly the
+ * viewport's height and the stage takes what the copy, belt and footer leave.
+ * The frame keeps the design's 1240 by 600 proportions at the largest size
+ * that fits, and everything on it is placed in `cqw`, the cards' type
+ * included, so it all scales together. Burst behind (0), laptop (1),
+ * cards (2), the nearest limes in front (3).
+ */
+@media (min-width: 64rem) and (min-height: 40rem) {
+  .landing-screen {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+  }
+
+  .landing-screen .landing-hero {
+    padding-top: clamp(0.5rem, 3.5dvh, 4rem);
+  }
+
+  .landing-screen .landing-title {
+    font-size: clamp(3rem, 8dvh, 6.5rem);
+  }
+
+  .landing-screen .landing-lede {
+    max-width: 46rem;
+    margin-top: clamp(0.75rem, 2dvh, 1.75rem);
+    font-size: clamp(1rem, 2.1dvh, 1.25rem);
+  }
+
+  .landing-screen .landing-stage {
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100%;
+    max-width: none;
+    margin-top: clamp(1.5rem, 4.5dvh, 4rem);
+    container-type: size;
+  }
+
+  .landing-screen .landing-stage-frame {
+    display: block;
+    position: relative;
+    width: min(100cqw - 6rem, 206.67cqh);
+    aspect-ratio: 1240 / 600;
+    margin-inline: auto;
+    container-type: inline-size;
+  }
+
+  .landing-screen .landing-device {
+    position: absolute;
+    z-index: 1;
+    left: 13.71cqw;
+    top: 1.613cqw;
+    width: 72.58cqw;
+    max-width: none;
+  }
+
+  .landing-screen .landing-burst {
+    display: block;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  /* The cards' type follows the frame: 16px on the 1240-wide design. */
+  .landing-screen .landing-card {
+    position: absolute;
+    z-index: 2;
+    max-width: none;
+    font-size: clamp(0.5rem, 1.29cqw, 1rem);
+  }
+
+  .landing-screen .landing-card-settings {
+    left: -3.2cqw;
+    top: 10cqw;
+    width: 21em;
+    rotate: -3deg;
+  }
+
+  .landing-screen .landing-card-share {
+    right: -3.2cqw;
+    top: 19cqw;
+    width: 23em;
+    rotate: 3deg;
+  }
+
+  .landing-screen .landing-cursor {
+    display: block;
+  }
+
+  .landing-screen .landing-belt {
+    padding-block: clamp(0.5rem, 2.5dvh, 2rem);
+  }
+
+  .landing-screen .landing-sticker {
+    height: clamp(2.25rem, 5dvh, 3.5rem);
+    padding-inline: clamp(1rem, 2dvh, 1.5rem);
+    font-size: clamp(1rem, 2.3dvh, 1.625rem);
+  }
+
+  .landing-screen .landing-footer {
+    padding-top: 0;
+    padding-bottom: clamp(0.5rem, 2dvh, 2rem);
+  }
+}
+
+.landing-glow,
+.landing-trail,
+.landing-lime,
+.landing-drop {
+  position: absolute;
+  z-index: 0;
+}
+
+.landing-front > * {
+  z-index: 3;
+}
+
+/* Starburst rays behind the laptop, fading out from its middle. */
+.landing-glow {
+  background:
+    radial-gradient(
+      closest-side,
+      rgb(212 255 58 / 0.75),
+      rgb(212 255 58 / 0.25) 45%,
+      rgb(212 255 58 / 0) 100%
+    ),
+    repeating-conic-gradient(
+      from 4deg,
+      rgb(190 235 40 / 0.32) 0deg 7deg,
+      rgb(190 235 40 / 0) 7deg 19deg
+    );
+  mask-image: radial-gradient(closest-side, #000 25%, transparent 100%);
+}
+
+.landing-trail {
+  border-radius: 9999px;
+  transform-origin: 0 50%;
+  background: linear-gradient(to right, rgb(120 180 20), rgb(120 180 20 / 0));
+}
+
+.landing-lime {
+  height: auto;
+  filter: drop-shadow(0 20px 22px rgb(60 90 0 / 0.32));
+}
+
+.landing-lime-near {
+  filter: drop-shadow(0 20px 22px rgb(60 90 0 / 0.32)) blur(1.2px);
+}
+
+.landing-sticker-edge {
+  fill: light-dark(#ffffff, #262724);
+}
+
+.landing-drop {
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: radial-gradient(circle at 35% 30%, #f4ffb8, #9bd12a 70%);
+  box-shadow: 0 4px 8px -2px rgb(60 90 0 / 0.35);
+}
+
+/* ---- The cards ---------------------------------------------------------- */
+
+/* In `em`, so one font size scales a whole card. */
+.landing-card {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 24rem;
+  padding: 1.25em;
+  border-radius: 1.625em;
+  font-size: 1rem;
+  line-height: 1.4;
+  background: light-dark(rgb(255 255 255 / 0.88), rgb(26 27 24 / 0.92));
+  box-shadow:
+    inset 0 0 0 1px light-dark(#ffffff, #2f302c),
+    0 0 0 0.375em light-dark(rgb(255 255 255 / 0.45), rgb(255 255 255 / 0.03)),
+    0 1.875em 3.125em -1.5em light-dark(rgb(50 80 0 / 0.4), rgb(0 0 0 / 0.8));
+}
+
+.landing-card-share {
+  padding: 1.375em;
+  background: light-dark(rgb(240 248 214 / 0.92), rgb(30 33 22 / 0.94));
+}
+
+.landing-card-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+}
+
+.landing-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.landing-card-label {
+  font-weight: 500;
+}
+
+.landing-card-rule {
+  height: 1px;
+  margin: 1em 0;
+  background: light-dark(#e3e5dc, #262724);
+}
+
+.landing-card-title {
+  font-size: 1.125em;
+  font-weight: 600;
+}
+
+.landing-card-title-lg {
+  font-size: 1.25em;
+}
+
+.landing-card-text {
+  margin-top: 0.25em;
+  font-size: 0.875em;
+  line-height: 1.6;
+  color: light-dark(#63665a, #95978d);
+}
+
+.landing-card-button {
+  height: 3em;
+  margin-top: 1em;
+}
+
+.landing-card-button-lg {
+  gap: 0.5em;
+  height: 3.5em;
+  margin-top: 1.25em;
+  font-size: 1.0625em;
+}
+
+.landing-card-icon {
+  width: 1.25em;
+  height: 1.25em;
+}
+
+.landing-card-or {
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  margin: 1em 0;
+  font-size: 0.875em;
+  color: light-dark(#63665a, #95978d);
+}
+
+.landing-card-or > span {
+  flex-grow: 1;
+  height: 1px;
+  background: light-dark(#e3e5dc, #262724);
+}
+
+/*
+ * The editor's switch at `md` (Yumma UI: a 2.5 by 1.5 track with a 2px
+ * clear border, a 1.25 thumb, rounded corners), in the same colors and shadows.
+ */
+.landing-switch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 2.5em;
+  height: 1.5em;
+  border: 2px solid transparent;
+  border-radius: 0.375em;
+  background: light-dark(#e3e5dc, #262724);
+  box-shadow: inset 0 1px 2px light-dark(oklch(0 0 0 / 0.05), oklch(0 0 0 / 0.45));
+}
+
+.landing-switch-on {
+  background: #d4ff3a;
+  box-shadow:
+    inset 0 1px 0 light-dark(oklch(1 0 0 / 0.14), oklch(1 0 0 / 0.7)),
+    0 1px 0 light-dark(oklch(0.18 0.008 286 / 0.25), oklch(0 0 0 / 0)),
+    0 2px 4px -1px light-dark(oklch(0.18 0.008 286 / 0.2), oklch(0 0 0 / 0.35));
+}
+
+.landing-switch-thumb {
+  width: 1.25em;
+  height: 1.25em;
+  border-radius: 0.375em;
+  background: light-dark(#ffffff, #3a3b36);
+  box-shadow:
+    inset 0 1px 0 light-dark(oklch(1 0 0), oklch(1 0 0 / 0.11)),
+    0 1px 0 light-dark(oklch(0.18 0.008 286 / 0.1), oklch(0 0 0 / 0.45)),
+    0 2px 4px -1px light-dark(oklch(0.18 0.008 286 / 0.08), oklch(0 0 0 / 0.4));
+}
+
+.landing-switch-on .landing-switch-thumb {
+  translate: 1em 0;
+}
+
+.landing-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* The Export button's lime, with Yumma UI's keycap edge. */
+.landing-pill-fill {
+  background: linear-gradient(to bottom, #d4ff3a, #b6e51f);
+  color: #0b0b0a;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.7),
+    inset 0 -3px 0 #8fb515;
+}
+
+.landing-pill-ink {
+  background: #11120e;
+  color: #d4ff3a;
+}
+
+.landing-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5em;
+  height: 3em;
+  padding: 0 0.25em 0 1em;
+  border-radius: 9999px;
+  font-size: 0.875em;
+  color: light-dark(#63665a, #95978d);
+  background: light-dark(#ffffff, #121311);
+}
+
+/* The share link stays on one line, trimmed when the card is narrow. */
+.landing-link-url {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.landing-link-copy {
+  flex-shrink: 0;
+  height: 2.5em;
+  padding: 0 1em;
+}
+
+/* The pointer that just clicked Copy, only where there is room for it. */
+.landing-cursor {
+  display: none;
+  position: absolute;
+  right: -0.75em;
+  bottom: -3.25em;
+  rotate: -6deg;
+  filter: drop-shadow(0 10px 12px rgb(40 60 0 / 0.3));
+}
+
+.landing-cursor-arrow {
+  display: block;
+  width: 2.75em;
+}
+
+.landing-cursor-label {
+  position: absolute;
+  left: 2.125em;
+  top: 2.375em;
+  padding: 0.375em 0.75em;
+  font-size: 0.9375em;
+  box-shadow: 0 0 0 3px #ffffff;
+}
+
+/* ---- The sticker belt --------------------------------------------------- */
+
+@keyframes landing-drift {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.landing-belt {
+  mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+}
+
+.landing-belt-track {
+  animation: landing-drift 90s linear infinite;
+}
+
+.landing-sticker {
+  display: inline-flex;
+  align-items: center;
+  height: 3rem;
+  padding: 0 1.25rem;
+  border-radius: 9999px;
+  white-space: nowrap;
+  font-size: 1.375rem;
+  font-weight: 600;
+  background: light-dark(#ffffff, #1a1b18);
+  color: light-dark(#11120e, #eeefe9);
+  box-shadow:
+    0 0 0 4px light-dark(rgb(255 255 255 / 0.55), rgb(255 255 255 / 0.04)),
+    0 14px 24px -14px light-dark(rgb(50 80 0 / 0.45), rgb(0 0 0 / 0.8));
+}
+
+@media (min-width: 40rem) {
+  .landing-sticker {
+    height: 3.5rem;
+    padding: 0 1.5rem;
+    font-size: 1.625rem;
+  }
+}
+
+.landing-sticker-fill {
+  background: #d4ff3a;
+  color: #0b0b0a;
+}
+
+.landing-sticker-ink {
+  background: light-dark(#11120e, #eeefe9);
+  color: light-dark(#d4ff3a, #0b0b0a);
+}
+
+.landing-star {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* ---- Footer ------------------------------------------------------------- */
+
+/* A small lime tag beside Firefox, until it ships. */
+.landing-soon {
+  margin-left: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  background: #d4ff3a;
+  color: #0b0b0a;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  vertical-align: 0.125rem;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landing-row,
-  .landing-tape-track,
-  .landing-tape-track-back {
+  .landing-belt-track {
     animation: none;
   }
 }
