@@ -79,7 +79,7 @@ export default function LandingPage() {
           GitHub
         </a>
         <span aria-hidden="true">·</span>
-        <a href="/editor" className="td:none c:hint h:c:label tp:c tdu:150">
+        <a href="/chrome" className="td:none c:hint h:c:label tp:c tdu:150">
           Chrome
         </a>
         <span aria-hidden="true">·</span>
