@@ -60,7 +60,6 @@ export const settingsParsers = {
   win: parseAsStringEnum<WindowStyle>(["none", "frame", "browser", "terminal"]).withDefault(
     "frame",
   ),
-  tabs: parseAsBoolean.withDefault(false),
   deco: parseAsBoolean.withDefault(false),
   // Empty follows the frame's text color.
   decoColor: parseAsString.withDefault(""),

@@ -44,6 +44,8 @@ export function Canvas({
   tabs,
   activeTabId,
   onSelectTab,
+  onCloseTab,
+  onAddTab,
   decorators,
 }: {
   code: string;
@@ -73,9 +75,11 @@ export function Canvas({
   showLineNumbers: boolean;
   labelPosition: LabelPosition;
   windowStyle: WindowStyle;
-  tabs: FrameTab[] | null;
+  tabs: FrameTab[];
   activeTabId: string;
   onSelectTab: (id: string) => void;
+  onCloseTab: (id: string) => void;
+  onAddTab?: () => void;
   decorators: Decorators | null;
 }) {
   const viewportRef = useRef<HTMLElement>(null);
@@ -114,6 +118,8 @@ export function Canvas({
           tabs={tabs}
           activeTabId={activeTabId}
           onSelectTab={onSelectTab}
+          onCloseTab={onCloseTab}
+          onAddTab={onAddTab}
           decorators={decorators}
         />
 

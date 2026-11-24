@@ -178,8 +178,6 @@ interface InspectorContentProps {
   onLabelPositionChange: (value: LabelPosition) => void;
   windowStyle: WindowStyle;
   onWindowStyleChange: (value: WindowStyle) => void;
-  showFrameTabs: boolean;
-  onShowFrameTabsChange: (value: boolean) => void;
   showDecorators: boolean;
   onShowDecoratorsChange: (value: boolean) => void;
   decoratorColor: string;
@@ -222,8 +220,6 @@ function InspectorContent({
   onLabelPositionChange,
   windowStyle,
   onWindowStyleChange,
-  showFrameTabs,
-  onShowFrameTabsChange,
   showDecorators,
   onShowDecoratorsChange,
   decoratorColor,
@@ -267,12 +263,6 @@ function InspectorContent({
           checked={showTabBar}
           onCheckedChange={onShowTabBarChange}
           disabled={windowStyle !== "frame"}
-        />
-        <OptionSwitch
-          label="Snippets as tabs"
-          checked={showFrameTabs}
-          onCheckedChange={onShowFrameTabsChange}
-          disabled={windowStyle === "none" || windowStyle === "terminal"}
         />
         <OptionSwitch
           label="Bounding box"

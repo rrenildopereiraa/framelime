@@ -5,6 +5,7 @@ import { modLabel } from "./platform";
 import {
   ASPECT_RATIOS,
   type AspectRatio,
+  type EditorDocument,
   FONT_SIZE_DEFAULT,
   FONT_SIZE_MAX,
   FONT_SIZE_MIN,
@@ -33,8 +34,9 @@ export function buildCommands({
   onShowLineNumbersChange,
   onLabelPositionChange,
   onWindowStyleChange,
-  showFrameTabs,
-  onShowFrameTabsChange,
+  documents,
+  activeId,
+  onSelectDocument,
   showDecorators,
   onShowDecoratorsChange,
   padding,
@@ -65,8 +67,9 @@ export function buildCommands({
   onShowLineNumbersChange: (value: boolean) => void;
   onLabelPositionChange: (value: LabelPosition) => void;
   onWindowStyleChange: (value: WindowStyle) => void;
-  showFrameTabs: boolean;
-  onShowFrameTabsChange: (value: boolean) => void;
+  documents: EditorDocument[];
+  activeId: string;
+  onSelectDocument: (id: string) => void;
   showDecorators: boolean;
   onShowDecoratorsChange: (value: boolean) => void;
   padding: number;
@@ -171,11 +174,15 @@ export function buildCommands({
       label: `${showLineNumbers ? "Hide" : "Show"} line numbers`,
       run: () => onShowLineNumbersChange(!showLineNumbers),
     },
-    {
-      id: "toggle-frame-tabs",
-      label: `${showFrameTabs ? "Hide" : "Show"} snippets as tabs in the frame`,
-      run: () => onShowFrameTabsChange(!showFrameTabs),
-    },
+    // Reaches every snippet when the frame shows no tabs: the terminal and
+    // bare styles, or a hidden tab bar.
+    ...documents
+      .filter((doc) => doc.id !== activeId)
+      .map((doc): Command => ({
+        id: `switch-snippet-${doc.id}`,
+        label: `Switch to snippet: ${doc.fileName || "Untitled"}`,
+        run: () => onSelectDocument(doc.id),
+      })),
     {
       id: "toggle-decorators",
       label: `${showDecorators ? "Hide" : "Show"} hash lines`,
