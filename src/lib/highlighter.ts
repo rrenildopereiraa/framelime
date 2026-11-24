@@ -22,6 +22,12 @@ import limeDark from "../themes/lime-dark-theme.json";
 import limeLight from "../themes/lime-light-theme.json";
 import monochrome from "../themes/monochrome-theme.json";
 import type { ResolvedMode } from "./chrome-theme";
+import {
+  CATALOG_LOADERS,
+  CATALOG_THEMES,
+  THEME_CATALOG,
+  type PreviewColors,
+} from "./theme-catalog";
 
 export const LANGUAGES = {
   html: "HTML",
@@ -62,7 +68,8 @@ export const THEMES = {
   Default: "Default",
   [eclipsa.name]: eclipsa.name,
   [amber.name]: amber.name,
-} as const;
+  ...Object.fromEntries(CATALOG_THEMES.map((theme) => [theme.id, theme.id])),
+} as Record<string, string>;
 
 export type ThemeId = keyof typeof THEMES;
 
@@ -85,7 +92,25 @@ export function resolveShikiTheme(themeName: string, mode: ResolvedMode): string
   const name = normalizeThemeName(themeName);
   if (name === "Lime") return mode === "dark" ? limeDark.name : limeLight.name;
   if (name === "Default") return mode === "dark" ? monochrome.name : defaultTheme.name;
+  const catalogTheme = CATALOG_THEMES.find((theme) => theme.id === name);
+  if (catalogTheme) {
+    return mode === "light" && "light" in catalogTheme ? catalogTheme.light : catalogTheme.dark;
+  }
   return name;
+}
+
+/**
+ * What the picker draws for a theme under a scheme: its frame color and the
+ * colors of a few tokens. Undefined for an uploaded theme.
+ */
+export function themePreview(
+  themeName: string,
+  mode: ResolvedMode,
+): { background: string; colors: PreviewColors } | undefined {
+  const entry = THEME_CATALOG[resolveShikiTheme(themeName, mode)];
+  const frame = themeFrameColors(themeName, mode);
+  if (!entry || !frame) return undefined;
+  return { background: frame.page, colors: entry.preview };
 }
 
 export function readThemeFrameColors(theme: {
@@ -99,9 +124,29 @@ export function readThemeFrameColors(theme: {
   return {
     page: getColor(c, "editor.background") ?? f.page ?? "#0b0b0a",
     surface: getColor(c, "sideBar.background") ?? f.surface ?? "#121311",
-    border: getColor(c, "editorGroupHeader.border") ?? f.border ?? "#232421",
+    border:
+      firstColor(
+        c,
+        "editorGroupHeader.border",
+        "sideBar.border",
+        "tab.border",
+        "editorGroup.border",
+        "panel.border",
+        "editorWidget.border",
+      ) ??
+      f.border ??
+      "#232421",
     accentDim: getColor(c, "editor.foreground") ?? f.accentDim ?? "#95978d",
-    tabBar: getColor(c, "tab.inactiveBackground") ?? f.tabBar ?? "#0b0b0a",
+    tabBar:
+      firstColor(
+        c,
+        "tab.inactiveBackground",
+        "editorGroupHeader.tabsBackground",
+        "sideBar.background",
+        "editor.background",
+      ) ??
+      f.tabBar ??
+      "#0b0b0a",
     tabActive: getColor(c, "tab.activeBackground") ?? f.tabActive ?? "#121311",
     statusBarBg: getColor(c, "statusBar.background") ?? f.statusBarBg ?? "#1a1b18",
     statusBarText: getColor(c, "statusBar.foreground") ?? f.statusBarText ?? "#d4ff3a",
@@ -124,9 +169,21 @@ export function readThemeFrameColors(theme: {
   };
 }
 
+// A theme color, with short hex (#fff, #fff8) spelled out. Fully
+// transparent colors count as unset, as themes use them to hide a part.
 function getColor(colors: Record<string, string | null>, key: string): string | undefined {
   const value = colors[key];
-  if (value != null && value !== "#00000000" && value.length >= 7) return value;
+  if (value == null || !/^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(value)) return undefined;
+  const hex = value.length <= 5 ? value.replace(/[0-9a-f]/gi, (digit) => digit + digit) : value;
+  if (hex.length === 9 && hex.slice(7) === "00") return undefined;
+  return hex;
+}
+
+function firstColor(colors: Record<string, string | null>, ...keys: string[]): string | undefined {
+  for (const key of keys) {
+    const value = getColor(colors, key);
+    if (value) return value;
+  }
   return undefined;
 }
 
@@ -179,6 +236,15 @@ export const THEME_FRAME_COLORS: Record<string, Record<ResolvedMode, FrameColors
     );
     return { light: colors, dark: colors };
   })(),
+  ...Object.fromEntries(
+    CATALOG_THEMES.map((theme) => [
+      theme.id,
+      {
+        light: THEME_CATALOG[resolveShikiTheme(theme.id, "light")].frame,
+        dark: THEME_CATALOG[theme.dark].frame,
+      },
+    ]),
+  ),
 };
 
 // Default frame colors for a (possibly adaptive) theme under a scheme.
@@ -240,6 +306,23 @@ export function getHighlighter(): Promise<HighlighterCore> {
     });
   }
   return highlighterPromise;
+}
+
+/**
+ * The highlighter, with the Shiki theme for a theme under a scheme loaded.
+ * The catalog's themes are fetched the first time they're needed.
+ */
+export async function getHighlighterWithTheme(
+  themeName: string,
+  mode: ResolvedMode,
+): Promise<{ highlighter: HighlighterCore; theme: string }> {
+  const highlighter = await getHighlighter();
+  const theme = resolveShikiTheme(themeName, mode);
+  const load = CATALOG_LOADERS[theme];
+  if (load && !highlighter.getLoadedThemes().includes(theme)) {
+    await highlighter.loadTheme((await load()).default);
+  }
+  return { highlighter, theme };
 }
 
 // VS Code theme files are JSONC - strip // and /* */ comments (outside
