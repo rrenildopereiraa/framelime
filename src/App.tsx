@@ -38,7 +38,6 @@ import {
   PADDING_MAX,
   PADDING_MIN,
   PADDING_STEP,
-  WINDOW_STYLES,
 } from "./lib/types";
 import { settingsParsers } from "./lib/url-state";
 
@@ -217,7 +216,7 @@ function App() {
   const fontSize = clamp(settings.size, FONT_SIZE_MIN, FONT_SIZE_MAX);
   const decoOpacity = clamp(settings.decoOpacity, 0, 100);
   const decoGap = clamp(settings.decoGap, DECOR_SPACING_MIN, DECOR_SPACING_MAX);
-  const decoColor = settings.decoColor || settings.colors.accentDim;
+  const decoColor = settings.decoColor || settings.colors.border;
 
   const radii: CornerRadii = {
     tl: settings.rtl,
@@ -432,7 +431,6 @@ function App() {
 
     recordChange(null);
     writeSettings({
-      win: WINDOW_STYLES[Math.floor(Math.random() * WINDOW_STYLES.length)].id,
       tabBar: randomBool(),
       lines: randomBool(),
       label: LABEL_POSITIONS[Math.floor(Math.random() * LABEL_POSITIONS.length)].id,
@@ -569,7 +567,6 @@ function App() {
     showLineNumbers: settings.lines,
     onShowLineNumbersChange: (value) => setSettings({ lines: value }),
     onLabelPositionChange: (value) => setSettings({ label: value }),
-    onWindowStyleChange: (value) => setSettings({ win: value }),
     documents,
     activeId,
     onSelectDocument: selectDocument,
@@ -646,7 +643,6 @@ function App() {
             fontSize={fontSize}
             showLineNumbers={settings.lines}
             labelPosition={settings.label}
-            windowStyle={settings.win}
             tabs={documents.map(({ id, fileName }) => ({ id, fileName }))}
             activeTabId={activeId}
             onSelectTab={selectDocument}
@@ -671,8 +667,6 @@ function App() {
             onShowLineNumbersChange={(value) => setSettings({ lines: value })}
             labelPosition={settings.label}
             onLabelPositionChange={(value) => setSettings({ label: value })}
-            windowStyle={settings.win}
-            onWindowStyleChange={(value) => setSettings({ win: value })}
             showDecorators={settings.deco}
             onShowDecoratorsChange={(value) => setSettings({ deco: value })}
             decoratorColor={decoColor}

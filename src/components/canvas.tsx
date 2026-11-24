@@ -7,7 +7,6 @@ import type {
   HighlightedLine,
   HighlightedWord,
   LabelPosition,
-  WindowStyle,
 } from "../lib/types";
 import { BoundingBox } from "./bounding-box";
 import { type Decorators, Frame, type FrameColors } from "./frame";
@@ -40,7 +39,6 @@ export function Canvas({
   fontSize,
   showLineNumbers,
   labelPosition,
-  windowStyle,
   tabs,
   activeTabId,
   onSelectTab,
@@ -74,7 +72,6 @@ export function Canvas({
   fontSize: number;
   showLineNumbers: boolean;
   labelPosition: LabelPosition;
-  windowStyle: WindowStyle;
   tabs: FrameTab[];
   activeTabId: string;
   onSelectTab: (id: string) => void;
@@ -114,7 +111,6 @@ export function Canvas({
           fontSize={fontSize}
           showLineNumbers={showLineNumbers}
           labelPosition={labelPosition}
-          windowStyle={windowStyle}
           tabs={tabs}
           activeTabId={activeTabId}
           onSelectTab={onSelectTab}

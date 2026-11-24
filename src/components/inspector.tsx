@@ -21,8 +21,6 @@ import {
   PADDING_MAX,
   PADDING_MIN,
   PADDING_STEP,
-  WINDOW_STYLES,
-  type WindowStyle,
 } from "../lib/types";
 import { BottomSheet, SubSheet } from "./bottom-sheet";
 import { ColorInput } from "./color-input";
@@ -99,6 +97,14 @@ function SettingsTabs({
   );
 }
 
+// Values for a slider's marks, which the slider spreads evenly from start to
+// end: `parts` equal steps from min to max.
+function evenMarks(min: number, max: number, parts: number) {
+  return Array.from({ length: parts + 1 }, (_, i) =>
+    String(Math.round(min + ((max - min) * i) / parts)),
+  );
+}
+
 function SliderField({
   label,
   value,
@@ -107,6 +113,7 @@ function SliderField({
   max,
   step,
   unit = "px",
+  marks,
 }: {
   label: string;
   value: number;
@@ -115,6 +122,7 @@ function SliderField({
   max: number;
   step: number;
   unit?: string;
+  marks?: string[];
 }) {
   return (
     <div className="pb:4">
@@ -126,6 +134,7 @@ function SliderField({
         max={max}
         step={step}
         unit={unit}
+        marks={marks}
         className="w:100%"
       />
     </div>
@@ -176,8 +185,6 @@ interface InspectorContentProps {
   onShowLineNumbersChange: (value: boolean) => void;
   labelPosition: LabelPosition;
   onLabelPositionChange: (value: LabelPosition) => void;
-  windowStyle: WindowStyle;
-  onWindowStyleChange: (value: WindowStyle) => void;
   showDecorators: boolean;
   onShowDecoratorsChange: (value: boolean) => void;
   decoratorColor: string;
@@ -218,8 +225,6 @@ function InspectorContent({
   onShowLineNumbersChange,
   labelPosition,
   onLabelPositionChange,
-  windowStyle,
-  onWindowStyleChange,
   showDecorators,
   onShowDecoratorsChange,
   decoratorColor,
@@ -252,18 +257,7 @@ function InspectorContent({
   if (tab === "layout") {
     return (
       <>
-        <PickerField
-          label="Window style"
-          value={windowStyle}
-          options={WINDOW_STYLES}
-          onValueChange={onWindowStyleChange}
-        />
-        <OptionSwitch
-          label="Tab bar"
-          checked={showTabBar}
-          onCheckedChange={onShowTabBarChange}
-          disabled={windowStyle !== "frame"}
-        />
+        <OptionSwitch label="Tab bar" checked={showTabBar} onCheckedChange={onShowTabBarChange} />
         <OptionSwitch
           label="Bounding box"
           checked={showBoundingBox}
@@ -273,7 +267,6 @@ function InspectorContent({
           label="Status bar"
           checked={showStatusBar}
           onCheckedChange={onShowStatusBarChange}
-          disabled={windowStyle === "none"}
         />
         <OptionSwitch
           label="Line numbers"
@@ -290,6 +283,7 @@ function InspectorContent({
           min={PADDING_MIN}
           max={PADDING_MAX}
           step={PADDING_STEP}
+          marks={evenMarks(PADDING_MIN, PADDING_MAX, 4)}
         />
 
         <PickerField
@@ -317,6 +311,7 @@ function InspectorContent({
           min={FONT_SIZE_MIN}
           max={FONT_SIZE_MAX}
           step={1}
+          marks={evenMarks(FONT_SIZE_MIN, FONT_SIZE_MAX, 2)}
         />
 
         <PickerField
@@ -348,6 +343,7 @@ function InspectorContent({
               max={100}
               step={5}
               unit="%"
+              marks={evenMarks(0, 100, 4)}
             />
             <SliderField
               label="Line spacing"
@@ -356,6 +352,7 @@ function InspectorContent({
               min={DECOR_SPACING_MIN}
               max={DECOR_SPACING_MAX}
               step={DECOR_SPACING_STEP}
+              marks={evenMarks(DECOR_SPACING_MIN, DECOR_SPACING_MAX, 4)}
             />
           </>
         )}

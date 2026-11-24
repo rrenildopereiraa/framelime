@@ -86,24 +86,13 @@ export const LABEL_POSITIONS: { id: LabelPosition; label: string }[] = [
   { id: "tab", label: "Tab bar, top right" },
 ];
 
-// The chrome around the code. "frame" is the frame every image had before
-// there was a choice.
-export type WindowStyle = "none" | "frame" | "browser" | "terminal";
-
-export const WINDOW_STYLES: { id: WindowStyle; label: string }[] = [
-  { id: "none", label: "None" },
-  { id: "frame", label: "Editor" },
-  { id: "browser", label: "Browser" },
-  { id: "terminal", label: "Terminal" },
-];
-
 // Hash lines drawn along the code window's edges, past the frame's edges.
 // Spacing is the gap between a line and the window, in px.
 export const DECOR_SPACING_MIN = 0;
 export const DECOR_SPACING_MAX = 48;
 export const DECOR_SPACING_STEP = 4;
 export const DECOR_SPACING_DEFAULT = 12;
-export const DECOR_OPACITY_DEFAULT = 30;
+export const DECOR_OPACITY_DEFAULT = 100;
 
 // A tab in the frame's tab bar, for each open snippet.
 export interface FrameTab {

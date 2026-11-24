@@ -16,7 +16,6 @@ import {
   FONT_SIZE_DEFAULT,
   type LabelPosition,
   PADDING_DEFAULT,
-  type WindowStyle,
 } from "./types";
 
 const FRAME_COLOR_KEYS: (keyof FrameColors)[] = [
@@ -57,11 +56,8 @@ export const settingsParsers = {
   lines: parseAsBoolean.withDefault(false),
   label: parseAsStringEnum<LabelPosition>(["none", "status", "tab"]).withDefault("status"),
   // Defaults keep links made before these settings looking as they did.
-  win: parseAsStringEnum<WindowStyle>(["none", "frame", "browser", "terminal"]).withDefault(
-    "frame",
-  ),
   deco: parseAsBoolean.withDefault(false),
-  // Empty follows the frame's text color.
+  // Empty follows the code window's border color.
   decoColor: parseAsString.withDefault(""),
   decoOpacity: parseAsInteger.withDefault(DECOR_OPACITY_DEFAULT),
   decoGap: parseAsInteger.withDefault(DECOR_SPACING_DEFAULT),

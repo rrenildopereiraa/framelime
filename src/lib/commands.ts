@@ -14,8 +14,6 @@ import {
   PADDING_MAX,
   PADDING_MIN,
   PADDING_STEP,
-  WINDOW_STYLES,
-  type WindowStyle,
 } from "./types";
 
 export interface Command {
@@ -33,7 +31,6 @@ export function buildCommands({
   showLineNumbers,
   onShowLineNumbersChange,
   onLabelPositionChange,
-  onWindowStyleChange,
   documents,
   activeId,
   onSelectDocument,
@@ -66,7 +63,6 @@ export function buildCommands({
   showLineNumbers: boolean;
   onShowLineNumbersChange: (value: boolean) => void;
   onLabelPositionChange: (value: LabelPosition) => void;
-  onWindowStyleChange: (value: WindowStyle) => void;
   documents: EditorDocument[];
   activeId: string;
   onSelectDocument: (id: string) => void;
@@ -174,8 +170,7 @@ export function buildCommands({
       label: `${showLineNumbers ? "Hide" : "Show"} line numbers`,
       run: () => onShowLineNumbersChange(!showLineNumbers),
     },
-    // Reaches every snippet when the frame shows no tabs: the terminal and
-    // bare styles, or a hidden tab bar.
+    // Reaches every snippet while the tab bar is hidden.
     ...documents
       .filter((doc) => doc.id !== activeId)
       .map((doc): Command => ({
@@ -188,11 +183,6 @@ export function buildCommands({
       label: `${showDecorators ? "Hide" : "Show"} hash lines`,
       run: () => onShowDecoratorsChange(!showDecorators),
     },
-    ...WINDOW_STYLES.map(({ id, label }): Command => ({
-      id: `window-style-${id}`,
-      label: `Window style: ${label}`,
-      run: () => onWindowStyleChange(id),
-    })),
     {
       id: "font-size-increase",
       label: "Increase font size",

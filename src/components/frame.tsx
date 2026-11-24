@@ -1,5 +1,5 @@
 import { Input } from "@base-ui/react/input";
-import { IconChevronRight, IconLock, IconPlus, IconX } from "@tabler/icons-react";
+import { IconPlus, IconX } from "@tabler/icons-react";
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import type { ResolvedMode } from "../lib/chrome-theme";
 import type { LanguageId } from "../lib/highlighter";
@@ -11,7 +11,6 @@ import {
   type HighlightedLine,
   type HighlightedWord,
   type LabelPosition,
-  type WindowStyle,
 } from "../lib/types";
 import { CodeEditor } from "./code-editor";
 import type { CornerRadii } from "./inspector";
@@ -70,35 +69,6 @@ function HashLines({ color, opacity, gap }: Decorators) {
   );
 }
 
-// The red, yellow and green of a desktop window's title bar.
-const DOT_COLORS = ["#ff5f57", "#febc2e", "#28c840"];
-
-function WindowDots() {
-  return (
-    <div className="d:f ai:c g:2 fs:0" aria-hidden="true">
-      {DOT_COLORS.map((color) => (
-        <span key={color} className="d:b w:3 h:3 br:9999" style={{ backgroundColor: color }} />
-      ))}
-    </div>
-  );
-}
-
-function AddressBar({ colors, children }: { colors: FrameColors; children: React.ReactNode }) {
-  return (
-    <div
-      className="f:1 d:f ai:c jc:c g:2 px:3 py:1 br:md min-w:0 bw:1 bs:s"
-      style={{
-        backgroundColor: colors.tabActive,
-        borderColor: colors.border,
-        color: colors.accentDim,
-      }}
-    >
-      <IconLock size={12} stroke={2} className="fs:0" aria-hidden />
-      {children}
-    </div>
-  );
-}
-
 export const Frame = forwardRef<
   HTMLDivElement,
   {
@@ -127,7 +97,6 @@ export const Frame = forwardRef<
     fontSize: number;
     showLineNumbers: boolean;
     labelPosition: LabelPosition;
-    windowStyle: WindowStyle;
     /** The open snippets, shown as the frame's tabs. */
     tabs: FrameTab[];
     activeTabId: string;
@@ -164,7 +133,6 @@ export const Frame = forwardRef<
     fontSize,
     showLineNumbers,
     labelPosition,
-    windowStyle,
     tabs,
     activeTabId,
     onSelectTab,
@@ -367,120 +335,44 @@ export const Frame = forwardRef<
           }}
         >
           <div className="f:1 min-w:0 min-h:0">
-            {windowStyle === "frame" && (
-              <div className={`frame-collapsible ${showTabBar ? "frame-collapsible-open" : ""}`}>
-                <div className="o:h min-h:0">
-                  <div className="d:f" style={{ backgroundColor: colors.tabBar }}>
-                    {tabs.map((tab) => {
-                      const isActive = tab.id === activeTabId;
-                      return (
-                        <div
-                          key={tab.id}
-                          className="frame-tab p:r d:f ai:c g:2 px:4 py:3"
-                          style={
-                            isActive
-                              ? several
-                                ? // Matches the inactive tabs' bottom border, so every name sits on one line.
-                                  {
-                                    ...activeTabStyle,
-                                    borderBottom: `1px solid ${colors.tabActive}`,
-                                  }
-                                : activeTabStyle
-                              : inactiveTabStyle
-                          }
-                        >
-                          {isActive ? fileNameInput : tabButton(tab, "fs:sm")}
-                          {several && closeButton(tab, isActive ? colors.tabActive : colors.tabBar)}
-                        </div>
-                      );
-                    })}
-                    <div
-                      className="f:1 d:f ai:c jc:fe px:4"
-                      style={{ borderBottom: `1px solid ${colors.border}` }}
-                    >
-                      {addButton}
-                      {languageLabel}
-                    </div>
+            <div className={`frame-collapsible ${showTabBar ? "frame-collapsible-open" : ""}`}>
+              <div className="o:h min-h:0">
+                <div className="d:f" style={{ backgroundColor: colors.tabBar }}>
+                  {tabs.map((tab) => {
+                    const isActive = tab.id === activeTabId;
+                    return (
+                      <div
+                        key={tab.id}
+                        className="frame-tab p:r d:f ai:c g:2 px:4 py:3"
+                        style={
+                          isActive
+                            ? several
+                              ? // Matches the inactive tabs' bottom border, so every name sits on one line.
+                                {
+                                  ...activeTabStyle,
+                                  borderBottom: `1px solid ${colors.tabActive}`,
+                                }
+                              : activeTabStyle
+                            : inactiveTabStyle
+                        }
+                      >
+                        {isActive ? fileNameInput : tabButton(tab, "fs:sm")}
+                        {several && closeButton(tab, isActive ? colors.tabActive : colors.tabBar)}
+                      </div>
+                    );
+                  })}
+                  <div
+                    className="f:1 d:f ai:c jc:fe px:4"
+                    style={{ borderBottom: `1px solid ${colors.border}` }}
+                  >
+                    {addButton}
+                    {languageLabel}
                   </div>
                 </div>
               </div>
-            )}
-
-            {windowStyle === "browser" && (
-              <div
-                style={{
-                  backgroundColor: colors.tabBar,
-                  borderBottom: `1px solid ${colors.border}`,
-                }}
-              >
-                <div className="d:f ai:c g:3 px:4 py:3">
-                  <WindowDots />
-                  {several ? (
-                    <div className="d:f ai:c g:1 min-w:0">
-                      {tabs.map((tab) => {
-                        const isActive = tab.id === activeTabId;
-                        const background = isActive ? colors.tabActive : colors.tabBar;
-                        return (
-                          <div
-                            key={tab.id}
-                            className="frame-tab p:r px:3 py:1 br:md"
-                            style={{
-                              ...(isActive ? undefined : { opacity: 0.6 }),
-                              backgroundColor: background,
-                            }}
-                          >
-                            {tabButton(tab, "fs:xs")}
-                            {closeButton(tab, background)}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <AddressBar colors={colors}>{fileNameInput}</AddressBar>
-                  )}
-                  {addButton}
-                  {/* Holds the row's right edge when tabs, not the address bar, fill it. */}
-                  <div className={`d:f jc:fe ${several ? "f:1" : ""}`}>{languageLabel}</div>
-                </div>
-                {several && (
-                  <div className="d:f px:4 pb:3">
-                    <AddressBar colors={colors}>{fileNameInput}</AddressBar>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {windowStyle === "terminal" && (
-              <div
-                className="d:g ai:c px:4 py:3"
-                style={{
-                  gridTemplateColumns: "1fr auto 1fr",
-                  backgroundColor: colors.tabBar,
-                  borderBottom: `1px solid ${colors.border}`,
-                }}
-              >
-                <WindowDots />
-                <div className="d:f jc:c">{fileNameInput}</div>
-                <div className="d:f jc:fe">{languageLabel}</div>
-              </div>
-            )}
+            </div>
 
             <div className="p:4" style={{ backgroundColor: colors.tabActive }}>
-              {windowStyle === "terminal" && (
-                <div
-                  className="d:f ai:c g:2 pb:2 ff:m"
-                  style={{ color: colors.accentDim, fontSize, lineHeight: 1.5, ...fontStyle }}
-                >
-                  <IconChevronRight
-                    className="fs:0"
-                    size={fontSize}
-                    stroke={2.5}
-                    style={{ color: colors.statusBarText }}
-                    aria-hidden
-                  />
-                  <span>cat {fileName || "Untitled-1"}</span>
-                </div>
-              )}
               <CodeEditor
                 code={code}
                 onCodeChange={onCodeChange}
@@ -506,9 +398,7 @@ export const Frame = forwardRef<
               />
             </div>
 
-            <div
-              className={`frame-collapsible ${showStatusBar && windowStyle !== "none" ? "frame-collapsible-open" : ""}`}
-            >
+            <div className={`frame-collapsible ${showStatusBar ? "frame-collapsible-open" : ""}`}>
               <div className="o:h min-h:0">
                 <div
                   className="d:f ai:c jc:fe px:4 py:2 btw:1 bs:s"
