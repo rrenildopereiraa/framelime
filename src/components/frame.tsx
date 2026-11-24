@@ -44,7 +44,10 @@ const HASH_REACH = 4000;
 /** Lines along the code window's edges, running past it to form a #. */
 function HashLines({ color, opacity, gap }: Decorators) {
   const line = { backgroundColor: color, opacity: opacity / 100 };
-  const offset = -gap - 1;
+  // At 0 the lines lie on the window's 1px border and carry it on, rather
+  // than sitting beside it and doubling it into a 2px edge. Past 0 they keep
+  // `gap` px clear of the border.
+  const offset = gap === 0 ? 0 : -gap - 1;
   return (
     <div aria-hidden="true" className="pe:none">
       <div
