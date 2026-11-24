@@ -5,6 +5,7 @@ import { modLabel } from "./platform";
 import {
   ASPECT_RATIOS,
   type AspectRatio,
+  type EditorDocument,
   FONT_SIZE_DEFAULT,
   FONT_SIZE_MAX,
   FONT_SIZE_MIN,
@@ -30,6 +31,11 @@ export function buildCommands({
   showLineNumbers,
   onShowLineNumbersChange,
   onLabelPositionChange,
+  documents,
+  activeId,
+  onSelectDocument,
+  showDecorators,
+  onShowDecoratorsChange,
   padding,
   onPaddingChange,
   fontSize,
@@ -57,6 +63,11 @@ export function buildCommands({
   showLineNumbers: boolean;
   onShowLineNumbersChange: (value: boolean) => void;
   onLabelPositionChange: (value: LabelPosition) => void;
+  documents: EditorDocument[];
+  activeId: string;
+  onSelectDocument: (id: string) => void;
+  showDecorators: boolean;
+  onShowDecoratorsChange: (value: boolean) => void;
   padding: number;
   onPaddingChange: (value: number) => void;
   fontSize: number;
@@ -158,6 +169,19 @@ export function buildCommands({
       id: "toggle-line-numbers",
       label: `${showLineNumbers ? "Hide" : "Show"} line numbers`,
       run: () => onShowLineNumbersChange(!showLineNumbers),
+    },
+    // Reaches every snippet while the tab bar is hidden.
+    ...documents
+      .filter((doc) => doc.id !== activeId)
+      .map((doc): Command => ({
+        id: `switch-snippet-${doc.id}`,
+        label: `Switch to snippet: ${doc.fileName || "Untitled"}`,
+        run: () => onSelectDocument(doc.id),
+      })),
+    {
+      id: "toggle-decorators",
+      label: `${showDecorators ? "Hide" : "Show"} hash lines`,
+      run: () => onShowDecoratorsChange(!showDecorators),
     },
     {
       id: "font-size-increase",

@@ -1,4 +1,5 @@
 import { Input } from "@base-ui/react/input";
+import { IconPlus, IconX } from "@tabler/icons-react";
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import type { ResolvedMode } from "../lib/chrome-theme";
 import type { LanguageId } from "../lib/highlighter";
@@ -6,6 +7,7 @@ import { LANGUAGES } from "../lib/highlighter";
 import {
   ASPECT_RATIO_VALUES,
   type AspectRatio,
+  type FrameTab,
   type HighlightedLine,
   type HighlightedWord,
   type LabelPosition,
@@ -25,6 +27,46 @@ export interface FrameColors {
   highlightMark: string;
   highlightAdd: string;
   highlightRemove: string;
+}
+
+export interface Decorators {
+  color: string;
+  /** 0 to 100. */
+  opacity: number;
+  /** Gap between each line and the code window, in px. */
+  gap: number;
+}
+
+// Far enough to cross any frame's padding; the frame clips the rest.
+const HASH_REACH = 4000;
+
+/** Lines along the code window's edges, running past it to form a #. */
+function HashLines({ color, opacity, gap }: Decorators) {
+  const line = { backgroundColor: color, opacity: opacity / 100 };
+  // At 0 the lines lie on the window's 1px border and carry it on, rather
+  // than sitting beside it and doubling it into a 2px edge. Past 0 they keep
+  // `gap` px clear of the border.
+  const offset = gap === 0 ? 0 : -gap - 1;
+  return (
+    <div aria-hidden="true" className="pe:none">
+      <div
+        className="p:a h:px"
+        style={{ ...line, top: offset, left: -HASH_REACH, right: -HASH_REACH }}
+      />
+      <div
+        className="p:a h:px"
+        style={{ ...line, bottom: offset, left: -HASH_REACH, right: -HASH_REACH }}
+      />
+      <div
+        className="p:a w:px"
+        style={{ ...line, left: offset, top: -HASH_REACH, bottom: -HASH_REACH }}
+      />
+      <div
+        className="p:a w:px"
+        style={{ ...line, right: offset, top: -HASH_REACH, bottom: -HASH_REACH }}
+      />
+    </div>
+  );
 }
 
 export const Frame = forwardRef<
@@ -55,6 +97,14 @@ export const Frame = forwardRef<
     fontSize: number;
     showLineNumbers: boolean;
     labelPosition: LabelPosition;
+    /** The open snippets, shown as the frame's tabs. */
+    tabs: FrameTab[];
+    activeTabId: string;
+    onSelectTab: (id: string) => void;
+    onCloseTab: (id: string) => void;
+    /** Left out once the snippet limit is reached. */
+    onAddTab?: () => void;
+    decorators: Decorators | null;
   }
 >(function Frame(
   {
@@ -83,10 +133,89 @@ export const Frame = forwardRef<
     fontSize,
     showLineNumbers,
     labelPosition,
+    tabs,
+    activeTabId,
+    onSelectTab,
+    onCloseTab,
+    onAddTab,
+    decorators,
   },
   ref,
 ) {
   const fontStyle = fontFamily ? { fontFamily } : undefined;
+  const activeTabStyle = {
+    backgroundColor: colors.tabActive,
+    borderRight: `1px solid ${colors.border}`,
+  };
+  const inactiveTabStyle = {
+    color: colors.accentDim,
+    opacity: 0.6,
+    borderRight: `1px solid ${colors.border}`,
+    borderBottom: `1px solid ${colors.border}`,
+  };
+  const several = tabs.length > 1;
+
+  // A tab that isn't the active one: its name, which switches to it.
+  const tabButton = (tab: FrameTab, size: string) => (
+    <button
+      type="button"
+      onClick={() => onSelectTab(tab.id)}
+      className={`d:b p:0 bg:transparent bw:0 c:p ff:m ws:nw ${size}`}
+      style={{ color: colors.accentDim, lineHeight: "normal", ...fontStyle }}
+    >
+      {tab.fileName || "Untitled"}
+    </button>
+  );
+
+  // Editing controls show on screen only: exports leave out anything marked
+  // `data-export-ignore`, and these sit over the tab without taking room in
+  // it, so the image keeps the layout seen on screen.
+  const closeButton = (tab: FrameTab, background: string) => (
+    <button
+      type="button"
+      data-export-ignore
+      aria-label={`Close ${tab.fileName || "Untitled"}`}
+      onClick={() => onCloseTab(tab.id)}
+      className="frame-tab-close p:a t:0 b:0 r:1 my:auto d:f ai:c jc:c w:3 h:3 p:0 bw:0 br:9999 c:p"
+      style={{ backgroundColor: background, color: colors.accentDim }}
+    >
+      <IconX size={10} stroke={2.5} aria-hidden />
+    </button>
+  );
+
+  const addButton = onAddTab ? (
+    <button
+      type="button"
+      data-export-ignore
+      aria-label="New snippet"
+      onClick={onAddTab}
+      className="d:f ai:c jc:c fs:0 w:5 h:5 mr:auto p:0 bg:transparent bw:0 br:sm c:p o:60 h:o:100"
+      style={{ color: colors.accentDim }}
+    >
+      <IconPlus size={14} stroke={2} aria-hidden />
+    </button>
+  ) : null;
+
+  const fileNameInput = (
+    <Input
+      value={fileName}
+      onChange={(event) => onFileNameChange(event.target.value)}
+      size={Math.max(fileName.length, 10)}
+      spellCheck={false}
+      placeholder="Untitled-1"
+      className="ff:m fs:sm bg:transparent bw:0 os:none p:0 w:fc"
+      // `normal`, not the inherited line height: exported
+      // images keep the tab bar height they always had.
+      style={{ color: colors.accentDim, lineHeight: "normal", ...fontStyle }}
+    />
+  );
+
+  const languageLabel =
+    labelPosition === "tab" ? (
+      <span className="ff:m fs:xs fw:700" style={{ color: colors.statusBarText, ...fontStyle }}>
+        {LANGUAGES[language]}
+      </span>
+    ) : null;
   const borderRadius = `${radii.tl}px ${radii.tr}px ${radii.br}px ${radii.bl}px`;
   const ratioValue = ASPECT_RATIO_VALUES[aspectRatio];
   const contentRef = useRef<HTMLDivElement>(null);
@@ -196,6 +325,7 @@ export const Frame = forwardRef<
           transform: fit ? `scale(${fit.scale})` : undefined,
         }}
       >
+        {decorators && <HashLines {...decorators} />}
         <div
           className="d:f bw:1 bs:s o:h"
           style={{
@@ -208,37 +338,35 @@ export const Frame = forwardRef<
             <div className={`frame-collapsible ${showTabBar ? "frame-collapsible-open" : ""}`}>
               <div className="o:h min-h:0">
                 <div className="d:f" style={{ backgroundColor: colors.tabBar }}>
-                  <div
-                    className="d:f ai:c g:2 px:4 py:3"
-                    style={{
-                      backgroundColor: colors.tabActive,
-                      borderRight: `1px solid ${colors.border}`,
-                    }}
-                  >
-                    <Input
-                      value={fileName}
-                      onChange={(event) => onFileNameChange(event.target.value)}
-                      size={Math.max(fileName.length, 10)}
-                      spellCheck={false}
-                      placeholder="Untitled-1"
-                      className="ff:m fs:sm bg:transparent bw:0 os:none p:0 w:fc"
-                      // `normal`, not the inherited line height: exported
-                      // images keep the tab bar height they always had.
-                      style={{ color: colors.accentDim, lineHeight: "normal", ...fontStyle }}
-                    />
-                  </div>
+                  {tabs.map((tab) => {
+                    const isActive = tab.id === activeTabId;
+                    return (
+                      <div
+                        key={tab.id}
+                        className="frame-tab p:r d:f ai:c g:2 px:4 py:3"
+                        style={
+                          isActive
+                            ? several
+                              ? // Matches the inactive tabs' bottom border, so every name sits on one line.
+                                {
+                                  ...activeTabStyle,
+                                  borderBottom: `1px solid ${colors.tabActive}`,
+                                }
+                              : activeTabStyle
+                            : inactiveTabStyle
+                        }
+                      >
+                        {isActive ? fileNameInput : tabButton(tab, "fs:sm")}
+                        {several && closeButton(tab, isActive ? colors.tabActive : colors.tabBar)}
+                      </div>
+                    );
+                  })}
                   <div
                     className="f:1 d:f ai:c jc:fe px:4"
                     style={{ borderBottom: `1px solid ${colors.border}` }}
                   >
-                    {labelPosition === "tab" && (
-                      <span
-                        className="ff:m fs:xs fw:700"
-                        style={{ color: colors.statusBarText, ...fontStyle }}
-                      >
-                        {LANGUAGES[language]}
-                      </span>
-                    )}
+                    {addButton}
+                    {languageLabel}
                   </div>
                 </div>
               </div>

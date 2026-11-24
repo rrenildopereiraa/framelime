@@ -11,6 +11,9 @@ import {
   ASPECT_RATIOS,
   type AspectRatio,
   type CornerRadii,
+  DECOR_SPACING_MAX,
+  DECOR_SPACING_MIN,
+  DECOR_SPACING_STEP,
   FONT_SIZE_MAX,
   FONT_SIZE_MIN,
   LABEL_POSITIONS,
@@ -61,7 +64,7 @@ const FRAME_COLOR_FIELDS: { key: keyof FrameColors; label: string }[] = [
   { key: "surface", label: "Surface" },
   { key: "border", label: "Border" },
   { key: "accentDim", label: "Text" },
-  { key: "tabBar", label: "Tab bar" },
+  { key: "tabBar", label: "Tab bar, inactive tabs" },
   { key: "tabActive", label: "Active tab" },
   { key: "statusBarBg", label: "Status bar" },
   { key: "statusBarText", label: "Status bar text" },
@@ -94,6 +97,12 @@ function SettingsTabs({
   );
 }
 
+// Words under a slider's track, spread evenly from start to end, as Border
+// radius labels its own: numbers there would crowd the sidebar.
+const SIZE_MARKS = ["None", "Medium", "Large"];
+const FONT_SIZE_MARKS = ["Small", "Medium", "Large"];
+const OPACITY_MARKS = ["None", "Half", "Full"];
+
 function SliderField({
   label,
   value,
@@ -101,6 +110,8 @@ function SliderField({
   min,
   max,
   step,
+  unit = "px",
+  marks,
 }: {
   label: string;
   value: number;
@@ -108,6 +119,8 @@ function SliderField({
   min: number;
   max: number;
   step: number;
+  unit?: string;
+  marks?: string[];
 }) {
   return (
     <div className="pb:4">
@@ -118,7 +131,8 @@ function SliderField({
         min={min}
         max={max}
         step={step}
-        unit="px"
+        unit={unit}
+        marks={marks}
         className="w:100%"
       />
     </div>
@@ -169,6 +183,14 @@ interface InspectorContentProps {
   onShowLineNumbersChange: (value: boolean) => void;
   labelPosition: LabelPosition;
   onLabelPositionChange: (value: LabelPosition) => void;
+  showDecorators: boolean;
+  onShowDecoratorsChange: (value: boolean) => void;
+  decoratorColor: string;
+  onDecoratorColorChange: (value: string) => void;
+  decoratorOpacity: number;
+  onDecoratorOpacityChange: (value: number) => void;
+  decoratorSpacing: number;
+  onDecoratorSpacingChange: (value: number) => void;
   padding: number;
   onPaddingChange: (value: number) => void;
   fontSize: number;
@@ -201,6 +223,14 @@ function InspectorContent({
   onShowLineNumbersChange,
   labelPosition,
   onLabelPositionChange,
+  showDecorators,
+  onShowDecoratorsChange,
+  decoratorColor,
+  onDecoratorColorChange,
+  decoratorOpacity,
+  onDecoratorOpacityChange,
+  decoratorSpacing,
+  onDecoratorSpacingChange,
   padding,
   onPaddingChange,
   fontSize,
@@ -251,6 +281,7 @@ function InspectorContent({
           min={PADDING_MIN}
           max={PADDING_MAX}
           step={PADDING_STEP}
+          marks={SIZE_MARKS}
         />
 
         <PickerField
@@ -278,6 +309,7 @@ function InspectorContent({
           min={FONT_SIZE_MIN}
           max={FONT_SIZE_MAX}
           step={1}
+          marks={FONT_SIZE_MARKS}
         />
 
         <PickerField
@@ -286,6 +318,42 @@ function InspectorContent({
           options={LABEL_POSITIONS}
           onValueChange={onLabelPositionChange}
         />
+
+        <SectionSeparator label="Decorators" />
+
+        <OptionSwitch
+          label="Hash lines"
+          checked={showDecorators}
+          onCheckedChange={onShowDecoratorsChange}
+        />
+        {showDecorators && (
+          <>
+            <ColorInput
+              label="Line color"
+              value={decoratorColor}
+              onChange={onDecoratorColorChange}
+            />
+            <SliderField
+              label="Line opacity"
+              value={decoratorOpacity}
+              onValueChange={onDecoratorOpacityChange}
+              min={0}
+              max={100}
+              step={5}
+              unit="%"
+              marks={OPACITY_MARKS}
+            />
+            <SliderField
+              label="Line spacing"
+              value={decoratorSpacing}
+              onValueChange={onDecoratorSpacingChange}
+              min={DECOR_SPACING_MIN}
+              max={DECOR_SPACING_MAX}
+              step={DECOR_SPACING_STEP}
+              marks={SIZE_MARKS}
+            />
+          </>
+        )}
       </>
     );
   }

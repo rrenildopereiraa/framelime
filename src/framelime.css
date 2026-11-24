@@ -85,3 +85,14 @@
   padding-bottom: env(safe-area-inset-bottom);
   padding-left: env(safe-area-inset-left);
 }
+
+/* A frame tab's close button shows while the tab is hovered or the button has focus. */
+.frame-tab-close {
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.frame-tab:hover .frame-tab-close,
+.frame-tab-close:focus-visible {
+  opacity: 1;
+}

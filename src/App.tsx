@@ -1,10 +1,9 @@
 import { useHotkey } from "@tanstack/react-hotkeys";
-import { toBlob } from "html-to-image";
 import { useQueryStates } from "nuqs";
 import { useEffect, useRef, useState } from "react";
 import { Canvas } from "./components/canvas";
 import { CommandPalette } from "./components/command-palette";
-import { EditorTabBar } from "./components/editor-tabs";
+import { EditorHeader } from "./components/editor-header";
 import type { ExportFormat } from "./components/format-picker";
 import { FONT_FAMILIES, type FontFamilyId, Inspector } from "./components/inspector";
 import { RADIUS_MAX, RADIUS_MIN } from "./components/radius-control";
@@ -13,7 +12,7 @@ import { useToast } from "./components/toast-provider";
 import { DrawerIndent } from "./components/ui/drawer";
 import { type ResolvedMode, useChromeTheme } from "./lib/chrome-theme";
 import { buildCommands } from "./lib/commands";
-import { captureDataUrl } from "./lib/export";
+import { captureDataUrl, copyImageToClipboard } from "./lib/export";
 import { canFormat, formatCode } from "./lib/format";
 import {
   framesColorsEqual,
@@ -28,6 +27,8 @@ import { randomSnippet } from "./lib/snippets";
 import {
   clamp,
   type CornerRadii,
+  DECOR_SPACING_MAX,
+  DECOR_SPACING_MIN,
   type EditorDocument,
   FONT_SIZE_MAX,
   FONT_SIZE_MIN,
@@ -213,6 +214,9 @@ function App() {
   // A hand-edited link can carry any number; the frame only draws the slider's range.
   const padding = clamp(settings.pad, PADDING_MIN, PADDING_MAX);
   const fontSize = clamp(settings.size, FONT_SIZE_MIN, FONT_SIZE_MAX);
+  const decoOpacity = clamp(settings.decoOpacity, 0, 100);
+  const decoGap = clamp(settings.decoGap, DECOR_SPACING_MIN, DECOR_SPACING_MAX);
+  const decoColor = settings.decoColor || settings.colors.border;
 
   const radii: CornerRadii = {
     tl: settings.rtl,
@@ -488,9 +492,7 @@ function App() {
 
   async function handleCopyImage() {
     if (!frameRef.current) return;
-    const blob = await toBlob(frameRef.current, { pixelRatio: 2 });
-    if (!blob) return;
-    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+    await copyImageToClipboard(frameRef.current);
     toast.add({
       title: "Copied",
       description: "Image copied to clipboard",
@@ -565,6 +567,11 @@ function App() {
     showLineNumbers: settings.lines,
     onShowLineNumbersChange: (value) => setSettings({ lines: value }),
     onLabelPositionChange: (value) => setSettings({ label: value }),
+    documents,
+    activeId,
+    onSelectDocument: selectDocument,
+    showDecorators: settings.deco,
+    onShowDecoratorsChange: (value) => setSettings({ deco: value }),
     padding,
     onPaddingChange: (value) => setSettings({ pad: value }),
     fontSize,
@@ -598,12 +605,7 @@ function App() {
   return (
     <DrawerIndent className="bg:page">
       <div className="app-root is:i d:f fd:c h:vh o:h bg:page">
-        <EditorTabBar
-          documents={documents}
-          activeId={activeId}
-          onSelect={selectDocument}
-          onClose={closeDocument}
-          onAdd={addDocument}
+        <EditorHeader
           onOpenPalette={() => setPaletteOpen(true)}
           onCopy={handleCopyImage}
           onExport={handleExport}
@@ -641,6 +643,14 @@ function App() {
             fontSize={fontSize}
             showLineNumbers={settings.lines}
             labelPosition={settings.label}
+            tabs={documents.map(({ id, fileName }) => ({ id, fileName }))}
+            activeTabId={activeId}
+            onSelectTab={selectDocument}
+            onCloseTab={closeDocument}
+            onAddTab={documents.length < MAX_DOCUMENTS ? addDocument : undefined}
+            decorators={
+              settings.deco ? { color: decoColor, opacity: decoOpacity, gap: decoGap } : null
+            }
           />
 
           <Inspector
@@ -657,6 +667,14 @@ function App() {
             onShowLineNumbersChange={(value) => setSettings({ lines: value })}
             labelPosition={settings.label}
             onLabelPositionChange={(value) => setSettings({ label: value })}
+            showDecorators={settings.deco}
+            onShowDecoratorsChange={(value) => setSettings({ deco: value })}
+            decoratorColor={decoColor}
+            onDecoratorColorChange={(value) => setSettings({ decoColor: value })}
+            decoratorOpacity={decoOpacity}
+            onDecoratorOpacityChange={(value) => setSettings({ decoOpacity: value })}
+            decoratorSpacing={decoGap}
+            onDecoratorSpacingChange={(value) => setSettings({ decoGap: value })}
             padding={padding}
             onPaddingChange={(value) => setSettings({ pad: value })}
             fontSize={fontSize}
