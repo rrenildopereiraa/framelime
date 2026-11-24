@@ -16,11 +16,10 @@ import typescript from "@shikijs/langs/typescript";
 import vue from "@shikijs/langs/vue";
 import type { FrameColors } from "../components/frame";
 import amber from "../themes/amber-theme.json";
-import defaultTheme from "../themes/default-theme.json";
 import eclipsa from "../themes/eclipsa-theme.json";
 import limeDark from "../themes/lime-dark-theme.json";
 import limeLight from "../themes/lime-light-theme.json";
-import monochrome from "../themes/monochrome-theme.json";
+import tinycolor from "tinycolor2";
 import type { ResolvedMode } from "./chrome-theme";
 import {
   CATALOG_LOADERS,
@@ -50,22 +49,12 @@ export type LanguageId = keyof typeof LANGUAGES;
 
 export const THEME_NAME = "Lime";
 
-const BUILTIN_THEMES = [
-  limeLight,
-  limeDark,
-  defaultTheme,
-  eclipsa,
-  monochrome,
-  amber,
-] as ThemeInput[];
+const BUILTIN_THEMES = [limeLight, limeDark, eclipsa, amber] as ThemeInput[];
 
-// The canonical theme list users pick from. "Lime" and "Default" are
-// adaptive: Lime renders Lime Light or Lime Dark, and Default renders the
-// Light theme (colored tokens, white frame) or Monochrome (grayscale
-// tokens, near-black frame), following the frame's scheme.
+// The canonical theme list users pick from. "Lime" is adaptive: it renders
+// Lime Light or Lime Dark, following the frame's scheme.
 export const THEMES = {
   Lime: "Lime",
-  Default: "Default",
   [eclipsa.name]: eclipsa.name,
   [amber.name]: amber.name,
   ...Object.fromEntries(CATALOG_THEMES.map((theme) => [theme.id, theme.id])),
@@ -73,11 +62,12 @@ export const THEMES = {
 
 export type ThemeId = keyof typeof THEMES;
 
-// Legacy names from before the merge - old share URLs keep working by
-// resolving straight to the merged theme.
+// Legacy names - old share URLs keep working. Default, and the Light and
+// Monochrome themes it was made of, were removed in favor of Lime.
 const LEGACY_THEME_NAMES: Record<string, string> = {
-  [defaultTheme.name]: "Default",
-  [monochrome.name]: "Default",
+  Default: "Lime",
+  Light: "Lime",
+  Monochrome: "Lime",
   [limeLight.name]: "Lime",
   [limeDark.name]: "Lime",
 };
@@ -91,7 +81,6 @@ export function normalizeThemeName(name: string): string {
 export function resolveShikiTheme(themeName: string, mode: ResolvedMode): string {
   const name = normalizeThemeName(themeName);
   if (name === "Lime") return mode === "dark" ? limeDark.name : limeLight.name;
-  if (name === "Default") return mode === "dark" ? monochrome.name : defaultTheme.name;
   const catalogTheme = CATALOG_THEMES.find((theme) => theme.id === name);
   if (catalogTheme) {
     return mode === "light" && "light" in catalogTheme ? catalogTheme.light : catalogTheme.dark;
@@ -121,7 +110,7 @@ export function readThemeFrameColors(theme: {
   const c = theme.colors ?? {};
   const f = theme.frameColors ?? {};
 
-  return {
+  const colors: FrameColors = {
     page: getColor(c, "editor.background") ?? f.page ?? "#0b0b0a",
     surface: getColor(c, "sideBar.background") ?? f.surface ?? "#121311",
     border:
@@ -167,6 +156,38 @@ export function readThemeFrameColors(theme: {
       f.highlightRemove ??
       "#fca5a5",
   };
+
+  // Solid parts of the frame draw see-through theme colors over the page.
+  for (const key of ["surface", "border", "tabBar", "tabActive", "statusBarBg"] as const) {
+    colors[key] = flatten(colors[key], colors.page);
+  }
+  colors.border = visibleBorder(colors);
+  return colors;
+}
+
+// The color a see-through color shows over a solid background.
+function flatten(color: string, background: string): string {
+  const parsed = tinycolor(color);
+  const alpha = parsed.getAlpha();
+  if (alpha >= 1) return color;
+  return tinycolor.mix(background, parsed.setAlpha(1), alpha * 100).toHexString();
+}
+
+// The frame's border should set it apart from the backdrop and from its
+// own code area, as Lime's does (about 1.3:1). Many themes draw borders so
+// close to the background they vanish, so those step toward the text color
+// until they show.
+const BORDER_CONTRAST = 1.25;
+
+function visibleBorder({ border, page, tabActive, accentDim }: FrameColors): string {
+  const contrast = (color: string) =>
+    Math.min(tinycolor.readability(color, page), tinycolor.readability(color, tabActive));
+  if (contrast(border) >= BORDER_CONTRAST) return border;
+  for (let amount = 2; amount <= 60; amount += 2) {
+    const candidate = tinycolor.mix(page, accentDim, amount).toHexString();
+    if (contrast(candidate) >= BORDER_CONTRAST + 0.05) return candidate;
+  }
+  return border;
 }
 
 // A theme color, with short hex (#fff, #fff8) spelled out. Fully
@@ -187,34 +208,12 @@ function firstColor(colors: Record<string, string | null>, ...keys: string[]): s
   return undefined;
 }
 
-// Frame colors per scheme. Adaptive themes (Default) carry distinct light
+// Frame colors per scheme. Adaptive themes (Lime) carry distinct light
 // and dark sets; static themes carry the same set for both schemes.
 export const THEME_FRAME_COLORS: Record<string, Record<ResolvedMode, FrameColors>> = {
   Lime: {
     light: readThemeFrameColors(limeLight),
     dark: readThemeFrameColors(limeDark),
-  },
-  Default: {
-    light: {
-      page: "#ffffff",
-      surface: "#ffffff",
-      border: "#cbd5e1",
-      accentDim: "#64748b",
-      tabBar: "#f1f5f9",
-      tabActive: "#ffffff",
-      statusBarBg: "#ffffff",
-      statusBarText: "#2563eb",
-      highlightMark: "#64748b",
-      highlightAdd: "#86efac",
-      highlightRemove: "#fca5a5",
-    },
-    dark: readThemeFrameColors(
-      monochrome as unknown as {
-        name: string;
-        colors?: Record<string, string | null>;
-        frameColors?: Partial<FrameColors>;
-      },
-    ),
   },
   [eclipsa.name]: (() => {
     const colors = readThemeFrameColors(
@@ -236,14 +235,14 @@ export const THEME_FRAME_COLORS: Record<string, Record<ResolvedMode, FrameColors
     );
     return { light: colors, dark: colors };
   })(),
+  // A theme missing from the catalog (before scripts/theme-catalog.ts has
+  // read it) is left out; a test checks the catalog is current.
   ...Object.fromEntries(
-    CATALOG_THEMES.map((theme) => [
-      theme.id,
-      {
-        light: THEME_CATALOG[resolveShikiTheme(theme.id, "light")].frame,
-        dark: THEME_CATALOG[theme.dark].frame,
-      },
-    ]),
+    CATALOG_THEMES.flatMap((theme) => {
+      const light = THEME_CATALOG[resolveShikiTheme(theme.id, "light")]?.frame;
+      const dark = THEME_CATALOG[theme.dark]?.frame;
+      return light && dark ? [[theme.id, { light, dark }]] : [];
+    }),
   ),
 };
 

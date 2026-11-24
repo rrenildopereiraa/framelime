@@ -43,50 +43,6 @@
       "func": "#f4f6ec"
     }
   },
-  "Light": {
-    "frame": {
-      "page": "#0b0b0a",
-      "surface": "#121311",
-      "border": "#232421",
-      "accentDim": "#95978d",
-      "tabBar": "#0b0b0a",
-      "tabActive": "#121311",
-      "statusBarBg": "#1a1b18",
-      "statusBarText": "#d4ff3a",
-      "highlightMark": "#64748b",
-      "highlightAdd": "#86efac",
-      "highlightRemove": "#fca5a5"
-    },
-    "preview": {
-      "comment": "#6b7280",
-      "keyword": "#7c3aed",
-      "name": "#374151",
-      "string": "#16a34a",
-      "func": "#4f46e5"
-    }
-  },
-  "Monochrome": {
-    "frame": {
-      "page": "#0d0d0d",
-      "surface": "#1a1a1a",
-      "border": "#333333",
-      "accentDim": "#888888",
-      "tabBar": "#0d0d0d",
-      "tabActive": "#1a1a1a",
-      "statusBarBg": "#1a1a1a",
-      "statusBarText": "#ffffff",
-      "highlightMark": "#64748b",
-      "highlightAdd": "#86efac",
-      "highlightRemove": "#fca5a5"
-    },
-    "preview": {
-      "comment": "#666666",
-      "keyword": "#bbbbbb",
-      "name": "#888888",
-      "string": "#a0a0a0",
-      "func": "#cccccc"
-    }
-  },
   "Eclipsa": {
     "frame": {
       "page": "#21243f",
@@ -157,7 +113,7 @@
     "frame": {
       "page": "#24292e",
       "surface": "#1f2428",
-      "border": "#1b1f23",
+      "border": "#373c41",
       "accentDim": "#e1e4e8",
       "tabBar": "#1f2428",
       "tabActive": "#24292e",
@@ -179,7 +135,7 @@
     "frame": {
       "page": "#eff1f5",
       "surface": "#e6e9ef",
-      "border": "#e6e9ef",
+      "border": "#d2d4dc",
       "accentDim": "#4c4f69",
       "tabBar": "#e6e9ef",
       "tabActive": "#eff1f5",
@@ -201,7 +157,7 @@
     "frame": {
       "page": "#1e1e2e",
       "surface": "#181825",
-      "border": "#181825",
+      "border": "#333446",
       "accentDim": "#cdd6f4",
       "tabBar": "#181825",
       "tabActive": "#1e1e2e",
@@ -223,10 +179,10 @@
     "frame": {
       "page": "#faf4ed",
       "surface": "#faf4ed",
-      "border": "#f2e9e1",
+      "border": "#d6d0d3",
       "accentDim": "#575279",
       "tabBar": "#faf4ed",
-      "tabActive": "#6e6a860d",
+      "tabActive": "#f3ede8",
       "statusBarBg": "#faf4ed",
       "statusBarText": "#797593",
       "highlightMark": "#6e6a8614",
@@ -245,10 +201,10 @@
     "frame": {
       "page": "#191724",
       "surface": "#191724",
-      "border": "#26233a",
+      "border": "#353341",
       "accentDim": "#e0def4",
       "tabBar": "#191724",
-      "tabActive": "#6e6a861a",
+      "tabActive": "#221f2e",
       "statusBarBg": "#191724",
       "statusBarText": "#908caa",
       "highlightMark": "#6e6a8633",
@@ -267,7 +223,7 @@
     "frame": {
       "page": "#ffffff",
       "surface": "#ffffff",
-      "border": "#f0f0f0",
+      "border": "#dfdfdf",
       "accentDim": "#393a34",
       "tabBar": "#ffffff",
       "tabActive": "#ffffff",
@@ -289,7 +245,7 @@
     "frame": {
       "page": "#121212",
       "surface": "#121212",
-      "border": "#191919",
+      "border": "#2a2a28",
       "accentDim": "#dbd7caee",
       "tabBar": "#121212",
       "tabActive": "#121212",
@@ -333,7 +289,7 @@
     "frame": {
       "page": "#282c34",
       "surface": "#21252b",
-      "border": "#181a1f",
+      "border": "#3a3f47",
       "accentDim": "#abb2bf",
       "tabBar": "#21252b",
       "tabActive": "#282c34",
@@ -351,121 +307,55 @@
       "func": "#61afef"
     }
   },
-  "solarized-light": {
+  "Claude Light": {
     "frame": {
-      "page": "#FDF6E3",
-      "surface": "#EEE8D5",
-      "border": "#DDD6C1",
-      "accentDim": "#657B83",
-      "tabBar": "#D3CBB7",
-      "tabActive": "#FDF6E3",
-      "statusBarBg": "#EEE8D5",
-      "statusBarText": "#586E75",
-      "highlightMark": "#64748b",
-      "highlightAdd": "#86efac",
-      "highlightRemove": "#fca5a5"
+      "page": "#faf9f5",
+      "surface": "#f4f1ea",
+      "border": "#dedcd1",
+      "accentDim": "#141413",
+      "tabBar": "#f0ede3",
+      "tabActive": "#faf9f5",
+      "statusBarBg": "#f0ede3",
+      "statusBarText": "#b96342",
+      "highlightMark": "#ccdbe850",
+      "highlightAdd": "#e7ecdf",
+      "highlightRemove": "#f6e4dd"
     },
     "preview": {
-      "comment": "#93a1a1",
-      "keyword": "#586e75",
-      "name": "#268bd2",
-      "string": "#2aa198",
-      "func": "#268bd2"
+      "comment": "#73726c",
+      "keyword": "#d97757",
+      "name": "#70627c",
+      "string": "#5e7457",
+      "func": "#6f5f43"
     }
   },
-  "solarized-dark": {
+  "Claude Dark": {
     "frame": {
-      "page": "#002B36",
-      "surface": "#00212B",
-      "border": "#003847",
-      "accentDim": "#839496",
-      "tabBar": "#004052",
-      "tabActive": "#002B37",
-      "statusBarBg": "#00212B",
-      "statusBarText": "#93A1A1",
-      "highlightMark": "#004454AA",
-      "highlightAdd": "#86efac",
-      "highlightRemove": "#fca5a5"
+      "page": "#141413",
+      "surface": "#1f1e1d",
+      "border": "#3d3d3a",
+      "accentDim": "#faf9f5",
+      "tabBar": "#1f1e1d",
+      "tabActive": "#141413",
+      "statusBarBg": "#1f1e1d",
+      "statusBarText": "#d97757",
+      "highlightMark": "#ccdbe826",
+      "highlightAdd": "#243421",
+      "highlightRemove": "#3a211c"
     },
     "preview": {
-      "comment": "#586e75",
-      "keyword": "#93a1a1",
-      "name": "#268bd2",
-      "string": "#2aa198",
-      "func": "#268bd2"
-    }
-  },
-  "gruvbox-light-medium": {
-    "frame": {
-      "page": "#fbf1c7",
-      "surface": "#fbf1c7",
-      "border": "#ebdbb2",
-      "accentDim": "#3c3836",
-      "tabBar": "#fbf1c7",
-      "tabActive": "#ebdbb2",
-      "statusBarBg": "#fbf1c7",
-      "statusBarText": "#3c3836",
-      "highlightMark": "#b5761440",
-      "highlightAdd": "#79740e30",
-      "highlightRemove": "#9d000630"
-    },
-    "preview": {
-      "comment": "#928374",
-      "keyword": "#af3a03",
-      "name": "#076678",
-      "string": "#79740e",
-      "func": "#b57614"
-    }
-  },
-  "gruvbox-dark-medium": {
-    "frame": {
-      "page": "#282828",
-      "surface": "#282828",
-      "border": "#3c3836",
-      "accentDim": "#ebdbb2",
-      "tabBar": "#282828",
-      "tabActive": "#3c3836",
-      "statusBarBg": "#282828",
-      "statusBarText": "#ebdbb2",
-      "highlightMark": "#fabd2f40",
-      "highlightAdd": "#b8bb2630",
-      "highlightRemove": "#fb493430"
-    },
-    "preview": {
-      "comment": "#928374",
-      "keyword": "#fe8019",
-      "name": "#83a598",
-      "string": "#b8bb26",
-      "func": "#fabd2f"
-    }
-  },
-  "tokyo-night": {
-    "frame": {
-      "page": "#1a1b26",
-      "surface": "#16161e",
-      "border": "#101014",
-      "accentDim": "#a9b1d6",
-      "tabBar": "#16161e",
-      "tabActive": "#16161e",
-      "statusBarBg": "#16161e",
-      "statusBarText": "#787c99",
-      "highlightMark": "#515c7e44",
-      "highlightAdd": "#41a6b520",
-      "highlightRemove": "#db4b4b22"
-    },
-    "preview": {
-      "comment": "#51597d",
-      "keyword": "#9d7cd8",
-      "name": "#bb9af7",
-      "string": "#9ece6a",
-      "func": "#7aa2f7"
+      "comment": "#9c9a92",
+      "keyword": "#d97757",
+      "name": "#c8a87a",
+      "string": "#9aa985",
+      "func": "#dec18a"
     }
   },
   "dracula": {
     "frame": {
       "page": "#282A36",
       "surface": "#21222C",
-      "border": "#191A21",
+      "border": "#3d3f49",
       "accentDim": "#F8F8F2",
       "tabBar": "#21222C",
       "tabActive": "#282A36",
@@ -487,7 +377,7 @@
     "frame": {
       "page": "#2e3440",
       "surface": "#2e3440",
-      "border": "#3b4252",
+      "border": "#4d535e",
       "accentDim": "#d8dee9",
       "tabBar": "#2e3440",
       "tabActive": "#3b4252",

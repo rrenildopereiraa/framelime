@@ -2,11 +2,9 @@ import { createHighlighterCore, type ThemeRegistration } from "@shikijs/core";
 import { createJavaScriptRegexEngine } from "@shikijs/engine-javascript";
 import typescript from "@shikijs/langs/typescript";
 import amber from "../themes/amber-theme.json";
-import defaultTheme from "../themes/default-theme.json";
 import eclipsa from "../themes/eclipsa-theme.json";
 import limeDark from "../themes/lime-dark-theme.json";
 import limeLight from "../themes/lime-light-theme.json";
-import monochrome from "../themes/monochrome-theme.json";
 import { readThemeFrameColors } from "./highlighter";
 import { CATALOG_LOADERS, type CatalogEntry, type PreviewColors } from "./theme-catalog";
 
@@ -24,7 +22,7 @@ const SAMPLE_TOKENS: Record<keyof PreviewColors, string> = {
   func: "greet",
 };
 
-const BUILTIN = [limeLight, limeDark, defaultTheme, monochrome, eclipsa, amber];
+const BUILTIN = [limeLight, limeDark, eclipsa, amber];
 
 /** Reads frame and preview colors from every theme the picker offers. */
 export async function buildThemeCatalog(): Promise<Record<string, CatalogEntry>> {

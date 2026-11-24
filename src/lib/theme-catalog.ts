@@ -13,9 +13,7 @@ export const CATALOG_THEMES = [
   { id: "Rosé Pine", light: "rose-pine-dawn", dark: "rose-pine" },
   { id: "Vitesse", light: "vitesse-light", dark: "vitesse-dark" },
   { id: "One", light: "one-light", dark: "one-dark-pro" },
-  { id: "Solarized", light: "solarized-light", dark: "solarized-dark" },
-  { id: "Gruvbox", light: "gruvbox-light-medium", dark: "gruvbox-dark-medium" },
-  { id: "Tokyo Night", dark: "tokyo-night" },
+  { id: "Claude", light: "Claude Light", dark: "Claude Dark" },
   { id: "Dracula", dark: "dracula" },
   { id: "Nord", dark: "nord" },
 ] as const satisfies readonly { id: string; light?: string; dark: string }[];
@@ -34,11 +32,9 @@ export const CATALOG_LOADERS: Record<string, () => ThemeModule> = {
   "vitesse-dark": () => import("@shikijs/themes/vitesse-dark"),
   "one-light": () => import("@shikijs/themes/one-light"),
   "one-dark-pro": () => import("@shikijs/themes/one-dark-pro"),
-  "solarized-light": () => import("@shikijs/themes/solarized-light"),
-  "solarized-dark": () => import("@shikijs/themes/solarized-dark"),
-  "gruvbox-light-medium": () => import("@shikijs/themes/gruvbox-light-medium"),
-  "gruvbox-dark-medium": () => import("@shikijs/themes/gruvbox-dark-medium"),
-  "tokyo-night": () => import("@shikijs/themes/tokyo-night"),
+  // From the Claude Vellum theme for Zed, converted by scripts/convert-zed-theme.ts.
+  "Claude Light": () => import("../themes/claude-light-theme.json") as unknown as ThemeModule,
+  "Claude Dark": () => import("../themes/claude-dark-theme.json") as unknown as ThemeModule,
   dracula: () => import("@shikijs/themes/dracula"),
   nord: () => import("@shikijs/themes/nord"),
 };
