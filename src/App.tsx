@@ -10,17 +10,7 @@ import { RADIUS_MAX, RADIUS_MIN } from "./components/radius-control";
 import { StatusBar } from "./components/status-bar";
 import { useToast } from "./components/toast-provider";
 import { DrawerIndent } from "./components/ui/drawer";
-import {
-  type BackgroundSettings,
-  type FrameBackground,
-  IMAGE_BLUR_MAX,
-  IMAGE_DIM_MAX,
-  loadStoredImage,
-  PATTERN_SCALE_MAX,
-  PATTERN_SCALE_MIN,
-  readImageFile,
-  storeImage,
-} from "./lib/background";
+import type { BackgroundSettings, FrameBackground } from "./lib/background";
 import { type ResolvedMode, useChromeTheme } from "./lib/chrome-theme";
 import { buildCommands } from "./lib/commands";
 import { captureDataUrl, copyImageToClipboard } from "./lib/export";
@@ -104,8 +94,6 @@ function App() {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [formatting, setFormatting] = useState(false);
-  // The uploaded background image, kept in this browser only.
-  const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   // Written with `history: "replace"`, so the browser keeps no trail of
   // settings: undo has a stack of its own (see `useHistory`).
   const [settings, writeSettings] = useQueryStates(settingsParsers, {
@@ -231,89 +219,29 @@ function App() {
   const decoGap = clamp(settings.decoGap, DECOR_SPACING_MIN, DECOR_SPACING_MAX);
   const decoColor = settings.decoColor || settings.colors.border;
 
-  // Empty background colors follow the theme: the frame's page color and
-  // its accent, the status bar text.
+  // Empty gradient stops follow the theme: the frame's page color and its
+  // accent, the status bar text.
   const background: BackgroundSettings = {
     bg: settings.bg,
     gradFrom: settings.gradFrom || settings.colors.page,
     gradVia: settings.gradVia,
     gradTo: settings.gradTo || settings.colors.statusBarText,
     gradAngle: clamp(settings.gradAngle, 0, 360),
-    pattern: settings.pattern,
-    patternInk: settings.patternInk || settings.colors.statusBarText,
-    patternScale: clamp(settings.patternScale, PATTERN_SCALE_MIN, PATTERN_SCALE_MAX),
-    imgFit: settings.imgFit,
-    imgBlur: clamp(settings.imgBlur, 0, IMAGE_BLUR_MAX),
-    imgDim: clamp(settings.imgDim, 0, IMAGE_DIM_MAX),
   };
   const pageColor = settings.colors.page;
-  const frameBackground: FrameBackground = (() => {
-    switch (background.bg) {
-      case "gradient":
-        return {
+  const frameBackground: FrameBackground =
+    background.bg === "gradient"
+      ? {
           type: "gradient",
           color: pageColor,
           stops: [background.gradFrom, background.gradVia, background.gradTo].filter(Boolean),
           angle: background.gradAngle,
-        };
-      case "pattern":
-        return {
-          type: "pattern",
-          color: pageColor,
-          pattern: background.pattern,
-          ink: background.patternInk,
-          scale: background.patternScale / 100,
-        };
-      case "image":
-        // Without the image, as on a share link, the solid color stands in.
-        return backgroundImage
-          ? {
-              type: "image",
-              color: pageColor,
-              src: backgroundImage,
-              fit: background.imgFit,
-              blur: background.imgBlur,
-              dim: background.imgDim,
-            }
-          : { type: "solid", color: pageColor };
-      default:
-        return { type: "solid", color: pageColor };
-    }
-  })();
-
-  useEffect(() => {
-    let cancelled = false;
-    void loadStoredImage().then((src) => {
-      if (!cancelled && src) setBackgroundImage(src);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+        }
+      : { type: background.bg, color: pageColor };
 
   function setBackground(patch: Partial<BackgroundSettings>) {
     // Switching the type is a step of its own; tuning one merges.
     setSettings(patch, "bg" in patch ? null : undefined);
-  }
-
-  async function handleBackgroundImage(file: File) {
-    try {
-      const src = await readImageFile(file);
-      setBackgroundImage(src);
-      setSettings({ bg: "image" }, null);
-      await storeImage(src);
-    } catch {
-      toast.add({
-        title: "Couldn't load the image",
-        description: "Try a PNG, JPG, WEBP or SVG file.",
-        type: "error",
-      });
-    }
-  }
-
-  function removeBackgroundImage() {
-    setBackgroundImage(null);
-    void storeImage(null);
   }
 
   const radii: CornerRadii = {
@@ -573,7 +501,11 @@ function App() {
     if (!frameRef.current || exporting) return;
     setExporting(true);
     try {
-      const dataUrl = await captureDataUrl(frameRef.current, format);
+      const dataUrl = await captureDataUrl(
+        frameRef.current,
+        format,
+        frameBackground.type === "transparent" ? pageColor : undefined,
+      );
       const link = document.createElement("a");
       link.download = `${active.fileName || "framelime"}.${format}`;
       link.href = dataUrl;
@@ -599,16 +531,10 @@ function App() {
   }
 
   async function handleShare() {
-    // An uploaded image can't travel in a link: it shares as the solid color.
-    const url = new URL(window.location.href);
-    const withImage = url.searchParams.get("bg") === "image";
-    if (withImage) url.searchParams.delete("bg");
-    await navigator.clipboard.writeText(url.toString());
+    await navigator.clipboard.writeText(window.location.href);
     toast.add({
       title: "Link copied",
-      description: withImage
-        ? "Everything but the background image, which stays in this browser"
-        : "Anyone with this link sees the same settings",
+      description: "Anyone with this link sees the same settings",
       type: "success",
     });
   }
@@ -756,7 +682,6 @@ function App() {
               settings.deco ? { color: decoColor, opacity: decoOpacity, gap: decoGap } : null
             }
             background={frameBackground}
-            onDropImage={(file) => void handleBackgroundImage(file)}
           />
 
           <Inspector
@@ -803,9 +728,6 @@ function App() {
             onUploadTheme={handleUploadTheme}
             background={background}
             onBackgroundChange={setBackground}
-            backgroundImage={backgroundImage}
-            onUploadBackgroundImage={(file) => void handleBackgroundImage(file)}
-            onRemoveBackgroundImage={removeBackgroundImage}
           />
         </div>
 

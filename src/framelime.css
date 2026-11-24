@@ -97,106 +97,14 @@
   opacity: 1;
 }
 
-/*
- * Frame background patterns. Colors come from two custom properties, set on
- * the element from the frame colors: `--pattern-bg` and `--pattern-ink`.
- * `--pattern-scale` multiplies every spacing; line widths stay put. Lines are
- * softened with color-mix, never `opacity`, which would fade the frame too.
- */
-.pattern {
-  --pattern-bg: #0b0b0a;
-  --pattern-ink: #d4ff3a;
-  --pattern-scale: 1;
-  --pattern-soft: color-mix(in srgb, var(--pattern-ink) 35%, transparent);
-  background-color: var(--pattern-bg);
-}
-
-/* Blueprint: bold lines every 48px over a soft 12px grid. */
-.pattern-blueprint {
-  --pattern-major: var(--pattern-ink);
-  background-image:
-    linear-gradient(var(--pattern-major) 1.5px, transparent 1.5px),
-    linear-gradient(90deg, var(--pattern-major) 1.5px, transparent 1.5px),
-    linear-gradient(var(--pattern-soft) 1px, transparent 1px),
-    linear-gradient(90deg, var(--pattern-soft) 1px, transparent 1px);
-  background-size:
-    calc(48px * var(--pattern-scale)) calc(48px * var(--pattern-scale)),
-    calc(48px * var(--pattern-scale)) calc(48px * var(--pattern-scale)),
-    calc(12px * var(--pattern-scale)) calc(12px * var(--pattern-scale)),
-    calc(12px * var(--pattern-scale)) calc(12px * var(--pattern-scale));
-}
-
-/* The major lines read loud on a dark frame. */
-.pattern-blueprint[data-mode="dark"] {
-  --pattern-major: color-mix(in srgb, var(--pattern-ink) 70%, transparent);
-}
-
-/* Drafting: a lighter Blueprint, lines every 64px over a faint 16px grid. */
-.pattern-drafting {
-  --pattern-major: color-mix(in srgb, var(--pattern-ink) 60%, transparent);
-  --pattern-soft: color-mix(in srgb, var(--pattern-ink) 18%, transparent);
-  background-image:
-    linear-gradient(var(--pattern-major) 1px, transparent 1px),
-    linear-gradient(90deg, var(--pattern-major) 1px, transparent 1px),
-    linear-gradient(var(--pattern-soft) 1px, transparent 1px),
-    linear-gradient(90deg, var(--pattern-soft) 1px, transparent 1px);
-  background-size:
-    calc(64px * var(--pattern-scale)) calc(64px * var(--pattern-scale)),
-    calc(64px * var(--pattern-scale)) calc(64px * var(--pattern-scale)),
-    calc(16px * var(--pattern-scale)) calc(16px * var(--pattern-scale)),
-    calc(16px * var(--pattern-scale)) calc(16px * var(--pattern-scale));
-}
-
-/* Ledger: one even 24px grid. */
-.pattern-ledger {
-  background-image:
-    linear-gradient(var(--pattern-soft) 1px, transparent 1px),
-    linear-gradient(90deg, var(--pattern-soft) 1px, transparent 1px);
-  background-size: calc(24px * var(--pattern-scale)) calc(24px * var(--pattern-scale));
-}
-
-/* Stitched: a 24px grid of 4px dashes, each dash a conic-gradient quadrant. */
-.pattern-stitched {
-  background-image:
-    conic-gradient(
-      from 270deg at calc(4px * var(--pattern-scale)) 1px,
-      var(--pattern-soft) 25%,
-      transparent 0
-    ),
-    conic-gradient(
-      from 270deg at 1px calc(4px * var(--pattern-scale)),
-      var(--pattern-soft) 25%,
-      transparent 0
-    );
-  background-size:
-    calc(8px * var(--pattern-scale)) calc(24px * var(--pattern-scale)),
-    calc(24px * var(--pattern-scale)) calc(8px * var(--pattern-scale));
-}
-
-/* Perforated: a 24px grid drawn in dots every 6px. */
-.pattern-perforated {
-  background-image:
-    radial-gradient(circle at 1px 1px, var(--pattern-soft) 1px, transparent 1.5px),
-    radial-gradient(circle at 1px 1px, var(--pattern-soft) 1px, transparent 1.5px);
-  background-size:
-    calc(6px * var(--pattern-scale)) calc(24px * var(--pattern-scale)),
-    calc(24px * var(--pattern-scale)) calc(6px * var(--pattern-scale));
-}
-
-/* Junction: a 32px grid with a node at every crossing and a larger one every other. */
-.pattern-junction {
-  background-image:
-    radial-gradient(
-      circle at calc(32px * var(--pattern-scale)) calc(32px * var(--pattern-scale)),
-      var(--pattern-ink) 2.5px,
-      transparent 3px
-    ),
-    radial-gradient(circle at 1px 1px, var(--pattern-ink) 1.5px, transparent 2px),
-    linear-gradient(var(--pattern-soft) 1px, transparent 1px),
-    linear-gradient(90deg, var(--pattern-soft) 1px, transparent 1px);
-  background-size:
-    calc(64px * var(--pattern-scale)) calc(64px * var(--pattern-scale)),
-    calc(32px * var(--pattern-scale)) calc(32px * var(--pattern-scale)),
-    calc(32px * var(--pattern-scale)) calc(32px * var(--pattern-scale)),
-    calc(32px * var(--pattern-scale)) calc(32px * var(--pattern-scale));
+/* A checkerboard behind a transparent frame, on screen only. */
+.transparency-grid {
+  background-color: light-dark(#ffffff, #1a1b18);
+  background-image: conic-gradient(
+    light-dark(#e3e5dc, #262724) 25%,
+    transparent 0 50%,
+    light-dark(#e3e5dc, #262724) 0 75%,
+    transparent 0
+  );
+  background-size: 16px 16px;
 }

@@ -1,5 +1,4 @@
-import { IconPhoto } from "@tabler/icons-react";
-import { type DragEvent, useRef, useState } from "react";
+import { useRef } from "react";
 import type { FrameBackground } from "../lib/background";
 import type { ResolvedMode } from "../lib/chrome-theme";
 import type { LanguageId } from "../lib/highlighter";
@@ -48,7 +47,6 @@ export function Canvas({
   onAddTab,
   decorators,
   background,
-  onDropImage,
 }: {
   code: string;
   onCodeChange: (value: string) => void;
@@ -83,53 +81,16 @@ export function Canvas({
   onAddTab?: () => void;
   decorators: Decorators | null;
   background: FrameBackground;
-  /** An image file dropped on the canvas, for the background. */
-  onDropImage: (file: File) => void;
 }) {
   const viewportRef = useRef<HTMLElement>(null);
-  const [dragging, setDragging] = useState(false);
-
-  // Only files count: dragging selected code around the editor is not a drop.
-  const carriesFile = (event: DragEvent) => event.dataTransfer.types.includes("Files");
-
-  function handleDragOver(event: DragEvent) {
-    if (!carriesFile(event)) return;
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "copy";
-    setDragging(true);
-  }
-
-  function handleDragLeave(event: DragEvent) {
-    // Leaving for one of the canvas's own children is not leaving it.
-    if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
-    setDragging(false);
-  }
-
-  function handleDrop(event: DragEvent) {
-    if (!carriesFile(event)) return;
-    event.preventDefault();
-    setDragging(false);
-    const file = Array.from(event.dataTransfer.files).find((f) => f.type.startsWith("image/"));
-    if (file) onDropImage(file);
-  }
 
   return (
-    <main
-      ref={viewportRef}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-      className="p:r f:1 d:f min-h:0 min-w:0 o:auto px:2 @sm:px:4 py:8 @sm:py:16"
-    >
-      {dragging && (
-        <div className="p:a i:2 zi:20 d:f ai:c jc:c pe:none br:lg bw:2 bs:d bc:accent bg:page/80">
-          <span className="d:f ai:c g:2 fs:sm fw:500 c:label">
-            <IconPhoto className="w:5 h:5 c:accent" stroke={1.8} aria-hidden />
-            Drop an image for the background
-          </span>
-        </div>
-      )}
+    <main ref={viewportRef} className="f:1 d:f min-h:0 min-w:0 o:auto px:2 @sm:px:4 py:8 @sm:py:16">
       <div className="m:auto p:r min-w:0">
+        {/* Outside the frame, so exports keep it transparent. */}
+        {background.type === "transparent" && (
+          <div aria-hidden="true" className="transparency-grid p:a i:0 pe:none" />
+        )}
         <Frame
           ref={frameRef}
           code={code}
