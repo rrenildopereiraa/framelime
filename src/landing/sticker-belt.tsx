@@ -15,7 +15,7 @@ const ACTIONS = [
 ];
 const OPTIONS = [
   "Lime",
-  "Default",
+  "Claude",
   "Eclipsa",
   "Amber",
   "Your VS Code theme",

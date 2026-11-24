@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import Select from "@/components/ui/select.tsx";
 import { Tooltip } from "./tooltip";
 
@@ -7,6 +7,8 @@ export interface PickerOption<T extends string> {
   label: string;
   /** Previews the option, such as a font family, in an "Aa" beside its label. */
   style?: CSSProperties;
+  /** Drawn before the label, such as a theme's preview. */
+  icon?: ReactNode;
 }
 
 /** A labelled Yumma UI select, as the inspector lays its fields out. */
@@ -45,11 +47,13 @@ export function PickerField<T extends string>({
         options={options.map((option) => ({
           value: option.id,
           label: option.label,
-          icon: option.style ? (
-            <span className="fs:xs c:hint" style={option.style}>
-              Aa
-            </span>
-          ) : undefined,
+          icon:
+            option.icon ??
+            (option.style ? (
+              <span className="fs:xs c:hint" style={option.style}>
+                Aa
+              </span>
+            ) : undefined),
         }))}
         className="w:100%"
       />

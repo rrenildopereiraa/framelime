@@ -1,0 +1,398 @@
+{
+  "Lime Light": {
+    "frame": {
+      "page": "#ffffff",
+      "surface": "#f6f7f1",
+      "border": "#e1e3d8",
+      "accentDim": "#4b4e43",
+      "tabBar": "#f1f2ec",
+      "tabActive": "#ffffff",
+      "statusBarBg": "#f1f2ec",
+      "statusBarText": "#4d7c0f",
+      "highlightMark": "#65a30d30",
+      "highlightAdd": "#15803d26",
+      "highlightRemove": "#dc262626"
+    },
+    "preview": {
+      "comment": "#8a8d80",
+      "keyword": "#4d7c0f",
+      "name": "#0f766e",
+      "string": "#15803d",
+      "func": "#11120e"
+    }
+  },
+  "Lime Dark": {
+    "frame": {
+      "page": "#141512",
+      "surface": "#111210",
+      "border": "#2a2b26",
+      "accentDim": "#a9ac9f",
+      "tabBar": "#0e0f0d",
+      "tabActive": "#141512",
+      "statusBarBg": "#1b1c18",
+      "statusBarText": "#d4ff3a",
+      "highlightMark": "#d4ff3a40",
+      "highlightAdd": "#a8e6a330",
+      "highlightRemove": "#ff949930"
+    },
+    "preview": {
+      "comment": "#6e7165",
+      "keyword": "#d4ff3a",
+      "name": "#8fd8c6",
+      "string": "#a8e6a3",
+      "func": "#f4f6ec"
+    }
+  },
+  "Eclipsa": {
+    "frame": {
+      "page": "#21243f",
+      "surface": "#1e2039",
+      "border": "#31365e",
+      "accentDim": "#b9bed5",
+      "tabBar": "#151724",
+      "tabActive": "#21243f",
+      "statusBarBg": "#2d3151",
+      "statusBarText": "#bec6f2",
+      "highlightMark": "#bec6f260",
+      "highlightAdd": "#c1f0cc30",
+      "highlightRemove": "#ff949930"
+    },
+    "preview": {
+      "comment": "#979cac",
+      "keyword": "#9595e3",
+      "name": "#85b1e0",
+      "string": "#bec6f2",
+      "func": "#f5faff"
+    }
+  },
+  "Amber": {
+    "frame": {
+      "page": "#1a1206",
+      "surface": "#261e12",
+      "border": "#3d2e1a",
+      "accentDim": "#b8935a",
+      "tabBar": "#1a1206",
+      "tabActive": "#261e12",
+      "statusBarBg": "#261e12",
+      "statusBarText": "#ffb86c",
+      "highlightMark": "#64748b",
+      "highlightAdd": "#86efac",
+      "highlightRemove": "#fca5a5"
+    },
+    "preview": {
+      "comment": "#6272a4",
+      "keyword": "#bbbbbb",
+      "name": "#f8f8f2",
+      "string": "#f1fa8c",
+      "func": "#50fa7b"
+    }
+  },
+  "github-light": {
+    "frame": {
+      "page": "#ffffff",
+      "surface": "#f6f8fa",
+      "border": "#e1e4e8",
+      "accentDim": "#24292e",
+      "tabBar": "#f6f8fa",
+      "tabActive": "#ffffff",
+      "statusBarBg": "#ffffff",
+      "statusBarText": "#586069",
+      "highlightMark": "#34d05840",
+      "highlightAdd": "#34d05822",
+      "highlightRemove": "#d73a4922"
+    },
+    "preview": {
+      "comment": "#6a737d",
+      "keyword": "#d73a49",
+      "name": "#005cc5",
+      "string": "#032f62",
+      "func": "#6f42c1"
+    }
+  },
+  "github-dark": {
+    "frame": {
+      "page": "#24292e",
+      "surface": "#1f2428",
+      "border": "#373c41",
+      "accentDim": "#e1e4e8",
+      "tabBar": "#1f2428",
+      "tabActive": "#24292e",
+      "statusBarBg": "#24292e",
+      "statusBarText": "#d1d5da",
+      "highlightMark": "#17E5E633",
+      "highlightAdd": "#28a74530",
+      "highlightRemove": "#d73a4930"
+    },
+    "preview": {
+      "comment": "#6a737d",
+      "keyword": "#f97583",
+      "name": "#79b8ff",
+      "string": "#9ecbff",
+      "func": "#b392f0"
+    }
+  },
+  "catppuccin-latte": {
+    "frame": {
+      "page": "#eff1f5",
+      "surface": "#e6e9ef",
+      "border": "#d2d4dc",
+      "accentDim": "#4c4f69",
+      "tabBar": "#e6e9ef",
+      "tabActive": "#eff1f5",
+      "statusBarBg": "#dce0e8",
+      "statusBarText": "#4c4f69",
+      "highlightMark": "#7c7f9333",
+      "highlightAdd": "#40a02b33",
+      "highlightRemove": "#d20f3933"
+    },
+    "preview": {
+      "comment": "#7c7f93",
+      "keyword": "#8839ef",
+      "name": "#4c4f69",
+      "string": "#40a02b",
+      "func": "#1e66f5"
+    }
+  },
+  "catppuccin-mocha": {
+    "frame": {
+      "page": "#1e1e2e",
+      "surface": "#181825",
+      "border": "#333446",
+      "accentDim": "#cdd6f4",
+      "tabBar": "#181825",
+      "tabActive": "#1e1e2e",
+      "statusBarBg": "#11111b",
+      "statusBarText": "#cdd6f4",
+      "highlightMark": "#9399b233",
+      "highlightAdd": "#a6e3a133",
+      "highlightRemove": "#f38ba833"
+    },
+    "preview": {
+      "comment": "#9399b2",
+      "keyword": "#cba6f7",
+      "name": "#cdd6f4",
+      "string": "#a6e3a1",
+      "func": "#89b4fa"
+    }
+  },
+  "rose-pine-dawn": {
+    "frame": {
+      "page": "#faf4ed",
+      "surface": "#faf4ed",
+      "border": "#d6d0d3",
+      "accentDim": "#575279",
+      "tabBar": "#faf4ed",
+      "tabActive": "#f3ede8",
+      "statusBarBg": "#faf4ed",
+      "statusBarText": "#797593",
+      "highlightMark": "#6e6a8614",
+      "highlightAdd": "#56949f26",
+      "highlightRemove": "#b4637a26"
+    },
+    "preview": {
+      "comment": "#797593",
+      "keyword": "#286983",
+      "name": "#575279",
+      "string": "#ea9d34",
+      "func": "#d7827e"
+    }
+  },
+  "rose-pine": {
+    "frame": {
+      "page": "#191724",
+      "surface": "#191724",
+      "border": "#353341",
+      "accentDim": "#e0def4",
+      "tabBar": "#191724",
+      "tabActive": "#221f2e",
+      "statusBarBg": "#191724",
+      "statusBarText": "#908caa",
+      "highlightMark": "#6e6a8633",
+      "highlightAdd": "#9ccfd826",
+      "highlightRemove": "#eb6f9226"
+    },
+    "preview": {
+      "comment": "#908caa",
+      "keyword": "#31748f",
+      "name": "#e0def4",
+      "string": "#f6c177",
+      "func": "#ebbcba"
+    }
+  },
+  "vitesse-light": {
+    "frame": {
+      "page": "#ffffff",
+      "surface": "#ffffff",
+      "border": "#dfdfdf",
+      "accentDim": "#393a34",
+      "tabBar": "#ffffff",
+      "tabActive": "#ffffff",
+      "statusBarBg": "#ffffff",
+      "statusBarText": "#4e4f47",
+      "highlightMark": "#1c6b4805",
+      "highlightAdd": "#1c6b4830",
+      "highlightRemove": "#ab595940"
+    },
+    "preview": {
+      "comment": "#a0ada0",
+      "keyword": "#ab5959",
+      "name": "#b07d48",
+      "string": "#b56959",
+      "func": "#59873a"
+    }
+  },
+  "vitesse-dark": {
+    "frame": {
+      "page": "#121212",
+      "surface": "#121212",
+      "border": "#2a2a28",
+      "accentDim": "#dbd7caee",
+      "tabBar": "#121212",
+      "tabActive": "#121212",
+      "statusBarBg": "#121212",
+      "statusBarText": "#bfbaaa",
+      "highlightMark": "#1c6b4805",
+      "highlightAdd": "#4d937550",
+      "highlightRemove": "#ab595950"
+    },
+    "preview": {
+      "comment": "#758575dd",
+      "keyword": "#cb7676",
+      "name": "#bd976a",
+      "string": "#c98a7d",
+      "func": "#80a665"
+    }
+  },
+  "one-light": {
+    "frame": {
+      "page": "#FAFAFA",
+      "surface": "#EAEAEB",
+      "border": "#DBDBDC",
+      "accentDim": "#383A42",
+      "tabBar": "#EAEAEB",
+      "tabActive": "#FAFAFA",
+      "statusBarBg": "#EAEAEB",
+      "statusBarText": "#424243",
+      "highlightMark": "#64748b",
+      "highlightAdd": "#00809B33",
+      "highlightRemove": "#fca5a5"
+    },
+    "preview": {
+      "comment": "#a0a1a7",
+      "keyword": "#a626a4",
+      "name": "#986801",
+      "string": "#50a14f",
+      "func": "#4078f2"
+    }
+  },
+  "one-dark-pro": {
+    "frame": {
+      "page": "#282c34",
+      "surface": "#21252b",
+      "border": "#3a3f47",
+      "accentDim": "#abb2bf",
+      "tabBar": "#21252b",
+      "tabActive": "#282c34",
+      "statusBarBg": "#21252b",
+      "statusBarText": "#9da5b4",
+      "highlightMark": "#d2e0ff2f",
+      "highlightAdd": "#00809b33",
+      "highlightRemove": "#fca5a5"
+    },
+    "preview": {
+      "comment": "#7f848e",
+      "keyword": "#c678dd",
+      "name": "#e5c07b",
+      "string": "#98c379",
+      "func": "#61afef"
+    }
+  },
+  "Claude Light": {
+    "frame": {
+      "page": "#faf9f5",
+      "surface": "#f4f1ea",
+      "border": "#dedcd1",
+      "accentDim": "#141413",
+      "tabBar": "#f0ede3",
+      "tabActive": "#faf9f5",
+      "statusBarBg": "#f0ede3",
+      "statusBarText": "#b96342",
+      "highlightMark": "#ccdbe850",
+      "highlightAdd": "#e7ecdf",
+      "highlightRemove": "#f6e4dd"
+    },
+    "preview": {
+      "comment": "#73726c",
+      "keyword": "#d97757",
+      "name": "#70627c",
+      "string": "#5e7457",
+      "func": "#6f5f43"
+    }
+  },
+  "Claude Dark": {
+    "frame": {
+      "page": "#141413",
+      "surface": "#1f1e1d",
+      "border": "#3d3d3a",
+      "accentDim": "#faf9f5",
+      "tabBar": "#1f1e1d",
+      "tabActive": "#141413",
+      "statusBarBg": "#1f1e1d",
+      "statusBarText": "#d97757",
+      "highlightMark": "#ccdbe826",
+      "highlightAdd": "#243421",
+      "highlightRemove": "#3a211c"
+    },
+    "preview": {
+      "comment": "#9c9a92",
+      "keyword": "#d97757",
+      "name": "#c8a87a",
+      "string": "#9aa985",
+      "func": "#dec18a"
+    }
+  },
+  "dracula": {
+    "frame": {
+      "page": "#282A36",
+      "surface": "#21222C",
+      "border": "#3d3f49",
+      "accentDim": "#F8F8F2",
+      "tabBar": "#21222C",
+      "tabActive": "#282A36",
+      "statusBarBg": "#191A21",
+      "statusBarText": "#F8F8F2",
+      "highlightMark": "#8BE9FD50",
+      "highlightAdd": "#50FA7B20",
+      "highlightRemove": "#FF555550"
+    },
+    "preview": {
+      "comment": "#6272a4",
+      "keyword": "#ff79c6",
+      "name": "#f8f8f2",
+      "string": "#f1fa8c",
+      "func": "#50fa7b"
+    }
+  },
+  "nord": {
+    "frame": {
+      "page": "#2e3440",
+      "surface": "#2e3440",
+      "border": "#4d535e",
+      "accentDim": "#d8dee9",
+      "tabBar": "#2e3440",
+      "tabActive": "#3b4252",
+      "statusBarBg": "#3b4252",
+      "statusBarText": "#d8dee9",
+      "highlightMark": "#81a1c166",
+      "highlightAdd": "#81a1c133",
+      "highlightRemove": "#bf616a4d"
+    },
+    "preview": {
+      "comment": "#616e88",
+      "keyword": "#81a1c1",
+      "name": "#d8dee9",
+      "string": "#a3be8c",
+      "func": "#88c0d0"
+    }
+  }
+}

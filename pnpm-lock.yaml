@@ -211,6 +211,9 @@ importers:
       '@shikijs/langs':
         specifier: 4.6.0
         version: 4.6.0
+      '@shikijs/themes':
+        specifier: 4.6.0
+        version: 4.6.0
       '@tabler/icons-react':
         specifier: ^3.51.0
         version: 3.52.0(react@19.3.1)
@@ -879,6 +882,10 @@ packages:
 
   '@shikijs/primitive@4.6.0':
     resolution: {integrity: sha512-c54+TQEo9ToqgfL/AU8FpjnV09+GA9Oa7M5ROkkXteZfp5XzpAJGXjjvZQFQioJOwm/w/6Z3lIzQstAkl8coag==}
+    engines: {node: '>=20'}
+
+  '@shikijs/themes@4.6.0':
+    resolution: {integrity: sha512-qHAVAs80RiGD+IRuH9G+JPDOEc9A/kHsng4EzCUCwB9bLzW6Z0y9WETh2YyCcADJBmfrIaJ1Jp7KBNP6FHkgtQ==}
     engines: {node: '>=20'}
 
   '@shikijs/types@4.6.0':
@@ -2280,6 +2287,10 @@ snapshots:
       '@shikijs/types': 4.6.0
       '@shikijs/vscode-textmate': 10.1.0
       '@types/hast': 3.0.5
+
+  '@shikijs/themes@4.6.0':
+    dependencies:
+      '@shikijs/types': 4.6.0
 
   '@shikijs/types@4.6.0':
     dependencies:

@@ -722,6 +722,7 @@ function App() {
             onThemeChange={handleManualThemeChange}
             themeIsRandom={themeIsRandom}
             frameMode={frameMode}
+            resolvedFrameMode={resolvedFrameMode}
             onFrameModeChange={(value) => setSettings({ frameMode: value })}
             frameColors={settings.colors}
             onFrameColorsChange={(value) => setSettings({ colors: value })}

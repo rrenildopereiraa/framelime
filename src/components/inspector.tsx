@@ -7,8 +7,13 @@ import Slider from "@/components/ui/slider.tsx";
 import Switch from "@/components/ui/switch.tsx";
 import Tabs from "@/components/ui/tabs.tsx";
 import { BACKGROUND_TYPES, type BackgroundSettings } from "../lib/background";
-import { type ChromeMode, type FrameMode, useChromeTheme } from "../lib/chrome-theme";
-import { LANGUAGES, type LanguageId, THEMES } from "../lib/highlighter";
+import {
+  type ChromeMode,
+  type FrameMode,
+  type ResolvedMode,
+  useChromeTheme,
+} from "../lib/chrome-theme";
+import { LANGUAGES, type LanguageId, THEMES, themePreview } from "../lib/highlighter";
 import {
   ASPECT_RATIOS,
   type AspectRatio,
@@ -28,6 +33,7 @@ import { BottomSheet, SubSheet } from "./bottom-sheet";
 import { ColorInput } from "./color-input";
 import type { FrameColors } from "./frame";
 import { PickerField } from "./picker-field";
+import { ThemePreview } from "./theme-preview";
 import { RadiusControl } from "./radius-control";
 
 export type { CornerRadii };
@@ -210,6 +216,8 @@ interface InspectorContentProps {
   onThemeChange: (value: string) => void;
   themeIsRandom: boolean;
   frameMode: FrameMode;
+  /** The scheme the frame draws in, which adaptive themes preview. */
+  resolvedFrameMode: ResolvedMode;
   onFrameModeChange: (value: FrameMode) => void;
   frameColors: FrameColors;
   onFrameColorsChange: (value: FrameColors) => void;
@@ -343,6 +351,7 @@ function InspectorContent({
   onThemeChange,
   themeIsRandom,
   frameMode,
+  resolvedFrameMode,
   onFrameModeChange,
   frameColors,
   onFrameColorsChange,
@@ -463,7 +472,10 @@ function InspectorContent({
       <PickerField
         label="Theme"
         value={themeName}
-        options={Object.keys(THEMES).map((id) => ({ id, label: id }))}
+        options={Object.keys(THEMES).map((id) => {
+          const preview = themePreview(id, resolvedFrameMode);
+          return { id, label: id, icon: preview && <ThemePreview {...preview} /> };
+        })}
         onValueChange={onThemeChange}
         badge={themeIsRandom ? { text: "*", title: "Randomly selected theme" } : undefined}
       />

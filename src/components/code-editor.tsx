@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ResolvedMode } from "../lib/chrome-theme";
 import { contrastColor, overlayColor } from "../lib/color";
-import { getHighlighter, type LanguageId, resolveShikiTheme } from "../lib/highlighter";
+import { getHighlighterWithTheme, type LanguageId } from "../lib/highlighter";
 import type { HighlightedLine, HighlightedWord, HighlightType } from "../lib/types";
 
 const TAB = "\t";
@@ -309,10 +309,9 @@ export function CodeEditor({
 
   useEffect(() => {
     let cancelled = false;
-    getHighlighter().then((highlighter) => {
+    void getHighlighterWithTheme(themeName, mode).then(({ highlighter, theme }) => {
       if (cancelled) return;
       const lang = language === "mjs" ? "javascript" : language;
-      const theme = resolveShikiTheme(themeName, mode);
       const result = highlighter.codeToTokens(code, { lang, theme });
       setTokens(result.tokens);
       setLineNumberColor(highlighter.getTheme(theme).colors?.["editorLineNumber.foreground"]);
