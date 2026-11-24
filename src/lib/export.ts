@@ -9,7 +9,15 @@ function filter(node: HTMLElement) {
 
 const OPTIONS = { filter };
 
-export async function captureDataUrl(node: HTMLElement, format: ExportFormat): Promise<string> {
+/**
+ * `fill` paints behind a transparent frame where the format has no alpha:
+ * JPG would otherwise turn it black.
+ */
+export async function captureDataUrl(
+  node: HTMLElement,
+  format: ExportFormat,
+  fill?: string,
+): Promise<string> {
   switch (format) {
     case "svg":
       return toSvg(node, OPTIONS);
@@ -18,7 +26,7 @@ export async function captureDataUrl(node: HTMLElement, format: ExportFormat): P
       return canvas.toDataURL("image/webp");
     }
     case "jpg":
-      return toJpeg(node, { ...OPTIONS, pixelRatio: 2, quality: 0.95 });
+      return toJpeg(node, { ...OPTIONS, pixelRatio: 2, quality: 0.95, backgroundColor: fill });
     default:
       return toPng(node, { ...OPTIONS, pixelRatio: 2 });
   }

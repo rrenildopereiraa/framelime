@@ -96,3 +96,15 @@
 .frame-tab-close:focus-visible {
   opacity: 1;
 }
+
+/* A checkerboard behind a transparent frame, on screen only. */
+.transparency-grid {
+  background-color: light-dark(#ffffff, #1a1b18);
+  background-image: conic-gradient(
+    light-dark(#e3e5dc, #262724) 25%,
+    transparent 0 50%,
+    light-dark(#e3e5dc, #262724) 0 75%,
+    transparent 0
+  );
+  background-size: 16px 16px;
+}

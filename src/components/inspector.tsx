@@ -1,10 +1,12 @@
 import { IconArrowsShuffle, IconLayout, IconPalette, IconUpload } from "@tabler/icons-react";
 import { useState } from "react";
+import tinycolor from "tinycolor2";
 import Button from "@/components/ui/button.tsx";
 import Separator from "@/components/ui/separator.tsx";
 import Slider from "@/components/ui/slider.tsx";
 import Switch from "@/components/ui/switch.tsx";
 import Tabs from "@/components/ui/tabs.tsx";
+import { BACKGROUND_TYPES, type BackgroundSettings } from "../lib/background";
 import { type ChromeMode, type FrameMode, useChromeTheme } from "../lib/chrome-theme";
 import { LANGUAGES, type LanguageId, THEMES } from "../lib/highlighter";
 import {
@@ -59,8 +61,8 @@ export const FONT_FAMILIES: Record<FontFamilyId, { label: string; stack?: string
   },
 };
 
+// The frame's own background color sits with the other background settings.
 const FRAME_COLOR_FIELDS: { key: keyof FrameColors; label: string }[] = [
-  { key: "page", label: "Background" },
   { key: "surface", label: "Surface" },
   { key: "border", label: "Border" },
   { key: "accentDim", label: "Text" },
@@ -102,6 +104,7 @@ function SettingsTabs({
 const SIZE_MARKS = ["None", "Medium", "Large"];
 const FONT_SIZE_MARKS = ["Small", "Medium", "Large"];
 const OPACITY_MARKS = ["None", "Half", "Full"];
+const ANGLE_MARKS = ["Up", "Down", "Up"];
 
 function SliderField({
   label,
@@ -211,6 +214,99 @@ interface InspectorContentProps {
   frameColors: FrameColors;
   onFrameColorsChange: (value: FrameColors) => void;
   onUploadTheme: (file: File) => void;
+  /** Background settings, with empty colors already resolved from the theme. */
+  background: BackgroundSettings;
+  onBackgroundChange: (patch: Partial<BackgroundSettings>) => void;
+}
+
+/** Opens the file picker for one file of the given types. */
+function pickFile(accept: string, onFile: (file: File) => void) {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = accept;
+  input.onchange = () => {
+    const file = input.files?.[0];
+    if (file) onFile(file);
+  };
+  input.click();
+}
+
+function BackgroundControls({
+  background,
+  onBackgroundChange,
+  color,
+  onColorChange,
+}: {
+  background: BackgroundSettings;
+  onBackgroundChange: (patch: Partial<BackgroundSettings>) => void;
+  color: string;
+  onColorChange: (value: string) => void;
+}) {
+  const type = background.bg;
+  return (
+    <>
+      <PickerField
+        label="Type"
+        value={type}
+        options={BACKGROUND_TYPES}
+        onValueChange={(value) => onBackgroundChange({ bg: value })}
+      />
+
+      {type === "solid" && <ColorInput label="Color" value={color} onChange={onColorChange} />}
+
+      {type === "gradient" && (
+        <>
+          <ColorInput
+            label="Start"
+            value={background.gradFrom}
+            onChange={(value) => onBackgroundChange({ gradFrom: value })}
+          />
+          <OptionSwitch
+            label="Middle stop"
+            checked={background.gradVia !== ""}
+            onCheckedChange={(on) =>
+              onBackgroundChange({
+                gradVia: on
+                  ? tinycolor.mix(background.gradFrom, background.gradTo).toHexString()
+                  : "",
+              })
+            }
+          />
+          {background.gradVia !== "" && (
+            <ColorInput
+              label="Middle"
+              value={background.gradVia}
+              onChange={(value) => onBackgroundChange({ gradVia: value })}
+            />
+          )}
+          <ColorInput
+            label="End"
+            value={background.gradTo}
+            onChange={(value) => onBackgroundChange({ gradTo: value })}
+          />
+          <div className="pt:2">
+            <SliderField
+              label="Angle"
+              value={background.gradAngle}
+              onValueChange={(value) => onBackgroundChange({ gradAngle: value })}
+              min={0}
+              max={360}
+              step={15}
+              unit="°"
+              marks={ANGLE_MARKS}
+            />
+          </div>
+        </>
+      )}
+
+      {type === "transparent" && (
+        <p className="pb:4 fs:xs c:hint">
+          PNG, WEBP and SVG keep it see-through. JPG has no transparency, so it uses the theme's
+          background color.
+        </p>
+      )}
+    </>
+  );
 }
 
 function InspectorContent({
@@ -251,6 +347,8 @@ function InspectorContent({
   frameColors,
   onFrameColorsChange,
   onUploadTheme,
+  background,
+  onBackgroundChange,
 }: InspectorContentProps) {
   if (tab === "layout") {
     return (
@@ -379,16 +477,7 @@ function InspectorContent({
 
       <div className="pb:5">
         <Button
-          onClick={() => {
-            const input = document.createElement("input");
-            input.type = "file";
-            input.accept = ".json";
-            input.onchange = () => {
-              const file = input.files?.[0];
-              if (file) onUploadTheme(file);
-            };
-            input.click();
-          }}
+          onClick={() => pickFile(".json", onUploadTheme)}
           variant="secondary"
           size="sm"
           icon={<IconUpload className="w:4 h:4" />}
@@ -398,7 +487,18 @@ function InspectorContent({
         </Button>
       </div>
 
-      <SectionSeparator label="Colors" />
+      <SectionSeparator label="Background" />
+
+      <BackgroundControls
+        background={background}
+        onBackgroundChange={onBackgroundChange}
+        color={frameColors.page}
+        onColorChange={(value) => onFrameColorsChange({ ...frameColors, page: value })}
+      />
+
+      <div className="pt:3">
+        <SectionSeparator label="Colors" />
+      </div>
 
       {FRAME_COLOR_FIELDS.map(({ key, label }) => (
         <ColorInput

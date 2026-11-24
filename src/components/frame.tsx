@@ -1,6 +1,7 @@
 import { Input } from "@base-ui/react/input";
 import { IconPlus, IconX } from "@tabler/icons-react";
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
+import { type FrameBackground, gradientCss } from "../lib/background";
 import type { ResolvedMode } from "../lib/chrome-theme";
 import type { LanguageId } from "../lib/highlighter";
 import { LANGUAGES } from "../lib/highlighter";
@@ -69,6 +70,18 @@ function HashLines({ color, opacity, gap }: Decorators) {
   );
 }
 
+/** What fills the frame behind the code window. */
+function Backdrop({ background }: { background: FrameBackground }) {
+  if (background.type !== "gradient") return null;
+  return (
+    <div
+      aria-hidden="true"
+      className="p:a i:0 pe:none"
+      style={{ backgroundImage: gradientCss(background.stops, background.angle) }}
+    />
+  );
+}
+
 export const Frame = forwardRef<
   HTMLDivElement,
   {
@@ -105,6 +118,7 @@ export const Frame = forwardRef<
     /** Left out once the snippet limit is reached. */
     onAddTab?: () => void;
     decorators: Decorators | null;
+    background: FrameBackground;
   }
 >(function Frame(
   {
@@ -139,6 +153,7 @@ export const Frame = forwardRef<
     onCloseTab,
     onAddTab,
     decorators,
+    background,
   },
   ref,
 ) {
@@ -303,7 +318,7 @@ export const Frame = forwardRef<
       className={`p:r min-w:0 o:h ${ratioValue ? "d:f ai:c jc:c tp:d tdu:200" : ""}`}
       style={{
         padding,
-        backgroundColor: colors.page,
+        backgroundColor: background.type === "transparent" ? undefined : background.color,
         ...(ratioValue
           ? {
               // Locked to the fitted rectangle once measured; the
@@ -316,6 +331,7 @@ export const Frame = forwardRef<
           : {}),
       }}
     >
+      <Backdrop background={background} />
       <div
         ref={contentRef}
         className={`p:r zi:10 w:192 o:v ${ratioValue ? "tp:t tdu:200 tor:c" : "max-w:100%"}`}

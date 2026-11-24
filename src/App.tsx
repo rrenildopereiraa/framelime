@@ -10,6 +10,7 @@ import { RADIUS_MAX, RADIUS_MIN } from "./components/radius-control";
 import { StatusBar } from "./components/status-bar";
 import { useToast } from "./components/toast-provider";
 import { DrawerIndent } from "./components/ui/drawer";
+import type { BackgroundSettings, FrameBackground } from "./lib/background";
 import { type ResolvedMode, useChromeTheme } from "./lib/chrome-theme";
 import { buildCommands } from "./lib/commands";
 import { captureDataUrl, copyImageToClipboard } from "./lib/export";
@@ -218,6 +219,31 @@ function App() {
   const decoGap = clamp(settings.decoGap, DECOR_SPACING_MIN, DECOR_SPACING_MAX);
   const decoColor = settings.decoColor || settings.colors.border;
 
+  // Empty gradient stops follow the theme: the frame's page color and its
+  // accent, the status bar text.
+  const background: BackgroundSettings = {
+    bg: settings.bg,
+    gradFrom: settings.gradFrom || settings.colors.page,
+    gradVia: settings.gradVia,
+    gradTo: settings.gradTo || settings.colors.statusBarText,
+    gradAngle: clamp(settings.gradAngle, 0, 360),
+  };
+  const pageColor = settings.colors.page;
+  const frameBackground: FrameBackground =
+    background.bg === "gradient"
+      ? {
+          type: "gradient",
+          color: pageColor,
+          stops: [background.gradFrom, background.gradVia, background.gradTo].filter(Boolean),
+          angle: background.gradAngle,
+        }
+      : { type: background.bg, color: pageColor };
+
+  function setBackground(patch: Partial<BackgroundSettings>) {
+    // Switching the type is a step of its own; tuning one merges.
+    setSettings(patch, "bg" in patch ? null : undefined);
+  }
+
   const radii: CornerRadii = {
     tl: settings.rtl,
     tr: settings.rtr,
@@ -396,7 +422,7 @@ function App() {
         description: result.name,
         type: "success",
       });
-    } catch (_error) {
+    } catch {
       toast.add({
         title: "Invalid theme",
         description: "Could not parse the uploaded file as a VS Code color theme.",
@@ -475,7 +501,11 @@ function App() {
     if (!frameRef.current || exporting) return;
     setExporting(true);
     try {
-      const dataUrl = await captureDataUrl(frameRef.current, format);
+      const dataUrl = await captureDataUrl(
+        frameRef.current,
+        format,
+        frameBackground.type === "transparent" ? pageColor : undefined,
+      );
       const link = document.createElement("a");
       link.download = `${active.fileName || "framelime"}.${format}`;
       link.href = dataUrl;
@@ -651,6 +681,7 @@ function App() {
             decorators={
               settings.deco ? { color: decoColor, opacity: decoOpacity, gap: decoGap } : null
             }
+            background={frameBackground}
           />
 
           <Inspector
@@ -695,6 +726,8 @@ function App() {
             frameColors={settings.colors}
             onFrameColorsChange={(value) => setSettings({ colors: value })}
             onUploadTheme={handleUploadTheme}
+            background={background}
+            onBackgroundChange={setBackground}
           />
         </div>
 

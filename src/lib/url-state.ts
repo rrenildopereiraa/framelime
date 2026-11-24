@@ -6,6 +6,7 @@ import {
   parseAsStringEnum,
 } from "nuqs";
 import type { FrameColors } from "../components/frame";
+import { type BackgroundType, GRADIENT_ANGLE_DEFAULT } from "./background";
 import { FONT_FAMILIES, type FontFamilyId } from "../components/inspector";
 import type { FrameMode } from "./chrome-theme";
 import { requireThemeFrameColors, THEME_NAME } from "./highlighter";
@@ -61,6 +62,14 @@ export const settingsParsers = {
   decoColor: parseAsString.withDefault(""),
   decoOpacity: parseAsInteger.withDefault(DECOR_OPACITY_DEFAULT),
   decoGap: parseAsInteger.withDefault(DECOR_SPACING_DEFAULT),
+  // What fills the frame.
+  bg: parseAsStringEnum<BackgroundType>(["solid", "gradient", "transparent"]).withDefault("solid"),
+  // Gradient stops; an empty start or end follows the theme, an empty
+  // middle leaves it out.
+  gradFrom: parseAsString.withDefault(""),
+  gradVia: parseAsString.withDefault(""),
+  gradTo: parseAsString.withDefault(""),
+  gradAngle: parseAsInteger.withDefault(GRADIENT_ANGLE_DEFAULT),
   theme: parseAsString.withDefault(THEME_NAME),
   // The frame's light/dark preference, independent of the app scheme.
   frameMode: parseAsStringEnum<FrameMode>(["light", "dark", "auto"]).withDefault("auto"),

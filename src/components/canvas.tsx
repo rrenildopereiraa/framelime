@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import type { FrameBackground } from "../lib/background";
 import type { ResolvedMode } from "../lib/chrome-theme";
 import type { LanguageId } from "../lib/highlighter";
 import type {
@@ -45,6 +46,7 @@ export function Canvas({
   onCloseTab,
   onAddTab,
   decorators,
+  background,
 }: {
   code: string;
   onCodeChange: (value: string) => void;
@@ -78,12 +80,17 @@ export function Canvas({
   onCloseTab: (id: string) => void;
   onAddTab?: () => void;
   decorators: Decorators | null;
+  background: FrameBackground;
 }) {
   const viewportRef = useRef<HTMLElement>(null);
 
   return (
     <main ref={viewportRef} className="f:1 d:f min-h:0 min-w:0 o:auto px:2 @sm:px:4 py:8 @sm:py:16">
       <div className="m:auto p:r min-w:0">
+        {/* Outside the frame, so exports keep it transparent. */}
+        {background.type === "transparent" && (
+          <div aria-hidden="true" className="transparency-grid p:a i:0 pe:none" />
+        )}
         <Frame
           ref={frameRef}
           code={code}
@@ -117,6 +124,7 @@ export function Canvas({
           onCloseTab={onCloseTab}
           onAddTab={onAddTab}
           decorators={decorators}
+          background={background}
         />
 
         {showBoundingBox && <BoundingBox />}
