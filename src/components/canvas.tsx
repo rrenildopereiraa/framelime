@@ -1,9 +1,16 @@
 import { useRef } from "react";
 import type { ResolvedMode } from "../lib/chrome-theme";
 import type { LanguageId } from "../lib/highlighter";
-import type { AspectRatio, HighlightedLine, HighlightedWord, LabelPosition } from "../lib/types";
+import type {
+  AspectRatio,
+  FrameTab,
+  HighlightedLine,
+  HighlightedWord,
+  LabelPosition,
+  WindowStyle,
+} from "../lib/types";
 import { BoundingBox } from "./bounding-box";
-import { Frame, type FrameColors } from "./frame";
+import { type Decorators, Frame, type FrameColors } from "./frame";
 import type { CornerRadii } from "./inspector";
 
 export function Canvas({
@@ -33,6 +40,11 @@ export function Canvas({
   fontSize,
   showLineNumbers,
   labelPosition,
+  windowStyle,
+  tabs,
+  activeTabId,
+  onSelectTab,
+  decorators,
 }: {
   code: string;
   onCodeChange: (value: string) => void;
@@ -60,6 +72,11 @@ export function Canvas({
   fontSize: number;
   showLineNumbers: boolean;
   labelPosition: LabelPosition;
+  windowStyle: WindowStyle;
+  tabs: FrameTab[] | null;
+  activeTabId: string;
+  onSelectTab: (id: string) => void;
+  decorators: Decorators | null;
 }) {
   const viewportRef = useRef<HTMLElement>(null);
 
@@ -93,6 +110,11 @@ export function Canvas({
           fontSize={fontSize}
           showLineNumbers={showLineNumbers}
           labelPosition={labelPosition}
+          windowStyle={windowStyle}
+          tabs={tabs}
+          activeTabId={activeTabId}
+          onSelectTab={onSelectTab}
+          decorators={decorators}
         />
 
         {showBoundingBox && <BoundingBox />}

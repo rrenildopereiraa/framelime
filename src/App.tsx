@@ -28,6 +28,8 @@ import { randomSnippet } from "./lib/snippets";
 import {
   clamp,
   type CornerRadii,
+  DECOR_SPACING_MAX,
+  DECOR_SPACING_MIN,
   type EditorDocument,
   FONT_SIZE_MAX,
   FONT_SIZE_MIN,
@@ -37,6 +39,7 @@ import {
   PADDING_MAX,
   PADDING_MIN,
   PADDING_STEP,
+  WINDOW_STYLES,
 } from "./lib/types";
 import { settingsParsers } from "./lib/url-state";
 
@@ -213,6 +216,9 @@ function App() {
   // A hand-edited link can carry any number; the frame only draws the slider's range.
   const padding = clamp(settings.pad, PADDING_MIN, PADDING_MAX);
   const fontSize = clamp(settings.size, FONT_SIZE_MIN, FONT_SIZE_MAX);
+  const decoOpacity = clamp(settings.decoOpacity, 0, 100);
+  const decoGap = clamp(settings.decoGap, DECOR_SPACING_MIN, DECOR_SPACING_MAX);
+  const decoColor = settings.decoColor || settings.colors.accentDim;
 
   const radii: CornerRadii = {
     tl: settings.rtl,
@@ -427,6 +433,7 @@ function App() {
 
     recordChange(null);
     writeSettings({
+      win: WINDOW_STYLES[Math.floor(Math.random() * WINDOW_STYLES.length)].id,
       tabBar: randomBool(),
       lines: randomBool(),
       label: LABEL_POSITIONS[Math.floor(Math.random() * LABEL_POSITIONS.length)].id,
@@ -565,6 +572,11 @@ function App() {
     showLineNumbers: settings.lines,
     onShowLineNumbersChange: (value) => setSettings({ lines: value }),
     onLabelPositionChange: (value) => setSettings({ label: value }),
+    onWindowStyleChange: (value) => setSettings({ win: value }),
+    showFrameTabs: settings.tabs,
+    onShowFrameTabsChange: (value) => setSettings({ tabs: value }),
+    showDecorators: settings.deco,
+    onShowDecoratorsChange: (value) => setSettings({ deco: value }),
     padding,
     onPaddingChange: (value) => setSettings({ pad: value }),
     fontSize,
@@ -641,6 +653,13 @@ function App() {
             fontSize={fontSize}
             showLineNumbers={settings.lines}
             labelPosition={settings.label}
+            windowStyle={settings.win}
+            tabs={settings.tabs ? documents.map(({ id, fileName }) => ({ id, fileName })) : null}
+            activeTabId={activeId}
+            onSelectTab={selectDocument}
+            decorators={
+              settings.deco ? { color: decoColor, opacity: decoOpacity, gap: decoGap } : null
+            }
           />
 
           <Inspector
@@ -657,6 +676,18 @@ function App() {
             onShowLineNumbersChange={(value) => setSettings({ lines: value })}
             labelPosition={settings.label}
             onLabelPositionChange={(value) => setSettings({ label: value })}
+            windowStyle={settings.win}
+            onWindowStyleChange={(value) => setSettings({ win: value })}
+            showFrameTabs={settings.tabs}
+            onShowFrameTabsChange={(value) => setSettings({ tabs: value })}
+            showDecorators={settings.deco}
+            onShowDecoratorsChange={(value) => setSettings({ deco: value })}
+            decoratorColor={decoColor}
+            onDecoratorColorChange={(value) => setSettings({ decoColor: value })}
+            decoratorOpacity={decoOpacity}
+            onDecoratorOpacityChange={(value) => setSettings({ decoOpacity: value })}
+            decoratorSpacing={decoGap}
+            onDecoratorSpacingChange={(value) => setSettings({ decoGap: value })}
             padding={padding}
             onPaddingChange={(value) => setSettings({ pad: value })}
             fontSize={fontSize}

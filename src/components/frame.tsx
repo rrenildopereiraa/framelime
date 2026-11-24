@@ -1,4 +1,5 @@
 import { Input } from "@base-ui/react/input";
+import { IconChevronRight, IconLock } from "@tabler/icons-react";
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import type { ResolvedMode } from "../lib/chrome-theme";
 import type { LanguageId } from "../lib/highlighter";
@@ -6,9 +7,11 @@ import { LANGUAGES } from "../lib/highlighter";
 import {
   ASPECT_RATIO_VALUES,
   type AspectRatio,
+  type FrameTab,
   type HighlightedLine,
   type HighlightedWord,
   type LabelPosition,
+  type WindowStyle,
 } from "../lib/types";
 import { CodeEditor } from "./code-editor";
 import type { CornerRadii } from "./inspector";
@@ -25,6 +28,72 @@ export interface FrameColors {
   highlightMark: string;
   highlightAdd: string;
   highlightRemove: string;
+}
+
+export interface Decorators {
+  color: string;
+  /** 0 to 100. */
+  opacity: number;
+  /** Gap between each line and the code window, in px. */
+  gap: number;
+}
+
+// Far enough to cross any frame's padding; the frame clips the rest.
+const HASH_REACH = 4000;
+
+/** Lines along the code window's edges, running past it to form a #. */
+function HashLines({ color, opacity, gap }: Decorators) {
+  const line = { backgroundColor: color, opacity: opacity / 100 };
+  const offset = -gap - 1;
+  return (
+    <div aria-hidden="true" className="pe:none">
+      <div
+        className="p:a h:px"
+        style={{ ...line, top: offset, left: -HASH_REACH, right: -HASH_REACH }}
+      />
+      <div
+        className="p:a h:px"
+        style={{ ...line, bottom: offset, left: -HASH_REACH, right: -HASH_REACH }}
+      />
+      <div
+        className="p:a w:px"
+        style={{ ...line, left: offset, top: -HASH_REACH, bottom: -HASH_REACH }}
+      />
+      <div
+        className="p:a w:px"
+        style={{ ...line, right: offset, top: -HASH_REACH, bottom: -HASH_REACH }}
+      />
+    </div>
+  );
+}
+
+// The red, yellow and green of a desktop window's title bar.
+const DOT_COLORS = ["#ff5f57", "#febc2e", "#28c840"];
+
+function WindowDots() {
+  return (
+    <div className="d:f ai:c g:2 fs:0" aria-hidden="true">
+      {DOT_COLORS.map((color) => (
+        <span key={color} className="d:b w:3 h:3 br:9999" style={{ backgroundColor: color }} />
+      ))}
+    </div>
+  );
+}
+
+function AddressBar({ colors, children }: { colors: FrameColors; children: React.ReactNode }) {
+  return (
+    <div
+      className="f:1 d:f ai:c jc:c g:2 px:3 py:1 br:md min-w:0 bw:1 bs:s"
+      style={{
+        backgroundColor: colors.tabActive,
+        borderColor: colors.border,
+        color: colors.accentDim,
+      }}
+    >
+      <IconLock size={12} stroke={2} className="fs:0" aria-hidden />
+      {children}
+    </div>
+  );
 }
 
 export const Frame = forwardRef<
@@ -55,6 +124,12 @@ export const Frame = forwardRef<
     fontSize: number;
     showLineNumbers: boolean;
     labelPosition: LabelPosition;
+    windowStyle: WindowStyle;
+    /** The open snippets as tabs, or null for the single tab. */
+    tabs: FrameTab[] | null;
+    activeTabId?: string;
+    onSelectTab?: (id: string) => void;
+    decorators: Decorators | null;
   }
 >(function Frame(
   {
@@ -83,10 +158,48 @@ export const Frame = forwardRef<
     fontSize,
     showLineNumbers,
     labelPosition,
+    windowStyle,
+    tabs,
+    activeTabId,
+    onSelectTab,
+    decorators,
   },
   ref,
 ) {
   const fontStyle = fontFamily ? { fontFamily } : undefined;
+  const activeTabStyle = {
+    backgroundColor: colors.tabActive,
+    borderRight: `1px solid ${colors.border}`,
+  };
+  const inactiveTabStyle = {
+    color: colors.accentDim,
+    opacity: 0.6,
+    borderRight: `1px solid ${colors.border}`,
+    borderBottom: `1px solid ${colors.border}`,
+  };
+  const activeChipStyle = { color: colors.accentDim };
+  const inactiveChipStyle = { color: colors.accentDim, opacity: 0.6 };
+
+  const fileNameInput = (
+    <Input
+      value={fileName}
+      onChange={(event) => onFileNameChange(event.target.value)}
+      size={Math.max(fileName.length, 10)}
+      spellCheck={false}
+      placeholder="Untitled-1"
+      className="ff:m fs:sm bg:transparent bw:0 os:none p:0 w:fc"
+      // `normal`, not the inherited line height: exported
+      // images keep the tab bar height they always had.
+      style={{ color: colors.accentDim, lineHeight: "normal", ...fontStyle }}
+    />
+  );
+
+  const languageLabel =
+    labelPosition === "tab" ? (
+      <span className="ff:m fs:xs fw:700" style={{ color: colors.statusBarText, ...fontStyle }}>
+        {LANGUAGES[language]}
+      </span>
+    ) : null;
   const borderRadius = `${radii.tl}px ${radii.tr}px ${radii.br}px ${radii.bl}px`;
   const ratioValue = ASPECT_RATIO_VALUES[aspectRatio];
   const contentRef = useRef<HTMLDivElement>(null);
@@ -196,6 +309,7 @@ export const Frame = forwardRef<
           transform: fit ? `scale(${fit.scale})` : undefined,
         }}
       >
+        {decorators && <HashLines {...decorators} />}
         <div
           className="d:f bw:1 bs:s o:h"
           style={{
@@ -205,46 +319,122 @@ export const Frame = forwardRef<
           }}
         >
           <div className="f:1 min-w:0 min-h:0">
-            <div className={`frame-collapsible ${showTabBar ? "frame-collapsible-open" : ""}`}>
-              <div className="o:h min-h:0">
-                <div className="d:f" style={{ backgroundColor: colors.tabBar }}>
-                  <div
-                    className="d:f ai:c g:2 px:4 py:3"
-                    style={{
-                      backgroundColor: colors.tabActive,
-                      borderRight: `1px solid ${colors.border}`,
-                    }}
-                  >
-                    <Input
-                      value={fileName}
-                      onChange={(event) => onFileNameChange(event.target.value)}
-                      size={Math.max(fileName.length, 10)}
-                      spellCheck={false}
-                      placeholder="Untitled-1"
-                      className="ff:m fs:sm bg:transparent bw:0 os:none p:0 w:fc"
-                      // `normal`, not the inherited line height: exported
-                      // images keep the tab bar height they always had.
-                      style={{ color: colors.accentDim, lineHeight: "normal", ...fontStyle }}
-                    />
-                  </div>
-                  <div
-                    className="f:1 d:f ai:c jc:fe px:4"
-                    style={{ borderBottom: `1px solid ${colors.border}` }}
-                  >
-                    {labelPosition === "tab" && (
-                      <span
-                        className="ff:m fs:xs fw:700"
-                        style={{ color: colors.statusBarText, ...fontStyle }}
-                      >
-                        {LANGUAGES[language]}
-                      </span>
+            {windowStyle === "frame" && (
+              <div className={`frame-collapsible ${showTabBar ? "frame-collapsible-open" : ""}`}>
+                <div className="o:h min-h:0">
+                  <div className="d:f" style={{ backgroundColor: colors.tabBar }}>
+                    {tabs ? (
+                      tabs.map((tab) =>
+                        tab.id === activeTabId ? (
+                          <div
+                            key={tab.id}
+                            className="d:f ai:c g:2 px:4 py:3"
+                            style={activeTabStyle}
+                          >
+                            {fileNameInput}
+                          </div>
+                        ) : (
+                          <button
+                            key={tab.id}
+                            type="button"
+                            onClick={() => onSelectTab?.(tab.id)}
+                            className="d:f ai:c px:4 py:3 bg:transparent bw:0 c:p ff:m fs:sm ws:nw"
+                            style={{ ...inactiveTabStyle, lineHeight: "normal", ...fontStyle }}
+                          >
+                            {tab.fileName || "Untitled"}
+                          </button>
+                        ),
+                      )
+                    ) : (
+                      <div className="d:f ai:c g:2 px:4 py:3" style={activeTabStyle}>
+                        {fileNameInput}
+                      </div>
                     )}
+                    <div
+                      className="f:1 d:f ai:c jc:fe px:4"
+                      style={{ borderBottom: `1px solid ${colors.border}` }}
+                    >
+                      {languageLabel}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
+
+            {windowStyle === "browser" && (
+              <div
+                style={{
+                  backgroundColor: colors.tabBar,
+                  borderBottom: `1px solid ${colors.border}`,
+                }}
+              >
+                <div className="d:f ai:c g:3 px:4 py:3">
+                  <WindowDots />
+                  {tabs ? (
+                    <div className="d:f ai:c g:1 min-w:0">
+                      {tabs.map((tab) => (
+                        <button
+                          key={tab.id}
+                          type="button"
+                          onClick={() => onSelectTab?.(tab.id)}
+                          className="px:3 py:1 bw:0 br:md c:p ff:m fs:xs ws:nw"
+                          style={{
+                            ...(tab.id === activeTabId ? activeChipStyle : inactiveChipStyle),
+                            backgroundColor:
+                              tab.id === activeTabId ? colors.tabActive : "transparent",
+                            lineHeight: "normal",
+                            ...fontStyle,
+                          }}
+                        >
+                          {tab.fileName || "Untitled"}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <AddressBar colors={colors}>{fileNameInput}</AddressBar>
+                  )}
+                  {/* Holds the row's right edge when tabs, not the address bar, fill it. */}
+                  <div className={`d:f jc:fe ${tabs ? "f:1" : ""}`}>{languageLabel}</div>
+                </div>
+                {tabs && (
+                  <div className="d:f px:4 pb:3">
+                    <AddressBar colors={colors}>{fileNameInput}</AddressBar>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {windowStyle === "terminal" && (
+              <div
+                className="d:g ai:c px:4 py:3"
+                style={{
+                  gridTemplateColumns: "1fr auto 1fr",
+                  backgroundColor: colors.tabBar,
+                  borderBottom: `1px solid ${colors.border}`,
+                }}
+              >
+                <WindowDots />
+                <div className="d:f jc:c">{fileNameInput}</div>
+                <div className="d:f jc:fe">{languageLabel}</div>
+              </div>
+            )}
 
             <div className="p:4" style={{ backgroundColor: colors.tabActive }}>
+              {windowStyle === "terminal" && (
+                <div
+                  className="d:f ai:c g:2 pb:2 ff:m"
+                  style={{ color: colors.accentDim, fontSize, lineHeight: 1.5, ...fontStyle }}
+                >
+                  <IconChevronRight
+                    className="fs:0"
+                    size={fontSize}
+                    stroke={2.5}
+                    style={{ color: colors.statusBarText }}
+                    aria-hidden
+                  />
+                  <span>cat {fileName || "Untitled-1"}</span>
+                </div>
+              )}
               <CodeEditor
                 code={code}
                 onCodeChange={onCodeChange}
@@ -270,7 +460,9 @@ export const Frame = forwardRef<
               />
             </div>
 
-            <div className={`frame-collapsible ${showStatusBar ? "frame-collapsible-open" : ""}`}>
+            <div
+              className={`frame-collapsible ${showStatusBar && windowStyle !== "none" ? "frame-collapsible-open" : ""}`}
+            >
               <div className="o:h min-h:0">
                 <div
                   className="d:f ai:c jc:fe px:4 py:2 btw:1 bs:s"

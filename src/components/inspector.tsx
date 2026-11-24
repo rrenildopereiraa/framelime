@@ -11,6 +11,9 @@ import {
   ASPECT_RATIOS,
   type AspectRatio,
   type CornerRadii,
+  DECOR_SPACING_MAX,
+  DECOR_SPACING_MIN,
+  DECOR_SPACING_STEP,
   FONT_SIZE_MAX,
   FONT_SIZE_MIN,
   LABEL_POSITIONS,
@@ -18,6 +21,8 @@ import {
   PADDING_MAX,
   PADDING_MIN,
   PADDING_STEP,
+  WINDOW_STYLES,
+  type WindowStyle,
 } from "../lib/types";
 import { BottomSheet, SubSheet } from "./bottom-sheet";
 import { ColorInput } from "./color-input";
@@ -61,7 +66,7 @@ const FRAME_COLOR_FIELDS: { key: keyof FrameColors; label: string }[] = [
   { key: "surface", label: "Surface" },
   { key: "border", label: "Border" },
   { key: "accentDim", label: "Text" },
-  { key: "tabBar", label: "Tab bar" },
+  { key: "tabBar", label: "Tab bar, inactive tabs" },
   { key: "tabActive", label: "Active tab" },
   { key: "statusBarBg", label: "Status bar" },
   { key: "statusBarText", label: "Status bar text" },
@@ -101,6 +106,7 @@ function SliderField({
   min,
   max,
   step,
+  unit = "px",
 }: {
   label: string;
   value: number;
@@ -108,6 +114,7 @@ function SliderField({
   min: number;
   max: number;
   step: number;
+  unit?: string;
 }) {
   return (
     <div className="pb:4">
@@ -118,7 +125,7 @@ function SliderField({
         min={min}
         max={max}
         step={step}
-        unit="px"
+        unit={unit}
         className="w:100%"
       />
     </div>
@@ -169,6 +176,18 @@ interface InspectorContentProps {
   onShowLineNumbersChange: (value: boolean) => void;
   labelPosition: LabelPosition;
   onLabelPositionChange: (value: LabelPosition) => void;
+  windowStyle: WindowStyle;
+  onWindowStyleChange: (value: WindowStyle) => void;
+  showFrameTabs: boolean;
+  onShowFrameTabsChange: (value: boolean) => void;
+  showDecorators: boolean;
+  onShowDecoratorsChange: (value: boolean) => void;
+  decoratorColor: string;
+  onDecoratorColorChange: (value: string) => void;
+  decoratorOpacity: number;
+  onDecoratorOpacityChange: (value: number) => void;
+  decoratorSpacing: number;
+  onDecoratorSpacingChange: (value: number) => void;
   padding: number;
   onPaddingChange: (value: number) => void;
   fontSize: number;
@@ -201,6 +220,18 @@ function InspectorContent({
   onShowLineNumbersChange,
   labelPosition,
   onLabelPositionChange,
+  windowStyle,
+  onWindowStyleChange,
+  showFrameTabs,
+  onShowFrameTabsChange,
+  showDecorators,
+  onShowDecoratorsChange,
+  decoratorColor,
+  onDecoratorColorChange,
+  decoratorOpacity,
+  onDecoratorOpacityChange,
+  decoratorSpacing,
+  onDecoratorSpacingChange,
   padding,
   onPaddingChange,
   fontSize,
@@ -225,7 +256,24 @@ function InspectorContent({
   if (tab === "layout") {
     return (
       <>
-        <OptionSwitch label="Tab bar" checked={showTabBar} onCheckedChange={onShowTabBarChange} />
+        <PickerField
+          label="Window style"
+          value={windowStyle}
+          options={WINDOW_STYLES}
+          onValueChange={onWindowStyleChange}
+        />
+        <OptionSwitch
+          label="Tab bar"
+          checked={showTabBar}
+          onCheckedChange={onShowTabBarChange}
+          disabled={windowStyle !== "frame"}
+        />
+        <OptionSwitch
+          label="Snippets as tabs"
+          checked={showFrameTabs}
+          onCheckedChange={onShowFrameTabsChange}
+          disabled={windowStyle === "none" || windowStyle === "terminal"}
+        />
         <OptionSwitch
           label="Bounding box"
           checked={showBoundingBox}
@@ -235,6 +283,7 @@ function InspectorContent({
           label="Status bar"
           checked={showStatusBar}
           onCheckedChange={onShowStatusBarChange}
+          disabled={windowStyle === "none"}
         />
         <OptionSwitch
           label="Line numbers"
@@ -286,6 +335,40 @@ function InspectorContent({
           options={LABEL_POSITIONS}
           onValueChange={onLabelPositionChange}
         />
+
+        <SectionSeparator label="Decorators" />
+
+        <OptionSwitch
+          label="Hash lines"
+          checked={showDecorators}
+          onCheckedChange={onShowDecoratorsChange}
+        />
+        {showDecorators && (
+          <>
+            <ColorInput
+              label="Line color"
+              value={decoratorColor}
+              onChange={onDecoratorColorChange}
+            />
+            <SliderField
+              label="Line opacity"
+              value={decoratorOpacity}
+              onValueChange={onDecoratorOpacityChange}
+              min={0}
+              max={100}
+              step={5}
+              unit="%"
+            />
+            <SliderField
+              label="Line spacing"
+              value={decoratorSpacing}
+              onValueChange={onDecoratorSpacingChange}
+              min={DECOR_SPACING_MIN}
+              max={DECOR_SPACING_MAX}
+              step={DECOR_SPACING_STEP}
+            />
+          </>
+        )}
       </>
     );
   }

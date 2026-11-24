@@ -9,7 +9,15 @@ import type { FrameColors } from "../components/frame";
 import { FONT_FAMILIES, type FontFamilyId } from "../components/inspector";
 import type { FrameMode } from "./chrome-theme";
 import { requireThemeFrameColors, THEME_NAME } from "./highlighter";
-import { type AspectRatio, FONT_SIZE_DEFAULT, type LabelPosition, PADDING_DEFAULT } from "./types";
+import {
+  type AspectRatio,
+  DECOR_OPACITY_DEFAULT,
+  DECOR_SPACING_DEFAULT,
+  FONT_SIZE_DEFAULT,
+  type LabelPosition,
+  PADDING_DEFAULT,
+  type WindowStyle,
+} from "./types";
 
 const FRAME_COLOR_KEYS: (keyof FrameColors)[] = [
   "page",
@@ -48,6 +56,16 @@ export const settingsParsers = {
   size: parseAsInteger.withDefault(FONT_SIZE_DEFAULT),
   lines: parseAsBoolean.withDefault(false),
   label: parseAsStringEnum<LabelPosition>(["none", "status", "tab"]).withDefault("status"),
+  // Defaults keep links made before these settings looking as they did.
+  win: parseAsStringEnum<WindowStyle>(["none", "frame", "browser", "terminal"]).withDefault(
+    "frame",
+  ),
+  tabs: parseAsBoolean.withDefault(false),
+  deco: parseAsBoolean.withDefault(false),
+  // Empty follows the frame's text color.
+  decoColor: parseAsString.withDefault(""),
+  decoOpacity: parseAsInteger.withDefault(DECOR_OPACITY_DEFAULT),
+  decoGap: parseAsInteger.withDefault(DECOR_SPACING_DEFAULT),
   theme: parseAsString.withDefault(THEME_NAME),
   // The frame's light/dark preference, independent of the app scheme.
   frameMode: parseAsStringEnum<FrameMode>(["light", "dark", "auto"]).withDefault("auto"),

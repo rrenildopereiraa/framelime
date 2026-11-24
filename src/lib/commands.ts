@@ -13,6 +13,8 @@ import {
   PADDING_MAX,
   PADDING_MIN,
   PADDING_STEP,
+  WINDOW_STYLES,
+  type WindowStyle,
 } from "./types";
 
 export interface Command {
@@ -30,6 +32,11 @@ export function buildCommands({
   showLineNumbers,
   onShowLineNumbersChange,
   onLabelPositionChange,
+  onWindowStyleChange,
+  showFrameTabs,
+  onShowFrameTabsChange,
+  showDecorators,
+  onShowDecoratorsChange,
   padding,
   onPaddingChange,
   fontSize,
@@ -57,6 +64,11 @@ export function buildCommands({
   showLineNumbers: boolean;
   onShowLineNumbersChange: (value: boolean) => void;
   onLabelPositionChange: (value: LabelPosition) => void;
+  onWindowStyleChange: (value: WindowStyle) => void;
+  showFrameTabs: boolean;
+  onShowFrameTabsChange: (value: boolean) => void;
+  showDecorators: boolean;
+  onShowDecoratorsChange: (value: boolean) => void;
   padding: number;
   onPaddingChange: (value: number) => void;
   fontSize: number;
@@ -159,6 +171,21 @@ export function buildCommands({
       label: `${showLineNumbers ? "Hide" : "Show"} line numbers`,
       run: () => onShowLineNumbersChange(!showLineNumbers),
     },
+    {
+      id: "toggle-frame-tabs",
+      label: `${showFrameTabs ? "Hide" : "Show"} snippets as tabs in the frame`,
+      run: () => onShowFrameTabsChange(!showFrameTabs),
+    },
+    {
+      id: "toggle-decorators",
+      label: `${showDecorators ? "Hide" : "Show"} hash lines`,
+      run: () => onShowDecoratorsChange(!showDecorators),
+    },
+    ...WINDOW_STYLES.map(({ id, label }): Command => ({
+      id: `window-style-${id}`,
+      label: `Window style: ${label}`,
+      run: () => onWindowStyleChange(id),
+    })),
     {
       id: "font-size-increase",
       label: "Increase font size",
