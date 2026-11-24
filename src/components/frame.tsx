@@ -1,6 +1,7 @@
 import { Input } from "@base-ui/react/input";
 import { IconPlus, IconX } from "@tabler/icons-react";
 import { forwardRef, useLayoutEffect, useRef, useState } from "react";
+import { type FrameBackground, gradientCss, type PatternId } from "../lib/background";
 import type { ResolvedMode } from "../lib/chrome-theme";
 import type { LanguageId } from "../lib/highlighter";
 import { LANGUAGES } from "../lib/highlighter";
@@ -69,6 +70,73 @@ function HashLines({ color, opacity, gap }: Decorators) {
   );
 }
 
+// Full class names, so the class scanner sees every one.
+const PATTERN_CLASSES: Record<PatternId, string> = {
+  blueprint: "pattern pattern-blueprint",
+  drafting: "pattern pattern-drafting",
+  ledger: "pattern pattern-ledger",
+  stitched: "pattern pattern-stitched",
+  perforated: "pattern pattern-perforated",
+  junction: "pattern pattern-junction",
+};
+
+/** What fills the frame behind the code window. */
+function Backdrop({ background, mode }: { background: FrameBackground; mode: ResolvedMode }) {
+  switch (background.type) {
+    case "gradient":
+      return (
+        <div
+          aria-hidden="true"
+          className="p:a i:0 pe:none"
+          style={{ backgroundImage: gradientCss(background.stops, background.angle) }}
+        />
+      );
+    case "pattern":
+      return (
+        <div
+          aria-hidden="true"
+          data-mode={mode}
+          className={`${PATTERN_CLASSES[background.pattern]} p:a i:0 pe:none`}
+          style={
+            {
+              "--pattern-bg": background.color,
+              "--pattern-ink": background.ink,
+              "--pattern-scale": background.scale,
+            } as React.CSSProperties
+          }
+        />
+      );
+    case "image": {
+      // Blur softens the image's edges too: reach past the frame by twice
+      // the radius so the frame's clip cuts them off.
+      const bleed = background.blur * -2;
+      return (
+        <div aria-hidden="true" className="p:a i:0 pe:none o:h">
+          <div
+            className="p:a"
+            style={{
+              inset: bleed,
+              backgroundImage: `url("${background.src}")`,
+              backgroundSize: background.fit,
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+              filter: background.blur ? `blur(${background.blur}px)` : undefined,
+            }}
+          />
+          {background.dim > 0 && (
+            <div
+              className="p:a i:0"
+              style={{ backgroundColor: `rgb(0 0 0 / ${background.dim / 100})` }}
+            />
+          )}
+        </div>
+      );
+    }
+    default:
+      return null;
+  }
+}
+
 export const Frame = forwardRef<
   HTMLDivElement,
   {
@@ -105,6 +173,7 @@ export const Frame = forwardRef<
     /** Left out once the snippet limit is reached. */
     onAddTab?: () => void;
     decorators: Decorators | null;
+    background: FrameBackground;
   }
 >(function Frame(
   {
@@ -139,6 +208,7 @@ export const Frame = forwardRef<
     onCloseTab,
     onAddTab,
     decorators,
+    background,
   },
   ref,
 ) {
@@ -303,7 +373,7 @@ export const Frame = forwardRef<
       className={`p:r min-w:0 o:h ${ratioValue ? "d:f ai:c jc:c tp:d tdu:200" : ""}`}
       style={{
         padding,
-        backgroundColor: colors.page,
+        backgroundColor: background.color,
         ...(ratioValue
           ? {
               // Locked to the fitted rectangle once measured; the
@@ -316,6 +386,7 @@ export const Frame = forwardRef<
           : {}),
       }}
     >
+      <Backdrop background={background} mode={mode} />
       <div
         ref={contentRef}
         className={`p:r zi:10 w:192 o:v ${ratioValue ? "tp:t tdu:200 tor:c" : "max-w:100%"}`}
