@@ -97,13 +97,11 @@ function SettingsTabs({
   );
 }
 
-// Values for a slider's marks, which the slider spreads evenly from start to
-// end: `parts` equal steps from min to max.
-function evenMarks(min: number, max: number, parts: number) {
-  return Array.from({ length: parts + 1 }, (_, i) =>
-    String(Math.round(min + ((max - min) * i) / parts)),
-  );
-}
+// Words under a slider's track, spread evenly from start to end, as Border
+// radius labels its own: numbers there would crowd the sidebar.
+const SIZE_MARKS = ["None", "Medium", "Large"];
+const FONT_SIZE_MARKS = ["Small", "Medium", "Large"];
+const OPACITY_MARKS = ["None", "Half", "Full"];
 
 function SliderField({
   label,
@@ -283,7 +281,7 @@ function InspectorContent({
           min={PADDING_MIN}
           max={PADDING_MAX}
           step={PADDING_STEP}
-          marks={evenMarks(PADDING_MIN, PADDING_MAX, 4)}
+          marks={SIZE_MARKS}
         />
 
         <PickerField
@@ -311,7 +309,7 @@ function InspectorContent({
           min={FONT_SIZE_MIN}
           max={FONT_SIZE_MAX}
           step={1}
-          marks={evenMarks(FONT_SIZE_MIN, FONT_SIZE_MAX, 2)}
+          marks={FONT_SIZE_MARKS}
         />
 
         <PickerField
@@ -343,7 +341,7 @@ function InspectorContent({
               max={100}
               step={5}
               unit="%"
-              marks={evenMarks(0, 100, 4)}
+              marks={OPACITY_MARKS}
             />
             <SliderField
               label="Line spacing"
@@ -352,7 +350,7 @@ function InspectorContent({
               min={DECOR_SPACING_MIN}
               max={DECOR_SPACING_MAX}
               step={DECOR_SPACING_STEP}
-              marks={evenMarks(DECOR_SPACING_MIN, DECOR_SPACING_MAX, 4)}
+              marks={SIZE_MARKS}
             />
           </>
         )}
