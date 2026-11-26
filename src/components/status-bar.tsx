@@ -1,5 +1,6 @@
 import { IconArrowsShuffle, IconBrandGithub, IconWand } from "@tabler/icons-react";
 import Button from "@/components/ui/button.tsx";
+import Switch from "@/components/ui/switch.tsx";
 import { site } from "@/lib/site.ts";
 import { LANGUAGES, type LanguageId } from "../lib/highlighter";
 import { modLabel } from "../lib/platform";
@@ -16,6 +17,8 @@ export function StatusBar({
   canFormat,
   onFormat,
   formatting,
+  showBoundingBox,
+  onShowBoundingBoxChange,
 }: {
   language: LanguageId;
   onLanguageChange: (value: LanguageId) => void;
@@ -25,6 +28,8 @@ export function StatusBar({
   canFormat: boolean;
   onFormat: () => void;
   formatting: boolean;
+  showBoundingBox: boolean;
+  onShowBoundingBoxChange: (value: boolean) => void;
 }) {
   return (
     <footer className="d:none @lg:d:f ai:c g:2 px:2 py:1 btw:1 bs:s bc:line bg:page">
@@ -69,6 +74,17 @@ export function StatusBar({
       </Tooltip>
 
       <div className="f:1" />
+
+      {/* An editing aid, not part of the image, so it sits with the editor's tools. */}
+      <label className="d:f ai:c g:2 px:2 fs:sm us:none c:hint">
+        Bounding box
+        <Switch
+          ariaLabel="Bounding box"
+          size="sm"
+          checked={showBoundingBox}
+          onCheckedChange={onShowBoundingBoxChange}
+        />
+      </label>
 
       <Button
         variant="ghost"

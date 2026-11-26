@@ -11,7 +11,10 @@ export interface PickerOption<T extends string> {
   icon?: ReactNode;
 }
 
-/** A labelled Yumma UI select, as the inspector lays its fields out. */
+/**
+ * A labelled Yumma UI select, as the inspector lays its rows out: the label on
+ * the left, the select on the right.
+ */
 export function PickerField<T extends string>({
   label,
   value,
@@ -26,9 +29,9 @@ export function PickerField<T extends string>({
   badge?: { text: string; title: string };
 }) {
   return (
-    <div className="d:f fd:c g:2 pb:4">
+    <div className="d:f ai:c jc:sb g:3">
       {label && (
-        <span className="fs:sm us:none c:hint">
+        <span className="fs:sm fw:500 us:none ws:nw c:label">
           {label}
           {badge && (
             <Tooltip content={badge.title}>
@@ -55,7 +58,7 @@ export function PickerField<T extends string>({
               </span>
             ) : undefined),
         }))}
-        className="w:100%"
+        className="f:1 min-w:0 max-w:44"
       />
     </div>
   );

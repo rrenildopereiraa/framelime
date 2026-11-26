@@ -1,9 +1,10 @@
 import { Input } from "@base-ui/react/input";
-import { IconDeviceFloppy, IconTrash } from "@tabler/icons-react";
+import { Popover } from "@base-ui/react/popover";
+import { IconBookmarks, IconChevronDown, IconDeviceFloppy, IconTrash } from "@tabler/icons-react";
 import { useState } from "react";
 import Button from "@/components/ui/button.tsx";
 import { type Preset, PRESET_NAME_MAX } from "../lib/presets";
-import { FOCUS } from "./styles";
+import { FOCUS, POPUP } from "./styles";
 
 const ICON = "w:4 h:4";
 
@@ -30,7 +31,7 @@ export function PresetsControl({
   }
 
   return (
-    <div className="d:f fd:c g:2 pb:5">
+    <div className="d:f fd:c g:2">
       <form
         className="d:f g:2"
         onSubmit={(event) => {
@@ -86,5 +87,39 @@ export function PresetsControl({
         </ul>
       )}
     </div>
+  );
+}
+
+/** The inspector's first row: a button that opens the presets in a popover. */
+export function PresetsMenu(props: Parameters<typeof PresetsControl>[0]) {
+  const count = props.presets.length;
+  return (
+    <Popover.Root>
+      <Popover.Trigger
+        render={
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={<IconBookmarks className={ICON} />}
+            className="w:100% jc:fs"
+          />
+        }
+      >
+        <span className="f:1 ta:l">Presets</span>
+        <span className="d:if ai:c g:1 fw:400 c:hint">
+          {count === 0 ? "None saved" : `${count} saved`}
+          <IconChevronDown aria-hidden className="w:3 h:3" />
+        </span>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Positioner sideOffset={8} align="start" className="zi:50">
+          <Popover.Popup
+            className={`popover-popup w:72 max-w:var(--available-width) p:3 c:label os:none ${POPUP}`}
+          >
+            <PresetsControl {...props} />
+          </Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }

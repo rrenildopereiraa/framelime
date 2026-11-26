@@ -11,8 +11,8 @@ export function ColorInput({
   onChange: (value: string) => void;
 }) {
   return (
-    <div className="d:f ai:c jc:sb g:3 pb:2">
-      <span className="fs:sm us:none c:hint">{label}</span>
+    <div className="d:f ai:c jc:sb g:3">
+      <span className="fs:sm fw:500 us:none c:label">{label}</span>
       <ColorPicker variant="popover" value={value} onValueChange={onChange} className="fs:0" />
     </div>
   );
