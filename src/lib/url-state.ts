@@ -45,6 +45,8 @@ export const settingsParsers = {
   ratio: parseAsStringEnum<AspectRatio>(["auto", "1:1", "4:3", "3:4", "16:9", "9:16"]).withDefault(
     "auto",
   ),
+  // The frame's width in px, set by dragging its handles; 0 sizes it to fit.
+  w: parseAsInteger.withDefault(0),
   rtl: parseAsInteger.withDefault(0),
   rtr: parseAsInteger.withDefault(0),
   rbl: parseAsInteger.withDefault(0),

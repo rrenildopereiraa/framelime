@@ -4,12 +4,15 @@ import { site } from "@/lib/site.ts";
 import { LANGUAGES, type LanguageId } from "../lib/highlighter";
 import { modLabel } from "../lib/platform";
 import { LanguagePicker } from "./language-picker";
+import { RandomizeLocksMenu, type RandomizeLocksProps } from "./randomize-locks";
 import { Tooltip } from "./tooltip";
 
 export function StatusBar({
   language,
   onLanguageChange,
   onRandomize,
+  randomizeLocks,
+  onRandomizeLockChange,
   canFormat,
   onFormat,
   formatting,
@@ -17,6 +20,8 @@ export function StatusBar({
   language: LanguageId;
   onLanguageChange: (value: LanguageId) => void;
   onRandomize: () => void;
+  randomizeLocks: RandomizeLocksProps["locks"];
+  onRandomizeLockChange: RandomizeLocksProps["onLockChange"];
   canFormat: boolean;
   onFormat: () => void;
   formatting: boolean;
@@ -37,6 +42,7 @@ export function StatusBar({
           Randomize
         </Button>
       </Tooltip>
+      <RandomizeLocksMenu locks={randomizeLocks} onLockChange={onRandomizeLockChange} />
 
       <Tooltip
         content={

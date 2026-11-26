@@ -6,7 +6,6 @@ import { CommandPalette } from "./components/command-palette";
 import { EditorHeader } from "./components/editor-header";
 import type { ExportFormat } from "./components/format-picker";
 import { FONT_FAMILIES, type FontFamilyId, Inspector } from "./components/inspector";
-import { RADIUS_MAX, RADIUS_MIN } from "./components/radius-control";
 import { StatusBar } from "./components/status-bar";
 import { useToast } from "./components/toast-provider";
 import { DrawerIndent } from "./components/ui/drawer";
@@ -24,6 +23,7 @@ import {
   themeFrameColors,
 } from "./lib/highlighter";
 import { useHistory } from "./lib/history";
+import { randomPatch, useRandomizeLocks } from "./lib/randomize";
 import { randomSnippet } from "./lib/snippets";
 import {
   clamp,
@@ -33,12 +33,12 @@ import {
   type EditorDocument,
   FONT_SIZE_MAX,
   FONT_SIZE_MIN,
+  FRAME_WIDTH_MAX,
+  FRAME_WIDTH_MIN,
   type HighlightType,
-  LABEL_POSITIONS,
   MAX_DOCUMENTS,
   PADDING_MAX,
   PADDING_MIN,
-  PADDING_STEP,
 } from "./lib/types";
 import { settingsParsers } from "./lib/url-state";
 
@@ -103,6 +103,7 @@ function App() {
   const codeTextareaRef = useRef<HTMLTextAreaElement>(null);
   const toast = useToast();
   const history = useHistory<Snapshot>();
+  const randomizeLocks = useRandomizeLocks();
 
   const active = documents.find((doc) => doc.id === activeId) ?? documents[0];
 
@@ -218,6 +219,8 @@ function App() {
   const decoOpacity = clamp(settings.decoOpacity, 0, 100);
   const decoGap = clamp(settings.decoGap, DECOR_SPACING_MIN, DECOR_SPACING_MAX);
   const decoColor = settings.decoColor || settings.colors.border;
+  // 0 in a link sizes the frame to fit.
+  const frameWidth = settings.w > 0 ? clamp(settings.w, FRAME_WIDTH_MIN, FRAME_WIDTH_MAX) : null;
 
   // Empty gradient stops follow the theme: the frame's page color and its
   // accent, the status bar text.
@@ -441,35 +444,17 @@ function App() {
     setThemeIsRandom(false);
   }
 
+  // Locked groups keep their settings; locking the theme randomizes everything else.
   function randomizeAll() {
-    const randomBool = () => Math.random() < 0.5;
-    const fontFamilyIds = Object.keys(FONT_FAMILIES) as FontFamilyId[];
-    const radius = RADIUS_MIN + Math.floor(Math.random() * (RADIUS_MAX - RADIUS_MIN + 1));
-
-    // Colors are randomized by picking among the curated themes rather
-    // than generating independent random hex values per token - arbitrary
-    // colors have no contrast or taste guarantees, real themes do.
-    const themeNames = Object.keys(THEME_FRAME_COLORS);
-    const themePool = themeNames.filter((name) => name !== themeName);
-    const pool = themePool.length > 0 ? themePool : themeNames;
-    const nextTheme = pool[Math.floor(Math.random() * pool.length)];
-    const paddingSteps = (PADDING_MAX - PADDING_MIN) / PADDING_STEP;
-
-    recordChange(null);
-    writeSettings({
-      tabBar: randomBool(),
-      lines: randomBool(),
-      label: LABEL_POSITIONS[Math.floor(Math.random() * LABEL_POSITIONS.length)].id,
-      pad: PADDING_MIN + Math.floor(Math.random() * (paddingSteps + 1)) * PADDING_STEP,
-      rtl: radius,
-      rtr: radius,
-      rbl: radius,
-      rbr: radius,
-      font: fontFamilyIds[Math.floor(Math.random() * fontFamilyIds.length)],
-      theme: nextTheme,
-      colors: requireThemeFrameColors(nextTheme, resolvedFrameMode),
+    const patch = randomPatch({
+      locks: randomizeLocks.locks,
+      currentTheme: themeName,
+      themeNames: Object.keys(THEME_FRAME_COLORS),
+      colorsFor: (name) => requireThemeFrameColors(name, resolvedFrameMode),
+      fontIds: Object.keys(FONT_FAMILIES) as FontFamilyId[],
     });
-    setThemeIsRandom(true);
+    setSettings(patch, null);
+    if (patch.theme !== undefined) setThemeIsRandom(true);
   }
 
   // A format is one step, and is dropped if the code changed while Prettier
@@ -662,6 +647,8 @@ function App() {
             showTabBar={settings.tabBar}
             showStatusBar={settings.statusBar}
             aspectRatio={settings.ratio}
+            frameWidth={frameWidth}
+            onFrameWidthChange={(value) => setSettings({ w: value ?? 0 })}
             radii={radii}
             fontFamily={FONT_FAMILIES[settings.font].stack}
             themeName={themeName}
@@ -690,6 +677,8 @@ function App() {
             language={active.language}
             onLanguageChange={(value) => updateActive({ language: value })}
             onRandomize={randomizeAll}
+            randomizeLocks={randomizeLocks.locks}
+            onRandomizeLockChange={randomizeLocks.setLocked}
             showTabBar={settings.tabBar}
             onShowTabBarChange={(value) => setSettings({ tabBar: value })}
             showStatusBar={settings.statusBar}
@@ -736,6 +725,8 @@ function App() {
           language={active.language}
           onLanguageChange={(value) => updateActive({ language: value })}
           onRandomize={randomizeAll}
+          randomizeLocks={randomizeLocks.locks}
+          onRandomizeLockChange={randomizeLocks.setLocked}
           canFormat={canFormat(active.language)}
           onFormat={formatActive}
           formatting={formatting}

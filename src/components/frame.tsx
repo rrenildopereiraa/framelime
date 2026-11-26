@@ -38,6 +38,12 @@ export interface Decorators {
   gap: number;
 }
 
+/** "16 / 9" as 16/9. */
+function ratioNumber(value: string) {
+  const [width, height] = value.split(" / ").map(Number) as [number, number];
+  return width / height;
+}
+
 // Far enough to cross any frame's padding; the frame clips the rest.
 const HASH_REACH = 4000;
 
@@ -100,6 +106,10 @@ export const Frame = forwardRef<
     showTabBar: boolean;
     showStatusBar: boolean;
     aspectRatio: AspectRatio;
+    /** Set by dragging the frame's handles; `null` sizes the frame to fit. */
+    width: number | null;
+    /** While a handle is dragged, so size changes follow the pointer without easing. */
+    resizing: boolean;
     radii: CornerRadii;
     fontFamily?: string;
     themeName: string;
@@ -137,6 +147,8 @@ export const Frame = forwardRef<
     showTabBar,
     showStatusBar,
     aspectRatio,
+    width,
+    resizing,
     radii,
     fontFamily,
     themeName,
@@ -233,12 +245,16 @@ export const Frame = forwardRef<
     ) : null;
   const borderRadius = `${radii.tl}px ${radii.tr}px ${radii.br}px ${radii.bl}px`;
   const ratioValue = ASPECT_RATIO_VALUES[aspectRatio];
+  const ratio = ratioValue ? ratioNumber(ratioValue) : null;
+  // A set width stretches the code window to fill it, inside the padding.
+  const contentWidth = width === null ? undefined : Math.max(0, width - padding * 2);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // Fit-to-frame for fixed ratios. The outer box is locked to the largest
-  // exact-ratio rectangle that fits the viewport, so it can never outgrow
-  // the canvas; the code frame is then zoomed down (uniformly, never up and
-  // never stretched) to fit inside it. `auto` stays untouched.
+  // Fit-to-frame for fixed ratios. Without a set width, the outer box is
+  // locked to the largest exact-ratio rectangle that fits the viewport, so it
+  // can never outgrow the canvas; with one, its height follows that width.
+  // The code frame is then zoomed down (uniformly, never up and never
+  // stretched) to fit inside it. `auto` stays untouched.
   const [fit, setFit] = useState<{
     width: number;
     height: number;
@@ -252,16 +268,13 @@ export const Frame = forwardRef<
   const hasFitRef = useRef(false);
 
   useLayoutEffect(() => {
-    if (!ratioValue) {
+    if (ratio === null) {
       setFit(null);
       return;
     }
     const viewport = viewportRef.current;
     const content = contentRef.current;
     if (!viewport || !content) return;
-
-    const [ratioWidth, ratioHeight] = ratioValue.split(" / ").map(Number) as [number, number];
-    const ratio = ratioWidth / ratioHeight;
 
     let raf = 0;
     const update = () => {
@@ -273,7 +286,7 @@ export const Frame = forwardRef<
       const availWidth = Math.max(0, viewport.clientWidth - padX - 2);
       const availHeight = Math.max(0, viewport.clientHeight - padY - 2);
 
-      const boxWidth = Math.min(availWidth, availHeight * ratio);
+      const boxWidth = width ?? Math.min(availWidth, availHeight * ratio);
       const boxHeight = boxWidth / ratio;
 
       const naturalWidth = content.offsetWidth;
@@ -310,32 +323,36 @@ export const Frame = forwardRef<
       cancelAnimationFrame(raf);
       observer.disconnect();
     };
-  }, [ratioValue, viewportRef, padding]);
+  }, [ratio, width, viewportRef, padding]);
+
+  // Easing size changes reads well when a setting changes, but lags behind a dragged handle.
+  const eased = ratio !== null && !resizing;
 
   return (
     <div
       ref={ref}
-      className={`p:r min-w:0 o:h ${ratioValue ? "d:f ai:c jc:c tp:d tdu:200" : ""}`}
+      className={`p:r min-w:0 o:h ${ratio !== null ? "d:f ai:c jc:c" : ""} ${eased ? "tp:d tdu:200" : ""}`}
       style={{
         padding,
         backgroundColor: background.type === "transparent" ? undefined : background.color,
-        ...(ratioValue
+        ...(ratio !== null
           ? {
-              // Locked to the fitted rectangle once measured; the
-              // aspect-ratio only fills the pre-measure frame so the
-              // first (unpainted) render is already shaped.
-              width: fit ? fit.width : undefined,
-              height: fit ? fit.height : undefined,
-              aspectRatio: fit ? undefined : ratioValue,
+              // Locked to the set width, or to the fitted rectangle once
+              // measured; the aspect-ratio only fills the pre-measure frame
+              // so the first (unpainted) render is already shaped.
+              width: width ?? fit?.width,
+              height: width !== null ? width / ratio : fit?.height,
+              aspectRatio: width !== null || fit ? undefined : ratioValue,
             }
-          : {}),
+          : { width: width ?? undefined }),
       }}
     >
       <Backdrop background={background} />
       <div
         ref={contentRef}
-        className={`p:r zi:10 w:192 o:v ${ratioValue ? "tp:t tdu:200 tor:c" : "max-w:100%"}`}
+        className={`p:r zi:10 w:192 o:v ${ratio !== null ? "tor:c" : "max-w:100%"} ${eased ? "tp:t tdu:200" : ""}`}
         style={{
+          width: contentWidth,
           backgroundColor: colors.surface,
           borderRadius,
           transform: fit ? `scale(${fit.scale})` : undefined,

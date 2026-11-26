@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import type { FrameBackground } from "../lib/background";
 import type { ResolvedMode } from "../lib/chrome-theme";
 import type { LanguageId } from "../lib/highlighter";
@@ -29,6 +29,8 @@ export function Canvas({
   showTabBar,
   showStatusBar,
   aspectRatio,
+  frameWidth,
+  onFrameWidthChange,
   radii,
   fontFamily,
   themeName,
@@ -63,6 +65,8 @@ export function Canvas({
   showTabBar: boolean;
   showStatusBar: boolean;
   aspectRatio: AspectRatio;
+  frameWidth: number | null;
+  onFrameWidthChange: (width: number | null) => void;
   radii: CornerRadii;
   fontFamily?: string;
   themeName: string;
@@ -83,6 +87,7 @@ export function Canvas({
   background: FrameBackground;
 }) {
   const viewportRef = useRef<HTMLElement>(null);
+  const [resizing, setResizing] = useState(false);
 
   return (
     <main ref={viewportRef} className="f:1 d:f min-h:0 min-w:0 o:auto px:2 @sm:px:4 py:8 @sm:py:16">
@@ -108,6 +113,8 @@ export function Canvas({
           showTabBar={showTabBar}
           showStatusBar={showStatusBar}
           aspectRatio={aspectRatio}
+          width={frameWidth}
+          resizing={resizing}
           radii={radii}
           fontFamily={fontFamily}
           themeName={themeName}
@@ -127,7 +134,14 @@ export function Canvas({
           background={background}
         />
 
-        {showBoundingBox && <BoundingBox />}
+        {showBoundingBox && (
+          <BoundingBox
+            frameRef={frameRef}
+            width={frameWidth}
+            onWidthChange={onFrameWidthChange}
+            onResizingChange={setResizing}
+          />
+        )}
       </div>
     </main>
   );

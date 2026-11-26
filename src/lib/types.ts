@@ -54,6 +54,10 @@ export interface EditorDocument {
   highlightedWords: HighlightedWord[];
 }
 
+// Corner radius, in px.
+export const RADIUS_MIN = 0;
+export const RADIUS_MAX = 16;
+
 export interface CornerRadii {
   tl: number;
   tr: number;
@@ -99,3 +103,10 @@ export interface FrameTab {
   id: string;
   fileName: string;
 }
+
+// The frame's width when set by dragging its handles, in px. Unset (0 in a
+// link) sizes it the way it always was: to the code window, or to the canvas
+// for a fixed aspect ratio. Drags snap to the step.
+export const FRAME_WIDTH_MIN = 320;
+export const FRAME_WIDTH_MAX = 1920;
+export const FRAME_WIDTH_STEP = 10;
