@@ -55,7 +55,7 @@ export function RandomizeLocksMenu({ locks, onLockChange }: RandomizeLocksProps)
               <IconLockOpen className={ICON} />
             )
           }
-          className="w:8 blw:1 bs:s bc:line brr:9999 c:hint h:c:label"
+          className="w:8 brr:9999 c:hint h:c:label"
         >
           {lockLabel(locks)}
         </Button>
