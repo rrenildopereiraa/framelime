@@ -5,14 +5,30 @@ export const MAX_DOCUMENTS = 5;
 // "auto" keeps the frame sized to its content (the original behaviour and
 // still the default); the rest lock it to a fixed shape for a target
 // platform, so a snippet can be posted without a detour through an image
-// editor to re-crop it.
-export type AspectRatio = "auto" | "1:1" | "4:3" | "3:4" | "16:9" | "9:16";
+// editor to re-crop it. Size presets also fix the exported image's size in
+// pixels, whatever the export scale.
+export type AspectRatio =
+  | "auto"
+  | "1:1"
+  | "4:3"
+  | "3:4"
+  | "16:9"
+  | "9:16"
+  | "x-post"
+  | "linkedin-post"
+  | "instagram-square"
+  | "instagram-story";
+
+export interface ImageSize {
+  width: number;
+  height: number;
+}
 
 export const ASPECT_RATIOS: {
   id: AspectRatio;
   label: string;
-  // CSS aspect-ratio value; undefined means "size to content".
-  value?: string;
+  /** The exported image's size, for a size preset. */
+  size?: ImageSize;
 }[] = [
   { id: "auto", label: "Auto" },
   { id: "1:1", label: "1:1 — Square" },
@@ -20,7 +36,26 @@ export const ASPECT_RATIOS: {
   { id: "3:4", label: "3:4 — Portrait" },
   { id: "16:9", label: "16:9 — Wide" },
   { id: "9:16", label: "9:16 — Story" },
+  { id: "x-post", label: "X post — 1200 × 675", size: { width: 1200, height: 675 } },
+  { id: "linkedin-post", label: "LinkedIn post — 1200 × 627", size: { width: 1200, height: 627 } },
+  {
+    id: "instagram-square",
+    label: "Instagram square — 1080 × 1080",
+    size: { width: 1080, height: 1080 },
+  },
+  {
+    id: "instagram-story",
+    label: "Instagram story — 1080 × 1920",
+    size: { width: 1080, height: 1920 },
+  },
 ];
+
+export const ASPECT_RATIO_IDS = ASPECT_RATIOS.map((ratio) => ratio.id);
+
+/** The exported image's size in pixels, for a size preset; `undefined` otherwise. */
+export function presetSize(ratio: AspectRatio): ImageSize | undefined {
+  return ASPECT_RATIOS.find((entry) => entry.id === ratio)?.size;
+}
 
 export const ASPECT_RATIO_VALUES: Record<AspectRatio, string | undefined> = {
   auto: undefined,
@@ -29,7 +64,26 @@ export const ASPECT_RATIO_VALUES: Record<AspectRatio, string | undefined> = {
   "3:4": "3 / 4",
   "16:9": "16 / 9",
   "9:16": "9 / 16",
+  "x-post": "1200 / 675",
+  "linkedin-post": "1200 / 627",
+  "instagram-square": "1 / 1",
+  "instagram-story": "1080 / 1920",
 };
+
+// How many image pixels each CSS pixel of the frame becomes in PNG, JPG and
+// WEBP exports. 2x is what every export used before it could be chosen.
+export type ExportScale = 1 | 2 | 3;
+export const EXPORT_SCALES: ExportScale[] = [1, 2, 3];
+export const EXPORT_SCALE_DEFAULT: ExportScale = 2;
+
+// A shadow under the code window. "none" keeps links made before it as they were.
+export type ShadowStyle = "none" | "soft" | "hard";
+
+export const SHADOW_STYLES: { id: ShadowStyle; label: string }[] = [
+  { id: "none", label: "Off" },
+  { id: "soft", label: "Soft" },
+  { id: "hard", label: "Hard" },
+];
 
 export type HighlightType = "mark" | "add" | "remove";
 

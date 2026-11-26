@@ -5,6 +5,7 @@ import Button from "@/components/ui/button.tsx";
 import Kbd from "@/components/ui/kbd.tsx";
 import ThemeSwitcher from "@/components/ui/theme-switcher.tsx";
 import { type ChromeMode, useChromeTheme } from "../lib/chrome-theme";
+import type { ExportScale, ImageSize } from "../lib/types";
 import { modKey } from "../lib/platform";
 import { ExportButton } from "./export-button";
 import type { ExportFormat } from "./format-picker";
@@ -27,6 +28,9 @@ export function EditorHeader({
   exporting,
   format,
   onFormatChange,
+  scale,
+  onScaleChange,
+  presetSize,
 }: {
   onOpenPalette: () => void;
   onCopy: () => void;
@@ -35,6 +39,9 @@ export function EditorHeader({
   exporting: boolean;
   format: ExportFormat;
   onFormatChange: (value: ExportFormat) => void;
+  scale: ExportScale;
+  onScaleChange: (value: ExportScale) => void;
+  presetSize?: ImageSize;
 }) {
   const [copied, setCopied] = useState(false);
   const [shared, setShared] = useState(false);
@@ -123,6 +130,9 @@ export function EditorHeader({
           onExport={onExport}
           format={format}
           onFormatChange={onFormatChange}
+          scale={scale}
+          onScaleChange={onScaleChange}
+          presetSize={presetSize}
         />
       </div>
     </header>

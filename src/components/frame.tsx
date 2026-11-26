@@ -129,6 +129,8 @@ export const Frame = forwardRef<
     onAddTab?: () => void;
     decorators: Decorators | null;
     background: FrameBackground;
+    /** The code window's `box-shadow`, if it has one. */
+    shadow?: string;
   }
 >(function Frame(
   {
@@ -166,6 +168,7 @@ export const Frame = forwardRef<
     onAddTab,
     decorators,
     background,
+    shadow,
   },
   ref,
 ) {
@@ -355,6 +358,7 @@ export const Frame = forwardRef<
           width: contentWidth,
           backgroundColor: colors.surface,
           borderRadius,
+          boxShadow: shadow,
           transform: fit ? `scale(${fit.scale})` : undefined,
         }}
       >

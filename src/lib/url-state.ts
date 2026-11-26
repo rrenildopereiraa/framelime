@@ -11,12 +11,14 @@ import { FONT_FAMILIES, type FontFamilyId } from "../components/inspector";
 import type { FrameMode } from "./chrome-theme";
 import { requireThemeFrameColors, THEME_NAME } from "./highlighter";
 import {
+  ASPECT_RATIO_IDS,
   type AspectRatio,
   DECOR_OPACITY_DEFAULT,
   DECOR_SPACING_DEFAULT,
   FONT_SIZE_DEFAULT,
   type LabelPosition,
   PADDING_DEFAULT,
+  type ShadowStyle,
 } from "./types";
 
 const FRAME_COLOR_KEYS: (keyof FrameColors)[] = [
@@ -42,9 +44,7 @@ function parseFrameColors(value: unknown): FrameColors | null {
 export const settingsParsers = {
   tabBar: parseAsBoolean.withDefault(true),
   statusBar: parseAsBoolean.withDefault(false),
-  ratio: parseAsStringEnum<AspectRatio>(["auto", "1:1", "4:3", "3:4", "16:9", "9:16"]).withDefault(
-    "auto",
-  ),
+  ratio: parseAsStringEnum<AspectRatio>(ASPECT_RATIO_IDS).withDefault("auto"),
   // The frame's width in px, set by dragging its handles; 0 sizes it to fit.
   w: parseAsInteger.withDefault(0),
   rtl: parseAsInteger.withDefault(0),
@@ -64,6 +64,9 @@ export const settingsParsers = {
   decoColor: parseAsString.withDefault(""),
   decoOpacity: parseAsInteger.withDefault(DECOR_OPACITY_DEFAULT),
   decoGap: parseAsInteger.withDefault(DECOR_SPACING_DEFAULT),
+  // A shadow under the code window; an empty color follows the theme.
+  shadow: parseAsStringEnum<ShadowStyle>(["none", "soft", "hard"]).withDefault("none"),
+  shadowColor: parseAsString.withDefault(""),
   // What fills the frame.
   bg: parseAsStringEnum<BackgroundType>(["solid", "gradient", "transparent"]).withDefault("solid"),
   // Gradient stops; an empty start or end follows the theme, an empty
