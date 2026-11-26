@@ -1,31 +1,11 @@
 import type { NextConfig } from "next";
 
-// The editor's settings, as its share links carry them in the query string.
-const EDITOR_QUERY_KEYS = [
-  "tabBar",
-  "statusBar",
-  "ratio",
-  "rtl",
-  "rtr",
-  "rbl",
-  "rbr",
-  "font",
-  "theme",
-  "frameMode",
-  "colors",
-];
-
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   async redirects() {
-    // The editor used to live at `/`: send its share links on to `/editor`,
-    // query and all, now that `/` is the landing page.
-    return EDITOR_QUERY_KEYS.map((key) => ({
-      source: "/",
-      has: [{ type: "query" as const, key }],
-      destination: "/editor",
-      permanent: true,
-    }));
+    // The editor lived at `/editor` while `/` was a landing page. Its share
+    // links still open, query and all, now that the editor is back at `/`.
+    return [{ source: "/editor", destination: "/", permanent: true }];
   },
 };
 
