@@ -7,9 +7,6 @@ import { type CornerRadii, RADIUS_MAX, RADIUS_MIN } from "../lib/types";
 
 export { RADIUS_MAX, RADIUS_MIN };
 
-// Under the slider, spread evenly across 0–16 px: None at 0, Small at 8, Large at 16.
-const MARKS = ["None", "Small", "Large"];
-
 const CORNERS: { id: keyof CornerRadii; label: string }[] = [
   { id: "tl", label: "Top left" },
   { id: "tr", label: "Top right" },
@@ -34,27 +31,35 @@ export function RadiusControl({
   }
 
   return (
-    <div className="d:f fd:c g:3 pb:4">
+    <div className="d:f fd:c g:3">
       <Slider
-        label="Border radius"
+        label="Corner radius"
         value={uniform ? radii.tl : Math.max(...values)}
         onValueChange={(value) => setAll(Array.isArray(value) ? value[0] : value)}
         min={RADIUS_MIN}
         max={RADIUS_MAX}
         step={1}
-        unit="px"
-        marks={MARKS}
-        formatValue={uniform ? undefined : () => "Mixed"}
+        // The per-corner toggle rides beside the value, so it takes no row of its own.
+        formatValue={() => (
+          <span className="d:if ai:c g:2">
+            {uniform ? (
+              <span>
+                <span className="c:label fw:500">{radii.tl}</span> px
+              </span>
+            ) : (
+              "Mixed"
+            )}
+            <Toggle
+              size="sm"
+              aria-label="Set each corner"
+              icon={<IconBorderCorners className="w:4 h:4" />}
+              pressed={split}
+              onPressedChange={setSplit}
+              className="w:6 h:6"
+            />
+          </span>
+        )}
         className="w:100%"
-      />
-
-      <Toggle
-        size="sm"
-        label="Per corner"
-        icon={<IconBorderCorners className="w:4 h:4" />}
-        pressed={split}
-        onPressedChange={setSplit}
-        className="as:s"
       />
 
       {split && (

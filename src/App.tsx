@@ -836,6 +836,8 @@ function App() {
           canFormat={canFormat(active.language)}
           onFormat={formatActive}
           formatting={formatting}
+          showBoundingBox={showBoundingBox}
+          onShowBoundingBoxChange={setShowBoundingBox}
         />
 
         <CommandPalette
