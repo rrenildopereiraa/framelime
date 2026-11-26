@@ -35,6 +35,7 @@ import type { FrameColors } from "./frame";
 import { PickerField } from "./picker-field";
 import { ThemePreview } from "./theme-preview";
 import { RadiusControl } from "./radius-control";
+import { RandomizeLockToggles, type RandomizeLocksProps } from "./randomize-locks";
 
 export type { CornerRadii };
 
@@ -530,6 +531,8 @@ export function Inspector({
   language,
   onLanguageChange,
   onRandomize,
+  randomizeLocks,
+  onRandomizeLockChange,
   ...contentProps
 }: Omit<InspectorContentProps, "tab"> & {
   open: boolean;
@@ -537,6 +540,8 @@ export function Inspector({
   language: LanguageId;
   onLanguageChange: (value: LanguageId) => void;
   onRandomize: () => void;
+  randomizeLocks: RandomizeLocksProps["locks"];
+  onRandomizeLockChange: RandomizeLocksProps["onLockChange"];
 }) {
   const [tab, setTab] = useState<SettingsTab>("layout");
   const { mode, setMode } = useChromeTheme();
@@ -568,7 +573,7 @@ export function Inspector({
           onValueChange={onLanguageChange}
         />
 
-        <div className="pb:5">
+        <div className="d:f fd:c g:3 pb:5">
           <Button
             variant="secondary"
             size="sm"
@@ -578,6 +583,7 @@ export function Inspector({
           >
             Randomize
           </Button>
+          <RandomizeLockToggles locks={randomizeLocks} onLockChange={onRandomizeLockChange} />
         </div>
 
         {/* Layout and Style stack on top of this drawer; tabs stay on desktop. */}

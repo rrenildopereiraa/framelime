@@ -3,10 +3,9 @@ import { useState } from "react";
 import Knob from "@/components/ui/knob.tsx";
 import Slider from "@/components/ui/slider.tsx";
 import Toggle from "@/components/ui/toggle.tsx";
-import type { CornerRadii } from "../lib/types";
+import { type CornerRadii, RADIUS_MAX, RADIUS_MIN } from "../lib/types";
 
-export const RADIUS_MIN = 0;
-export const RADIUS_MAX = 16;
+export { RADIUS_MAX, RADIUS_MIN };
 
 // Under the slider, spread evenly across 0–16 px: None at 0, Small at 8, Large at 16.
 const MARKS = ["None", "Small", "Large"];
