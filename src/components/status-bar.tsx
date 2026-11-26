@@ -49,6 +49,7 @@ export function StatusBar({
             Randomize
           </Button>
         </Tooltip>
+        <span aria-hidden className="w:px h:4 bg:line" />
         <RandomizeLocksMenu locks={randomizeLocks} onLockChange={onRandomizeLockChange} />
       </div>
 
