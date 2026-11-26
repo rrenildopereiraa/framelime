@@ -15,7 +15,7 @@ function lockLabel(locks: RandomizeGroup[]) {
   return locks.length === 0 ? "Randomize locks" : `Randomize locks, ${locks.length} locked`;
 }
 
-/** Beside Randomize in the status bar: a menu of what it keeps. */
+/** The end of the Randomize split button in the status bar: a menu of what it keeps. */
 export function RandomizeLocksMenu({ locks, onLockChange }: RandomizeLocksProps) {
   const locked = new Set(locks);
   return (
@@ -46,7 +46,7 @@ export function RandomizeLocksMenu({ locks, onLockChange }: RandomizeLocksProps)
         <Button
           variant="ghost"
           size="sm"
-          shape="pill"
+          shape="none"
           iconOnly
           icon={
             locks.length > 0 ? (
@@ -55,7 +55,7 @@ export function RandomizeLocksMenu({ locks, onLockChange }: RandomizeLocksProps)
               <IconLockOpen className={ICON} />
             )
           }
-          className="c:hint h:c:label"
+          className="w:8 blw:1 bs:s bc:line brr:9999 c:hint h:c:label"
         >
           {lockLabel(locks)}
         </Button>

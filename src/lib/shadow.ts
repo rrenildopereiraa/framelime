@@ -12,7 +12,7 @@ export function defaultShadowColor(
 ) {
   return style === "hard"
     ? tinycolor(colors.statusBarText).toHexString()
-    : tinycolor.mix(colors.page, "#000000", 75).toHexString();
+    : tinycolor.mix(colors.page, "#000000", 60).toHexString();
 }
 
 /** The code window's `box-shadow`; `undefined` when off. */
@@ -20,5 +20,6 @@ export function shadowCss(style: ShadowStyle, color: string) {
   if (style === "none") return undefined;
   if (style === "hard") return `8px 8px 0 0 ${tinycolor(color).toRgbString()}`;
   const at = (alpha: number) => tinycolor(color).setAlpha(alpha).toRgbString();
-  return `0 24px 48px -12px ${at(0.55)}, 0 8px 16px -8px ${at(0.35)}`;
+  // A wide, faint spread and a tight contact shadow: depth without a dark halo.
+  return `0 16px 40px -16px ${at(0.32)}, 0 4px 12px -6px ${at(0.18)}`;
 }

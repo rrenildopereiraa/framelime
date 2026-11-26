@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { clamp, FRAME_WIDTH_MAX, FRAME_WIDTH_MIN, FRAME_WIDTH_STEP } from "../lib/types";
+import { clamp, FRAME_WIDTH_MIN, FRAME_WIDTH_STEP } from "../lib/types";
 import { FOCUS } from "./styles";
 
 type Edge = "left" | "right";
@@ -52,12 +52,10 @@ const HANDLES: Handle[] = [
   { id: "right", edge: "right", place: `r:-4 @pc:r:-6 ${SIDE}`, cursor: "c:er", focusable: true },
 ];
 
-function snap(width: number) {
-  return clamp(
-    Math.round(width / FRAME_WIDTH_STEP) * FRAME_WIDTH_STEP,
-    FRAME_WIDTH_MIN,
-    FRAME_WIDTH_MAX,
-  );
+/** Rounds to the step and keeps the width between the minimum and what the canvas shows. */
+function snap(width: number, max: number) {
+  if (width >= max) return max;
+  return clamp(Math.round(width / FRAME_WIDTH_STEP) * FRAME_WIDTH_STEP, FRAME_WIDTH_MIN, max);
 }
 
 /** The frame's width in px as laid out, kept current as it changes. */
@@ -77,17 +75,21 @@ function useMeasuredWidth(frameRef: React.RefObject<HTMLDivElement | null>) {
 /**
  * The frame's selection outline. Its side and corner handles drag the
  * frame's width; the side handles also take focus and move with the arrow
- * keys. A double-click, or Delete, sizes the frame to fit again.
+ * keys. A double-click, or Delete, sizes the frame to fit again. The width
+ * stops where the frame would leave the canvas, so it is always seen whole.
  */
 export function BoundingBox({
   frameRef,
   width,
+  maxWidth,
   onWidthChange,
   onResizingChange,
 }: {
   frameRef: React.RefObject<HTMLDivElement | null>;
   /** `null` while the frame sizes itself. */
   width: number | null;
+  /** The widest the frame can be while the canvas still shows all of it. */
+  maxWidth: number;
   onWidthChange: (width: number | null) => void;
   onResizingChange: (resizing: boolean) => void;
 }) {
@@ -99,8 +101,6 @@ export function BoundingBox({
     edge: Edge;
     startX: number;
     startWidth: number;
-    /** Room on the canvas before the frame outgrows it. */
-    room: number;
   } | null>(null);
 
   const current = width ?? measured;
@@ -108,17 +108,10 @@ export function BoundingBox({
   function startDrag(event: React.PointerEvent<HTMLDivElement>, edge: Edge) {
     if (event.button !== 0) return;
     const frame = frameRef.current;
-    const viewport = frame?.closest("main");
-    if (!frame || !viewport) return;
+    if (!frame) return;
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
-    const style = getComputedStyle(viewport);
-    drag.current = {
-      edge,
-      startX: event.clientX,
-      startWidth: frame.offsetWidth,
-      room: viewport.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight),
-    };
+    drag.current = { edge, startX: event.clientX, startWidth: frame.offsetWidth };
     setDragging(true);
     onResizingChange(true);
   }
@@ -129,17 +122,8 @@ export function BoundingBox({
     // How far the handle moved away from the frame's middle.
     const out = (event.clientX - state.startX) * (state.edge === "right" ? 1 : -1);
     // The frame is centred on the canvas, so both edges move and the width
-    // changes twice as fast as the handle. Once it outgrows the canvas its
-    // left edge stays put, and the width follows the handle one to one.
-    const { startWidth, room } = state;
-    const centredReach = Math.max(0, (room - startWidth) / 2);
-    const next =
-      startWidth > room
-        ? startWidth + out
-        : out <= centredReach
-          ? startWidth + out * 2
-          : room + (out - centredReach);
-    onWidthChange(snap(next));
+    // changes twice as fast as the handle.
+    onWidthChange(snap(state.startWidth + out * 2, maxWidth));
   }
 
   function endDrag(event: React.PointerEvent<HTMLDivElement>) {
@@ -153,7 +137,7 @@ export function BoundingBox({
   }
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>, edge: Edge) {
-    const base = snap(current);
+    const base = snap(current, maxWidth);
     const step = event.shiftKey ? FRAME_WIDTH_STEP * 10 : FRAME_WIDTH_STEP;
     // Left and right move the handle itself: away from the frame widens it.
     const outward = edge === "right" ? "ArrowRight" : "ArrowLeft";
@@ -162,23 +146,23 @@ export function BoundingBox({
     switch (event.key) {
       case outward:
       case "ArrowUp":
-        next = snap(base + step);
+        next = snap(base + step, maxWidth);
         break;
       case inward:
       case "ArrowDown":
-        next = snap(base - step);
+        next = snap(base - step, maxWidth);
         break;
       case "PageUp":
-        next = snap(base + FRAME_WIDTH_STEP * 10);
+        next = snap(base + FRAME_WIDTH_STEP * 10, maxWidth);
         break;
       case "PageDown":
-        next = snap(base - FRAME_WIDTH_STEP * 10);
+        next = snap(base - FRAME_WIDTH_STEP * 10, maxWidth);
         break;
       case "Home":
         next = FRAME_WIDTH_MIN;
         break;
       case "End":
-        next = FRAME_WIDTH_MAX;
+        next = maxWidth;
         break;
       case "Delete":
       case "Backspace":
@@ -207,7 +191,7 @@ export function BoundingBox({
           aria-label={handle.focusable ? `Frame width, ${handle.edge} edge` : undefined}
           aria-orientation={handle.focusable ? "horizontal" : undefined}
           aria-valuemin={handle.focusable ? FRAME_WIDTH_MIN : undefined}
-          aria-valuemax={handle.focusable ? FRAME_WIDTH_MAX : undefined}
+          aria-valuemax={handle.focusable ? maxWidth : undefined}
           aria-valuenow={handle.focusable ? current : undefined}
           aria-valuetext={handle.focusable ? readout : undefined}
           onPointerDown={(event) => startDrag(event, handle.edge)}

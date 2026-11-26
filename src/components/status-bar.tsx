@@ -35,19 +35,22 @@ export function StatusBar({
     <footer className="d:none @lg:d:f ai:c g:2 px:2 py:1 btw:1 bs:s bc:line bg:page">
       <LanguagePicker value={language} onValueChange={onLanguageChange} />
 
-      <Tooltip content={`Randomize appearance (${modLabel} Shift R)`}>
-        <Button
-          variant="ghost"
-          size="sm"
-          shape="pill"
-          icon={<IconArrowsShuffle className="w:4 h:4" />}
-          onClick={onRandomize}
-          className="fw:400 c:hint h:c:label"
-        >
-          Randomize
-        </Button>
-      </Tooltip>
-      <RandomizeLocksMenu locks={randomizeLocks} onLockChange={onRandomizeLockChange} />
+      {/* One split button: Randomize, and the menu of what it keeps. */}
+      <div role="group" aria-label="Randomize" className="d:f ai:c bw:1 bs:s bc:line br:9999">
+        <Tooltip content={`Randomize appearance (${modLabel} Shift R)`}>
+          <Button
+            variant="ghost"
+            size="sm"
+            shape="none"
+            icon={<IconArrowsShuffle className="w:4 h:4" />}
+            onClick={onRandomize}
+            className="blr:9999 fw:400 c:hint h:c:label"
+          >
+            Randomize
+          </Button>
+        </Tooltip>
+        <RandomizeLocksMenu locks={randomizeLocks} onLockChange={onRandomizeLockChange} />
+      </div>
 
       <Tooltip
         content={

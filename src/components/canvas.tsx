@@ -1,17 +1,59 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FrameBackground } from "../lib/background";
 import type { ResolvedMode } from "../lib/chrome-theme";
 import type { LanguageId } from "../lib/highlighter";
-import type {
-  AspectRatio,
-  FrameTab,
-  HighlightedLine,
-  HighlightedWord,
-  LabelPosition,
+import {
+  ASPECT_RATIO_VALUES,
+  type AspectRatio,
+  FRAME_WIDTH_MAX,
+  FRAME_WIDTH_MIN,
+  type FrameTab,
+  type HighlightedLine,
+  type HighlightedWord,
+  type LabelPosition,
 } from "../lib/types";
 import { BoundingBox } from "./bounding-box";
 import { type Decorators, Frame, type FrameColors } from "./frame";
 import type { CornerRadii } from "./inspector";
+
+// The selection outline and its handles sit 8px outside the frame; keep them on the canvas too.
+const OUTLINE = 8;
+
+/** The canvas's inner size, inside its padding, kept current as it changes. */
+function useCanvasRoom(viewportRef: React.RefObject<HTMLElement | null>) {
+  const [room, setRoom] = useState<{ width: number; height: number } | null>(null);
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    const measure = () => {
+      const style = getComputedStyle(viewport);
+      const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+      const padY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+      // A tiny buffer stops sub-pixel rounding from producing a 1px scrollbar.
+      setRoom({
+        width: Math.max(0, viewport.clientWidth - padX - OUTLINE * 2 - 2),
+        height: Math.max(0, viewport.clientHeight - padY - OUTLINE * 2 - 2),
+      });
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(viewport);
+    measure();
+    return () => observer.disconnect();
+  }, [viewportRef]);
+  return room;
+}
+
+/**
+ * The widest the frame can be and still be seen whole: the canvas's width,
+ * and for a fixed ratio, the width whose height still fits.
+ */
+function widestFrame(room: { width: number; height: number } | null, aspectRatio: AspectRatio) {
+  if (!room) return FRAME_WIDTH_MAX;
+  const value = ASPECT_RATIO_VALUES[aspectRatio];
+  const [w, h] = value ? value.split(" / ").map(Number) : [];
+  const byHeight = w && h ? room.height * (w / h) : Infinity;
+  return Math.max(FRAME_WIDTH_MIN, Math.floor(Math.min(FRAME_WIDTH_MAX, room.width, byHeight)));
+}
 
 export function Canvas({
   code,
@@ -90,6 +132,9 @@ export function Canvas({
 }) {
   const viewportRef = useRef<HTMLElement>(null);
   const [resizing, setResizing] = useState(false);
+  const maxWidth = widestFrame(useCanvasRoom(viewportRef), aspectRatio);
+  // A width set on a wider screen, or before the window shrank, shows at what fits.
+  const width = frameWidth === null ? null : Math.min(frameWidth, maxWidth);
 
   return (
     <main ref={viewportRef} className="f:1 d:f min-h:0 min-w:0 o:auto px:2 @sm:px:4 py:8 @sm:py:16">
@@ -115,7 +160,7 @@ export function Canvas({
           showTabBar={showTabBar}
           showStatusBar={showStatusBar}
           aspectRatio={aspectRatio}
-          width={frameWidth}
+          width={width}
           resizing={resizing}
           radii={radii}
           fontFamily={fontFamily}
@@ -140,7 +185,8 @@ export function Canvas({
         {showBoundingBox && (
           <BoundingBox
             frameRef={frameRef}
-            width={frameWidth}
+            width={width}
+            maxWidth={maxWidth}
             onWidthChange={onFrameWidthChange}
             onResizingChange={setResizing}
           />
