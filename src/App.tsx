@@ -11,11 +11,14 @@ import { useToast } from "./components/toast-provider";
 import { DrawerIndent } from "./components/ui/drawer";
 import type { BackgroundSettings, FrameBackground } from "./lib/background";
 import { type ResolvedMode, useChromeTheme } from "./lib/chrome-theme";
-import { buildCommands } from "./lib/commands";
-import { captureDataUrl, copyImageToClipboard } from "./lib/export";
+import { buildCommands, SHORTCUTS } from "./lib/commands";
+import { detectLanguage, renameForLanguage } from "./lib/detect-language";
+import { captureDataUrl, copyImageToClipboard, type RasterOptions } from "./lib/export";
 import { canFormat, formatCode } from "./lib/format";
 import {
   framesColorsEqual,
+  LANGUAGES,
+  type LanguageId,
   loadCustomTheme,
   normalizeThemeName,
   requireThemeFrameColors,
@@ -23,14 +26,18 @@ import {
   themeFrameColors,
 } from "./lib/highlighter";
 import { useHistory } from "./lib/history";
+import { type Preset, parsePresetValues, serializeSettings, usePresets } from "./lib/presets";
 import { randomPatch, useRandomizeLocks } from "./lib/randomize";
-import { randomSnippet } from "./lib/snippets";
+import { defaultShadowColor, shadowCss } from "./lib/shadow";
+import { randomSnippet, SNIPPETS } from "./lib/snippets";
 import {
   clamp,
   type CornerRadii,
   DECOR_SPACING_MAX,
   DECOR_SPACING_MIN,
   type EditorDocument,
+  EXPORT_SCALE_DEFAULT,
+  type ExportScale,
   FONT_SIZE_MAX,
   FONT_SIZE_MIN,
   FRAME_WIDTH_MAX,
@@ -39,6 +46,7 @@ import {
   MAX_DOCUMENTS,
   PADDING_MAX,
   PADDING_MIN,
+  presetSize,
 } from "./lib/types";
 import { settingsParsers } from "./lib/url-state";
 
@@ -88,6 +96,7 @@ function App() {
   });
   const [activeId, setActiveId] = useState(() => documents[0].id);
   const [format, setFormat] = useState<ExportFormat>("png");
+  const [exportScale, setExportScale] = useState<ExportScale>(EXPORT_SCALE_DEFAULT);
   const [exporting, setExporting] = useState(false);
   const [showBoundingBox, setShowBoundingBox] = useState(true);
   const [themeIsRandom, setThemeIsRandom] = useState(false);
@@ -104,6 +113,7 @@ function App() {
   const toast = useToast();
   const history = useHistory<Snapshot>();
   const randomizeLocks = useRandomizeLocks();
+  const presets = usePresets();
 
   const active = documents.find((doc) => doc.id === activeId) ?? documents[0];
 
@@ -177,9 +187,54 @@ function App() {
         undoRedo.current.redo();
       }
     };
+    const handlePaste = (event: ClipboardEvent) => {
+      pasteRef.current(event.clipboardData?.getData("text/plain") ?? "");
+    };
     textarea.addEventListener("beforeinput", handleBeforeInput);
-    return () => textarea.removeEventListener("beforeinput", handleBeforeInput);
+    textarea.addEventListener("paste", handlePaste);
+    return () => {
+      textarea.removeEventListener("beforeinput", handleBeforeInput);
+      textarea.removeEventListener("paste", handlePaste);
+    };
   }, []);
+
+  // A language change on a snippet that may not be the active one, as a
+  // step of its own. A file name ending in the old language's extension
+  // takes the new one.
+  function setDocumentLanguage(id: string, language: LanguageId) {
+    const doc = latest.current.documents.find((d) => d.id === id);
+    if (!doc || doc.language === language) return;
+    const snapshot = snapshotOf(id);
+    if (snapshot) history.record(id, snapshot, null);
+    const fileName = renameForLanguage(doc.fileName, doc.language, language);
+    setDocuments((docs) => docs.map((d) => (d.id === id ? { ...d, language, fileName } : d)));
+  }
+
+  // Code pasted into an empty snippet, or one still holding its sample,
+  // sets the language to the one it's written in. That is a step after the
+  // paste, so undo puts the language back first, as does the toast's button.
+  function handlePaste(text: string) {
+    const { id, code, language } = active;
+    const fresh = code.trim() === "" || SNIPPETS.some((snippet) => snippet.code === code);
+    if (!fresh) return;
+    const detected = detectLanguage(text);
+    if (!detected || detected === language) return;
+    // After the paste itself has landed in the snippet.
+    requestAnimationFrame(() => {
+      setDocumentLanguage(id, detected);
+      toast.add({
+        title: `Detected ${LANGUAGES[detected]}`,
+        description: "From the pasted code",
+        type: "info",
+        action: {
+          label: `Use ${LANGUAGES[language]}`,
+          onClick: () => setDocumentLanguage(id, language),
+        },
+      });
+    });
+  }
+  const pasteRef = useRef(handlePaste);
+  pasteRef.current = handlePaste;
 
   const themeName = normalizeThemeName(settings.theme);
 
@@ -241,6 +296,13 @@ function App() {
           angle: background.gradAngle,
         }
       : { type: background.bg, color: pageColor };
+
+  const shadowColor = settings.shadowColor || defaultShadowColor(settings.shadow, settings.colors);
+  const shadow = shadowCss(settings.shadow, shadowColor);
+
+  // A size preset fixes the image's size; the scale applies otherwise.
+  const exportSize = presetSize(settings.ratio);
+  const raster: RasterOptions = { scale: exportScale, size: exportSize };
 
   function setBackground(patch: Partial<BackgroundSettings>) {
     // Switching the type is a step of its own; tuning one merges.
@@ -457,6 +519,26 @@ function App() {
     if (patch.theme !== undefined) setThemeIsRandom(true);
   }
 
+  function savePreset(name: string) {
+    presets.save(name, serializeSettings(settingsParsers, settings));
+    toast.add({ title: "Preset saved", description: name, type: "success" });
+  }
+
+  // Everything but the code, in one step.
+  function applyPreset(preset: Preset) {
+    setSettings(parsePresetValues(settingsParsers, preset.values) as Partial<Settings>, null);
+    setThemeIsRandom(false);
+  }
+
+  function removePreset(preset: Preset) {
+    presets.remove(preset.id);
+    toast.add({
+      title: "Preset deleted",
+      description: preset.name,
+      action: { label: "Undo", onClick: () => presets.save(preset.name, preset.values) },
+    });
+  }
+
   // A format is one step, and is dropped if the code changed while Prettier
   // was loading or running.
   async function formatActive() {
@@ -482,6 +564,12 @@ function App() {
     }
   }
 
+  // How big the image came out, for the toast; SVG has no pixel size.
+  function exportDetail() {
+    if (format === "svg") return "";
+    return exportSize ? `, ${exportSize.width} × ${exportSize.height}` : ` at ${exportScale}×`;
+  }
+
   async function handleExport() {
     if (!frameRef.current || exporting) return;
     setExporting(true);
@@ -489,6 +577,7 @@ function App() {
       const dataUrl = await captureDataUrl(
         frameRef.current,
         format,
+        raster,
         frameBackground.type === "transparent" ? pageColor : undefined,
       );
       const link = document.createElement("a");
@@ -497,7 +586,7 @@ function App() {
       link.click();
       toast.add({
         title: "Exported",
-        description: `Downloaded as ${format.toUpperCase()}`,
+        description: `Downloaded as ${format.toUpperCase()}${exportDetail()}`,
         type: "success",
       });
     } finally {
@@ -507,7 +596,7 @@ function App() {
 
   async function handleCopyImage() {
     if (!frameRef.current) return;
-    await copyImageToClipboard(frameRef.current);
+    await copyImageToClipboard(frameRef.current, raster);
     toast.add({
       title: "Copied",
       description: "Image copied to clipboard",
@@ -613,6 +702,11 @@ function App() {
     onUndo: undo,
     onRedo: redo,
     onFormat: canFormat(active.language) ? formatActive : undefined,
+    exportScale,
+    onSetExportScale: setExportScale,
+    onSetShadow: (value) => setSettings({ shadow: value }),
+    presets: presets.presets,
+    onApplyPreset: applyPreset,
   });
 
   // `is:i` keeps the editor's z-indexes inside the app, so the settings
@@ -628,6 +722,9 @@ function App() {
           exporting={exporting}
           format={format}
           onFormatChange={setFormat}
+          scale={exportScale}
+          onScaleChange={setExportScale}
+          presetSize={exportSize}
         />
 
         <div className="f:1 d:f min-h:0">
@@ -669,6 +766,7 @@ function App() {
               settings.deco ? { color: decoColor, opacity: decoOpacity, gap: decoGap } : null
             }
             background={frameBackground}
+            shadow={shadow}
           />
 
           <Inspector
@@ -718,6 +816,14 @@ function App() {
             onUploadTheme={handleUploadTheme}
             background={background}
             onBackgroundChange={setBackground}
+            shadow={settings.shadow}
+            onShadowChange={(value) => setSettings({ shadow: value })}
+            shadowColor={shadowColor}
+            onShadowColorChange={(value) => setSettings({ shadowColor: value })}
+            presets={presets.presets}
+            onSavePreset={savePreset}
+            onApplyPreset={applyPreset}
+            onRemovePreset={removePreset}
           />
         </div>
 
@@ -732,7 +838,12 @@ function App() {
           formatting={formatting}
         />
 
-        <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} commands={commands} />
+        <CommandPalette
+          open={paletteOpen}
+          onOpenChange={setPaletteOpen}
+          commands={commands}
+          shortcuts={SHORTCUTS}
+        />
       </div>
     </DrawerIndent>
   );

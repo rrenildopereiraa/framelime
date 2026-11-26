@@ -49,6 +49,7 @@ export function Canvas({
   onAddTab,
   decorators,
   background,
+  shadow,
 }: {
   code: string;
   onCodeChange: (value: string) => void;
@@ -85,6 +86,7 @@ export function Canvas({
   onAddTab?: () => void;
   decorators: Decorators | null;
   background: FrameBackground;
+  shadow?: string;
 }) {
   const viewportRef = useRef<HTMLElement>(null);
   const [resizing, setResizing] = useState(false);
@@ -132,6 +134,7 @@ export function Canvas({
           onAddTab={onAddTab}
           decorators={decorators}
           background={background}
+          shadow={shadow}
         />
 
         {showBoundingBox && (

@@ -2,6 +2,7 @@ import type { ExportFormat } from "../components/format-picker";
 import { FONT_FAMILIES, type FontFamilyId } from "../components/inspector";
 import { LANGUAGES, type LanguageId } from "./highlighter";
 import { modLabel } from "./platform";
+import type { Preset } from "./presets";
 import {
   ASPECT_RATIOS,
   type AspectRatio,
@@ -14,6 +15,10 @@ import {
   PADDING_MAX,
   PADDING_MIN,
   PADDING_STEP,
+  EXPORT_SCALES,
+  type ExportScale,
+  SHADOW_STYLES,
+  type ShadowStyle,
 } from "./types";
 
 export interface Command {
@@ -22,6 +27,29 @@ export interface Command {
   kbd?: string;
   run: () => void;
 }
+
+export interface Shortcut {
+  label: string;
+  /** Keys pressed together, space-separated, as a command's `kbd`. */
+  kbd: string;
+}
+
+/** Every shortcut, for the palette's list. Commands repeat the ones they run. */
+export const SHORTCUTS: Shortcut[] = [
+  { label: "Open the command palette", kbd: `${modLabel} K` },
+  { label: "Export", kbd: `${modLabel} S` },
+  { label: "Copy image to clipboard", kbd: `${modLabel} Shift C` },
+  { label: "Randomize appearance", kbd: `${modLabel} Shift R` },
+  { label: "Undo", kbd: `${modLabel} Z` },
+  { label: "Redo", kbd: `${modLabel} Shift Z` },
+  { label: "Redo", kbd: `${modLabel} Y` },
+  { label: "Format code", kbd: "Alt Shift F" },
+  { label: "Indent", kbd: "Tab" },
+  { label: "Outdent", kbd: "Shift Tab" },
+  { label: "Highlight a line, then add, remove, off", kbd: "Alt Click" },
+  { label: "Highlight a range of lines", kbd: "Alt Drag" },
+  { label: "Highlight words", kbd: "Alt Shift Drag" },
+];
 
 export function buildCommands({
   showTabBar,
@@ -55,6 +83,11 @@ export function buildCommands({
   onUndo,
   onRedo,
   onFormat,
+  exportScale,
+  onSetExportScale,
+  onSetShadow,
+  presets,
+  onApplyPreset,
 }: {
   showTabBar: boolean;
   onShowTabBarChange: (value: boolean) => void;
@@ -88,6 +121,11 @@ export function buildCommands({
   onRedo: () => void;
   // Left out for languages Prettier can't format without a plugin.
   onFormat?: () => void;
+  exportScale: ExportScale;
+  onSetExportScale: (value: ExportScale) => void;
+  onSetShadow: (value: ShadowStyle) => void;
+  presets: Preset[];
+  onApplyPreset: (preset: Preset) => void;
 }): Command[] {
   return [
     {
@@ -232,6 +270,21 @@ export function buildCommands({
       id: `format-${id}`,
       label: `Set format: ${id.toUpperCase()}`,
       run: () => onSetFormat(id),
+    })),
+    ...EXPORT_SCALES.filter((scale) => scale !== exportScale).map((scale): Command => ({
+      id: `export-scale-${scale}`,
+      label: `Set export scale: ${scale}×`,
+      run: () => onSetExportScale(scale),
+    })),
+    ...SHADOW_STYLES.map(({ id, label }): Command => ({
+      id: `shadow-${id}`,
+      label: `Shadow: ${label}`,
+      run: () => onSetShadow(id),
+    })),
+    ...presets.map((preset): Command => ({
+      id: `preset-${preset.id}`,
+      label: `Apply preset: ${preset.name}`,
+      run: () => onApplyPreset(preset),
     })),
   ];
 }

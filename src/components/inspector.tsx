@@ -28,11 +28,15 @@ import {
   PADDING_MAX,
   PADDING_MIN,
   PADDING_STEP,
+  SHADOW_STYLES,
+  type ShadowStyle,
 } from "../lib/types";
+import type { Preset } from "../lib/presets";
 import { BottomSheet, SubSheet } from "./bottom-sheet";
 import { ColorInput } from "./color-input";
 import type { FrameColors } from "./frame";
 import { PickerField } from "./picker-field";
+import { PresetsControl } from "./presets-control";
 import { ThemePreview } from "./theme-preview";
 import { RadiusControl } from "./radius-control";
 import { RandomizeLockToggles, type RandomizeLocksProps } from "./randomize-locks";
@@ -226,6 +230,15 @@ interface InspectorContentProps {
   /** Background settings, with empty colors already resolved from the theme. */
   background: BackgroundSettings;
   onBackgroundChange: (patch: Partial<BackgroundSettings>) => void;
+  shadow: ShadowStyle;
+  onShadowChange: (value: ShadowStyle) => void;
+  /** Resolved from the theme while none is picked. */
+  shadowColor: string;
+  onShadowColorChange: (value: string) => void;
+  presets: Preset[];
+  onSavePreset: (name: string) => void;
+  onApplyPreset: (preset: Preset) => void;
+  onRemovePreset: (preset: Preset) => void;
 }
 
 /** Opens the file picker for one file of the given types. */
@@ -359,6 +372,14 @@ function InspectorContent({
   onUploadTheme,
   background,
   onBackgroundChange,
+  shadow,
+  onShadowChange,
+  shadowColor,
+  onShadowColorChange,
+  presets,
+  onSavePreset,
+  onApplyPreset,
+  onRemovePreset,
 }: InspectorContentProps) {
   if (tab === "layout") {
     return (
@@ -468,6 +489,15 @@ function InspectorContent({
 
   return (
     <>
+      <SectionSeparator label="Presets" />
+
+      <PresetsControl
+        presets={presets}
+        onSave={onSavePreset}
+        onApply={onApplyPreset}
+        onRemove={onRemovePreset}
+      />
+
       <SectionSeparator label="Theme" />
 
       <PickerField
@@ -508,6 +538,20 @@ function InspectorContent({
         color={frameColors.page}
         onColorChange={(value) => onFrameColorsChange({ ...frameColors, page: value })}
       />
+
+      <div className="pt:3">
+        <SectionSeparator label="Shadow" />
+      </div>
+
+      <PickerField
+        label="Shadow"
+        value={shadow}
+        options={SHADOW_STYLES}
+        onValueChange={onShadowChange}
+      />
+      {shadow !== "none" && (
+        <ColorInput label="Shadow color" value={shadowColor} onChange={onShadowColorChange} />
+      )}
 
       <div className="pt:3">
         <SectionSeparator label="Colors" />
