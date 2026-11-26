@@ -1,8 +1,7 @@
-import { IconArrowsShuffle, IconLayout, IconPalette, IconUpload } from "@tabler/icons-react";
+import { IconArrowsShuffle, IconRestore, IconUpload } from "@tabler/icons-react";
 import { useState } from "react";
 import tinycolor from "tinycolor2";
 import Button from "@/components/ui/button.tsx";
-import Separator from "@/components/ui/separator.tsx";
 import Slider from "@/components/ui/slider.tsx";
 import Switch from "@/components/ui/switch.tsx";
 import Tabs from "@/components/ui/tabs.tsx";
@@ -13,7 +12,14 @@ import {
   type ResolvedMode,
   useChromeTheme,
 } from "../lib/chrome-theme";
-import { LANGUAGES, type LanguageId, THEMES, themePreview } from "../lib/highlighter";
+import {
+  framesColorsEqual,
+  LANGUAGES,
+  type LanguageId,
+  THEMES,
+  themeFrameColors,
+  themePreview,
+} from "../lib/highlighter";
 import {
   ASPECT_RATIOS,
   type AspectRatio,
@@ -32,11 +38,12 @@ import {
   type ShadowStyle,
 } from "../lib/types";
 import type { Preset } from "../lib/presets";
-import { BottomSheet, SubSheet } from "./bottom-sheet";
+import { BottomSheet } from "./bottom-sheet";
 import { ColorInput } from "./color-input";
 import type { FrameColors } from "./frame";
+import { InspectorSection, InspectorSubheading } from "./inspector-section";
 import { PickerField } from "./picker-field";
-import { PresetsControl } from "./presets-control";
+import { PresetsMenu } from "./presets-control";
 import { ThemePreview } from "./theme-preview";
 import { RadiusControl } from "./radius-control";
 import { RandomizeLockToggles, type RandomizeLocksProps } from "./randomize-locks";
@@ -54,7 +61,7 @@ const CHROME_MODE_OPTIONS: { id: ChromeMode; label: string }[] = [
 const FRAME_MODE_OPTIONS: { id: FrameMode; label: string }[] = [
   { id: "light", label: "Light" },
   { id: "dark", label: "Dark" },
-  { id: "auto", label: "Auto (app)" },
+  { id: "auto", label: "Auto" },
 ];
 
 export type FontFamilyId = "default" | "jetbrains-mono" | "fira-code" | "ibm-plex-mono";
@@ -72,50 +79,85 @@ export const FONT_FAMILIES: Record<FontFamilyId, { label: string; stack?: string
   },
 };
 
-// The frame's own background color sits with the other background settings.
-const FRAME_COLOR_FIELDS: { key: keyof FrameColors; label: string }[] = [
-  { key: "surface", label: "Surface" },
-  { key: "border", label: "Border" },
-  { key: "accentDim", label: "Text" },
-  { key: "tabBar", label: "Tab bar, inactive tabs" },
-  { key: "tabActive", label: "Active tab" },
-  { key: "statusBarBg", label: "Status bar" },
-  { key: "statusBarText", label: "Status bar text" },
-  { key: "highlightMark", label: "Highlight" },
-  { key: "highlightAdd", label: "Highlight add" },
-  { key: "highlightRemove", label: "Highlight remove" },
-];
+// The frame's own background color sits with the other background settings;
+// the rest are grouped by the part of the window they paint.
+const FRAME_COLOR_GROUPS: { title: string; fields: { key: keyof FrameColors; label: string }[] }[] =
+  [
+    {
+      title: "Window",
+      fields: [
+        { key: "surface", label: "Surface" },
+        { key: "border", label: "Border" },
+        { key: "accentDim", label: "Text" },
+      ],
+    },
+    {
+      title: "Tab bar",
+      fields: [
+        { key: "tabBar", label: "Bar and inactive tabs" },
+        { key: "tabActive", label: "Active tab" },
+      ],
+    },
+    {
+      title: "Status bar",
+      fields: [
+        { key: "statusBarBg", label: "Bar" },
+        { key: "statusBarText", label: "Text" },
+      ],
+    },
+    {
+      title: "Highlights",
+      fields: [
+        { key: "highlightMark", label: "Mark" },
+        { key: "highlightAdd", label: "Add" },
+        { key: "highlightRemove", label: "Remove" },
+      ],
+    },
+  ];
 
-type SettingsTab = "layout" | "style";
+/** A section of the inspector, in the order they stack. */
+type SectionId = "theme" | "background" | "window" | "code" | "canvas" | "colors";
 
-function SettingsTabs({
-  tab,
-  onTabChange,
-}: {
-  tab: SettingsTab;
-  onTabChange: (value: SettingsTab) => void;
-}) {
-  return (
-    <Tabs
-      size="sm"
-      shape="pill"
-      value={tab}
-      onValueChange={(value) => onTabChange(value as SettingsTab)}
-      items={[
-        { value: "layout", label: "Layout" },
-        { value: "style", label: "Style" },
-      ]}
-      className="inspector-tabs w:100% mb:5"
-    />
-  );
+const SECTIONS_OPEN_BY_DEFAULT: Record<SectionId, boolean> = {
+  theme: true,
+  background: true,
+  window: true,
+  code: false,
+  canvas: false,
+  colors: false,
+};
+
+const SECTIONS_KEY = "framelime:inspector-sections";
+
+/** Which sections are open, kept in this browser so the panel opens as it was left. */
+function useOpenSections() {
+  const [open, setOpen] = useState<Record<SectionId, boolean>>(() => {
+    try {
+      const saved: unknown = JSON.parse(localStorage.getItem(SECTIONS_KEY) ?? "null");
+      return typeof saved === "object" && saved
+        ? { ...SECTIONS_OPEN_BY_DEFAULT, ...saved }
+        : SECTIONS_OPEN_BY_DEFAULT;
+    } catch {
+      return SECTIONS_OPEN_BY_DEFAULT;
+    }
+  });
+
+  function setSection(id: SectionId, value: boolean) {
+    setOpen((current) => {
+      const next = { ...current, [id]: value };
+      try {
+        localStorage.setItem(SECTIONS_KEY, JSON.stringify(next));
+      } catch {
+        // Storage can be blocked; the sections still open and close.
+      }
+      return next;
+    });
+  }
+
+  return { open, setSection };
 }
 
-// Words under a slider's track, spread evenly from start to end, as Border
-// radius labels its own: numbers there would crowd the sidebar.
-const SIZE_MARKS = ["None", "Medium", "Large"];
-const FONT_SIZE_MARKS = ["Small", "Medium", "Large"];
-const OPACITY_MARKS = ["None", "Half", "Full"];
-const ANGLE_MARKS = ["Up", "Down", "Up"];
+type OpenSections = ReturnType<typeof useOpenSections>;
 
 function SliderField({
   label,
@@ -125,7 +167,6 @@ function SliderField({
   max,
   step,
   unit = "px",
-  marks,
 }: {
   label: string;
   value: number;
@@ -134,30 +175,43 @@ function SliderField({
   max: number;
   step: number;
   unit?: string;
-  marks?: string[];
 }) {
   return (
-    <div className="pb:4">
-      <Slider
-        label={label}
-        value={value}
-        onValueChange={(next) => onValueChange(Array.isArray(next) ? next[0] : next)}
-        min={min}
-        max={max}
-        step={step}
-        unit={unit}
-        marks={marks}
-        className="w:100%"
-      />
-    </div>
+    <Slider
+      label={label}
+      value={value}
+      onValueChange={(next) => onValueChange(Array.isArray(next) ? next[0] : next)}
+      min={min}
+      max={max}
+      step={step}
+      unit={unit}
+      className="w:100%"
+    />
   );
 }
 
-/** A small heading over a group, on Yumma UI's separator. */
-function SectionSeparator({ label }: { label: string }) {
+/** Choices that fit side by side, as Yumma UI's tabs drawn as a segmented control. */
+function SegmentedField<T extends string>({
+  label,
+  value,
+  options,
+  onValueChange,
+}: {
+  label: string;
+  value: T;
+  options: { id: T; label: string }[];
+  onValueChange: (value: T) => void;
+}) {
   return (
-    <div className="pt:1 pb:3">
-      <Separator label={label} />
+    <div role="group" aria-label={label} className="d:f fd:c g:2">
+      <span className="fs:sm fw:500 us:none c:label">{label}</span>
+      <Tabs
+        size="sm"
+        value={value}
+        onValueChange={(next) => onValueChange(next as T)}
+        items={options.map(({ id, label }) => ({ value: id, label }))}
+        className="inspector-tabs w:100%"
+      />
     </div>
   );
 }
@@ -174,8 +228,8 @@ function OptionSwitch({
   disabled?: boolean;
 }) {
   return (
-    <div className="d:f ai:c jc:sb g:2 pb:3">
-      <span className={`fs:sm us:none c:hint ${disabled ? "o:60" : ""}`}>{label}</span>
+    <div className="d:f ai:c jc:sb g:2">
+      <span className={`fs:sm fw:500 us:none c:label ${disabled ? "o:60" : ""}`}>{label}</span>
       <Switch
         ariaLabel={label}
         size="sm"
@@ -188,7 +242,6 @@ function OptionSwitch({
 }
 
 interface InspectorContentProps {
-  tab: SettingsTab;
   showTabBar: boolean;
   onShowTabBarChange: (value: boolean) => void;
   showStatusBar: boolean;
@@ -253,6 +306,10 @@ function pickFile(accept: string, onFile: (file: File) => void) {
   input.click();
 }
 
+function labelOf<T extends string>(options: { id: T; label: string }[], id: T) {
+  return options.find((option) => option.id === id)?.label ?? id;
+}
+
 function BackgroundControls({
   background,
   onBackgroundChange,
@@ -267,7 +324,7 @@ function BackgroundControls({
   const type = background.bg;
   return (
     <>
-      <PickerField
+      <SegmentedField
         label="Type"
         value={type}
         options={BACKGROUND_TYPES}
@@ -306,23 +363,20 @@ function BackgroundControls({
             value={background.gradTo}
             onChange={(value) => onBackgroundChange({ gradTo: value })}
           />
-          <div className="pt:2">
-            <SliderField
-              label="Angle"
-              value={background.gradAngle}
-              onValueChange={(value) => onBackgroundChange({ gradAngle: value })}
-              min={0}
-              max={360}
-              step={15}
-              unit="°"
-              marks={ANGLE_MARKS}
-            />
-          </div>
+          <SliderField
+            label="Angle"
+            value={background.gradAngle}
+            onValueChange={(value) => onBackgroundChange({ gradAngle: value })}
+            min={0}
+            max={360}
+            step={15}
+            unit="°"
+          />
         </>
       )}
 
       {type === "transparent" && (
-        <p className="pb:4 fs:xs c:hint">
+        <p className="m:0 fs:xs c:hint">
           PNG, WEBP and SVG keep it see-through. JPG has no transparency, so it uses the theme's
           background color.
         </p>
@@ -331,240 +385,245 @@ function BackgroundControls({
   );
 }
 
+/** What a closed section shows beside its title. */
+function summaries(props: InspectorContentProps, themeColors: FrameColors | undefined) {
+  const { radii } = props;
+  const corners = [radii.tl, radii.tr, radii.bl, radii.br];
+  const radius = corners.every((value) => value === corners[0]) ? `${corners[0]}px` : "Mixed";
+  const shadow =
+    props.shadow === "none"
+      ? "no shadow"
+      : `${labelOf(SHADOW_STYLES, props.shadow).toLowerCase()} shadow`;
+  const background =
+    props.background.bg === "solid"
+      ? `Solid ${props.frameColors.page.toUpperCase()}`
+      : labelOf(BACKGROUND_TYPES, props.background.bg);
+
+  return {
+    theme: `${props.themeName} · ${labelOf(FRAME_MODE_OPTIONS, props.frameMode)}`,
+    background,
+    window: `${radius} · ${shadow}`,
+    code: `${FONT_FAMILIES[props.fontFamily].label} · ${props.fontSize}px`,
+    canvas: `${props.padding}px · ${props.aspectRatio === "auto" ? "Auto" : props.aspectRatio}`,
+    colors: themeColors
+      ? colorsEdited(props.frameColors, themeColors)
+        ? "Edited"
+        : "From theme"
+      : undefined,
+  };
+}
+
+/** Whether any frame color differs from the theme's, leaving out the background. */
+function colorsEdited(colors: FrameColors, themeColors: FrameColors) {
+  return !framesColorsEqual(colors, { ...themeColors, page: colors.page });
+}
+
 function InspectorContent({
-  tab,
-  showTabBar,
-  onShowTabBarChange,
-  showStatusBar,
-  onShowStatusBarChange,
-  showLineNumbers,
-  onShowLineNumbersChange,
-  labelPosition,
-  onLabelPositionChange,
-  showDecorators,
-  onShowDecoratorsChange,
-  decoratorColor,
-  onDecoratorColorChange,
-  decoratorOpacity,
-  onDecoratorOpacityChange,
-  decoratorSpacing,
-  onDecoratorSpacingChange,
-  padding,
-  onPaddingChange,
-  fontSize,
-  onFontSizeChange,
-  showBoundingBox,
-  onShowBoundingBoxChange,
-  aspectRatio,
-  onAspectRatioChange,
-  radii,
-  onRadiiChange,
-  fontFamily,
-  onFontFamilyChange,
-  themeName,
-  onThemeChange,
-  themeIsRandom,
-  frameMode,
-  resolvedFrameMode,
-  onFrameModeChange,
-  frameColors,
-  onFrameColorsChange,
-  onUploadTheme,
-  background,
-  onBackgroundChange,
-  shadow,
-  onShadowChange,
-  shadowColor,
-  onShadowColorChange,
-  presets,
-  onSavePreset,
-  onApplyPreset,
-  onRemovePreset,
-}: InspectorContentProps) {
-  if (tab === "layout") {
-    return (
-      <>
-        <OptionSwitch label="Tab bar" checked={showTabBar} onCheckedChange={onShowTabBarChange} />
+  sections,
+  inSheet = false,
+  ...props
+}: InspectorContentProps & {
+  sections: OpenSections;
+  /** The settings drawer, where the status bar's controls aren't on screen. */
+  inSheet?: boolean;
+}) {
+  const { open, setSection } = sections;
+  const { frameColors, onFrameColorsChange } = props;
+  // Uploaded themes have no catalog colors, so they offer no reset.
+  const themeColors = themeFrameColors(props.themeName, props.resolvedFrameMode);
+  const summary = summaries(props, themeColors);
+
+  const section = (id: SectionId, title: string) => ({
+    title,
+    summary: summary[id],
+    open: open[id],
+    onOpenChange: (value: boolean) => setSection(id, value),
+    inSheet,
+  });
+
+  return (
+    <>
+      <InspectorSection {...section("theme", "Theme")}>
+        <PickerField
+          label="Theme"
+          value={props.themeName}
+          options={Object.keys(THEMES).map((id) => {
+            const preview = themePreview(id, props.resolvedFrameMode);
+            return { id, label: id, icon: preview && <ThemePreview {...preview} /> };
+          })}
+          onValueChange={props.onThemeChange}
+          badge={props.themeIsRandom ? { text: "*", title: "Randomly selected theme" } : undefined}
+        />
+        <SegmentedField
+          label="Mode"
+          value={props.frameMode}
+          options={FRAME_MODE_OPTIONS}
+          onValueChange={props.onFrameModeChange}
+        />
+        <Button
+          onClick={() => pickFile(".json", props.onUploadTheme)}
+          variant="ghost"
+          size="sm"
+          icon={<IconUpload className="w:4 h:4" />}
+          className="as:fs fw:400 c:hint h:c:label"
+        >
+          Import VS Code theme
+        </Button>
+      </InspectorSection>
+
+      <InspectorSection {...section("background", "Background")}>
+        <BackgroundControls
+          background={props.background}
+          onBackgroundChange={props.onBackgroundChange}
+          color={frameColors.page}
+          onColorChange={(value) => onFrameColorsChange({ ...frameColors, page: value })}
+        />
+      </InspectorSection>
+
+      <InspectorSection {...section("window", "Window")}>
         <OptionSwitch
-          label="Bounding box"
-          checked={showBoundingBox}
-          onCheckedChange={onShowBoundingBoxChange}
+          label="Tab bar"
+          checked={props.showTabBar}
+          onCheckedChange={props.onShowTabBarChange}
         />
         <OptionSwitch
           label="Status bar"
-          checked={showStatusBar}
-          onCheckedChange={onShowStatusBarChange}
+          checked={props.showStatusBar}
+          onCheckedChange={props.onShowStatusBarChange}
         />
         <OptionSwitch
           label="Line numbers"
-          checked={showLineNumbers}
-          onCheckedChange={onShowLineNumbersChange}
+          checked={props.showLineNumbers}
+          onCheckedChange={props.onShowLineNumbersChange}
         />
-
-        <RadiusControl radii={radii} onRadiiChange={onRadiiChange} />
-
-        <SliderField
-          label="Padding"
-          value={padding}
-          onValueChange={onPaddingChange}
-          min={PADDING_MIN}
-          max={PADDING_MAX}
-          step={PADDING_STEP}
-          marks={SIZE_MARKS}
-        />
-
         <PickerField
-          label="Aspect ratio"
-          value={aspectRatio}
-          options={ASPECT_RATIOS.map(({ id, label }) => ({ id, label }))}
-          onValueChange={onAspectRatioChange}
+          label="Language label"
+          value={props.labelPosition}
+          options={LABEL_POSITIONS}
+          onValueChange={props.onLabelPositionChange}
         />
-
+        <RadiusControl radii={props.radii} onRadiiChange={props.onRadiiChange} />
         <PickerField
-          label="Font family"
-          value={fontFamily}
+          label="Shadow"
+          value={props.shadow}
+          options={SHADOW_STYLES}
+          onValueChange={props.onShadowChange}
+        />
+        {props.shadow !== "none" && (
+          <ColorInput
+            label="Shadow color"
+            value={props.shadowColor}
+            onChange={props.onShadowColorChange}
+          />
+        )}
+      </InspectorSection>
+
+      <InspectorSection {...section("code", "Code")}>
+        <PickerField
+          label="Font"
+          value={props.fontFamily}
           options={(Object.keys(FONT_FAMILIES) as FontFamilyId[]).map((id) => ({
             id,
             label: FONT_FAMILIES[id].label,
             style: FONT_FAMILIES[id].stack ? { fontFamily: FONT_FAMILIES[id].stack } : undefined,
           }))}
-          onValueChange={onFontFamilyChange}
+          onValueChange={props.onFontFamilyChange}
         />
-
         <SliderField
-          label="Font size"
-          value={fontSize}
-          onValueChange={onFontSizeChange}
+          label="Size"
+          value={props.fontSize}
+          onValueChange={props.onFontSizeChange}
           min={FONT_SIZE_MIN}
           max={FONT_SIZE_MAX}
           step={1}
-          marks={FONT_SIZE_MARKS}
         />
+      </InspectorSection>
 
+      <InspectorSection {...section("canvas", "Canvas")}>
+        <SliderField
+          label="Padding"
+          value={props.padding}
+          onValueChange={props.onPaddingChange}
+          min={PADDING_MIN}
+          max={PADDING_MAX}
+          step={PADDING_STEP}
+        />
         <PickerField
-          label="Language label"
-          value={labelPosition}
-          options={LABEL_POSITIONS}
-          onValueChange={onLabelPositionChange}
+          label="Aspect ratio"
+          value={props.aspectRatio}
+          options={ASPECT_RATIOS.map(({ id, label }) => ({ id, label }))}
+          onValueChange={props.onAspectRatioChange}
         />
+        {/* On desktop it sits in the status bar: it guides editing, it isn't exported. */}
+        {inSheet && (
+          <OptionSwitch
+            label="Bounding box"
+            checked={props.showBoundingBox}
+            onCheckedChange={props.onShowBoundingBoxChange}
+          />
+        )}
 
-        <SectionSeparator label="Decorators" />
-
+        <InspectorSubheading>Hash lines</InspectorSubheading>
         <OptionSwitch
-          label="Hash lines"
-          checked={showDecorators}
-          onCheckedChange={onShowDecoratorsChange}
+          label="Show"
+          checked={props.showDecorators}
+          onCheckedChange={props.onShowDecoratorsChange}
         />
-        {showDecorators && (
+        {props.showDecorators && (
           <>
             <ColorInput
-              label="Line color"
-              value={decoratorColor}
-              onChange={onDecoratorColorChange}
+              label="Color"
+              value={props.decoratorColor}
+              onChange={props.onDecoratorColorChange}
             />
             <SliderField
-              label="Line opacity"
-              value={decoratorOpacity}
-              onValueChange={onDecoratorOpacityChange}
+              label="Opacity"
+              value={props.decoratorOpacity}
+              onValueChange={props.onDecoratorOpacityChange}
               min={0}
               max={100}
               step={5}
               unit="%"
-              marks={OPACITY_MARKS}
             />
             <SliderField
-              label="Line spacing"
-              value={decoratorSpacing}
-              onValueChange={onDecoratorSpacingChange}
+              label="Spacing"
+              value={props.decoratorSpacing}
+              onValueChange={props.onDecoratorSpacingChange}
               min={DECOR_SPACING_MIN}
               max={DECOR_SPACING_MAX}
               step={DECOR_SPACING_STEP}
-              marks={SIZE_MARKS}
             />
           </>
         )}
-      </>
-    );
-  }
+      </InspectorSection>
 
-  return (
-    <>
-      <SectionSeparator label="Presets" />
-
-      <PresetsControl
-        presets={presets}
-        onSave={onSavePreset}
-        onApply={onApplyPreset}
-        onRemove={onRemovePreset}
-      />
-
-      <SectionSeparator label="Theme" />
-
-      <PickerField
-        label="Theme"
-        value={themeName}
-        options={Object.keys(THEMES).map((id) => {
-          const preview = themePreview(id, resolvedFrameMode);
-          return { id, label: id, icon: preview && <ThemePreview {...preview} /> };
-        })}
-        onValueChange={onThemeChange}
-        badge={themeIsRandom ? { text: "*", title: "Randomly selected theme" } : undefined}
-      />
-
-      <PickerField
-        label="Frame theme"
-        value={frameMode}
-        options={FRAME_MODE_OPTIONS}
-        onValueChange={onFrameModeChange}
-      />
-
-      <div className="pb:5">
-        <Button
-          onClick={() => pickFile(".json", onUploadTheme)}
-          variant="secondary"
-          size="sm"
-          icon={<IconUpload className="w:4 h:4" />}
-          className="w:100%"
-        >
-          Import VS Code theme
-        </Button>
-      </div>
-
-      <SectionSeparator label="Background" />
-
-      <BackgroundControls
-        background={background}
-        onBackgroundChange={onBackgroundChange}
-        color={frameColors.page}
-        onColorChange={(value) => onFrameColorsChange({ ...frameColors, page: value })}
-      />
-
-      <div className="pt:3">
-        <SectionSeparator label="Shadow" />
-      </div>
-
-      <PickerField
-        label="Shadow"
-        value={shadow}
-        options={SHADOW_STYLES}
-        onValueChange={onShadowChange}
-      />
-      {shadow !== "none" && (
-        <ColorInput label="Shadow color" value={shadowColor} onChange={onShadowColorChange} />
-      )}
-
-      <div className="pt:3">
-        <SectionSeparator label="Colors" />
-      </div>
-
-      {FRAME_COLOR_FIELDS.map(({ key, label }) => (
-        <ColorInput
-          key={key}
-          label={label}
-          value={frameColors[key]}
-          onChange={(value) => onFrameColorsChange({ ...frameColors, [key]: value })}
-        />
-      ))}
+      <InspectorSection {...section("colors", "Custom colors")}>
+        {FRAME_COLOR_GROUPS.map(({ title, fields }) => (
+          <div key={title} className="d:f fd:c g:3">
+            <InspectorSubheading>{title}</InspectorSubheading>
+            {fields.map(({ key, label }) => (
+              <ColorInput
+                key={key}
+                label={label}
+                value={frameColors[key]}
+                onChange={(value) => onFrameColorsChange({ ...frameColors, [key]: value })}
+              />
+            ))}
+          </div>
+        ))}
+        {themeColors && (
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={<IconRestore className="w:4 h:4" />}
+            disabled={!colorsEdited(frameColors, themeColors)}
+            onClick={() => onFrameColorsChange({ ...themeColors, page: frameColors.page })}
+            className="w:100%"
+          >
+            Reset to theme
+          </Button>
+        )}
+      </InspectorSection>
     </>
   );
 }
@@ -578,7 +637,7 @@ export function Inspector({
   randomizeLocks,
   onRandomizeLockChange,
   ...contentProps
-}: Omit<InspectorContentProps, "tab"> & {
+}: InspectorContentProps & {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   language: LanguageId;
@@ -587,37 +646,47 @@ export function Inspector({
   randomizeLocks: RandomizeLocksProps["locks"];
   onRandomizeLockChange: RandomizeLocksProps["onLockChange"];
 }) {
-  const [tab, setTab] = useState<SettingsTab>("layout");
+  const sections = useOpenSections();
   const { mode, setMode } = useChromeTheme();
+
+  const presets = (
+    <PresetsMenu
+      presets={contentProps.presets}
+      onSave={contentProps.onSavePreset}
+      onApply={contentProps.onApplyPreset}
+      onRemove={contentProps.onRemovePreset}
+    />
+  );
 
   return (
     <>
-      <aside className="d:none @lg:d:f fd:c w:72 fs:0 min-h:0 oy:auto blw:1 bs:s bc:line bg:page p:4">
-        <SettingsTabs tab={tab} onTabChange={setTab} />
-        <InspectorContent tab={tab} {...contentProps} />
+      <aside
+        aria-label="Inspector"
+        className="d:none @lg:d:f fd:c w:80 fs:0 min-h:0 oy:auto blw:1 bs:s bc:line bg:page"
+      >
+        <div className="p:4 bbw:1 bs:s bc:line">{presets}</div>
+        <InspectorContent sections={sections} {...contentProps} />
       </aside>
 
       <BottomSheet open={open} onOpenChange={onOpenChange} title="Settings">
-        <SectionSeparator label="Quick actions" />
-
-        <PickerField
-          label="Appearance"
-          value={mode}
-          options={CHROME_MODE_OPTIONS}
-          onValueChange={setMode}
-        />
-
-        <PickerField
-          label="Language"
-          value={language}
-          options={Object.entries(LANGUAGES).map(([id, label]) => ({
-            id: id as LanguageId,
-            label,
-          }))}
-          onValueChange={onLanguageChange}
-        />
-
-        <div className="d:f fd:c g:3 pb:5">
+        {/* The status bar and the header's switcher are off screen on phones, so their
+            controls lead the drawer. */}
+        <div className="d:f fd:c g:3 pb:4 bbw:1 bs:s bc:line">
+          <PickerField
+            label="Appearance"
+            value={mode}
+            options={CHROME_MODE_OPTIONS}
+            onValueChange={setMode}
+          />
+          <PickerField
+            label="Language"
+            value={language}
+            options={Object.entries(LANGUAGES).map(([id, label]) => ({
+              id: id as LanguageId,
+              label,
+            }))}
+            onValueChange={onLanguageChange}
+          />
           <Button
             variant="secondary"
             size="sm"
@@ -628,17 +697,10 @@ export function Inspector({
             Randomize
           </Button>
           <RandomizeLockToggles locks={randomizeLocks} onLockChange={onRandomizeLockChange} />
+          {presets}
         </div>
-
-        {/* Layout and Style stack on top of this drawer; tabs stay on desktop. */}
-        <SectionSeparator label="Customize" />
-        <div className="d:f fd:c g:2 pb:2">
-          <SubSheet title="Layout" icon={<IconLayout className="w:4 h:4" stroke={1.8} />}>
-            <InspectorContent tab="layout" {...contentProps} />
-          </SubSheet>
-          <SubSheet title="Style" icon={<IconPalette className="w:4 h:4" stroke={1.8} />}>
-            <InspectorContent tab="style" {...contentProps} />
-          </SubSheet>
+        <div className="mx:-6">
+          <InspectorContent sections={sections} inSheet {...contentProps} />
         </div>
       </BottomSheet>
     </>
